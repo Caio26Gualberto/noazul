@@ -3,6 +3,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import localePt from '@angular/common/locales/pt';
 import {
   ApplicationConfig,
+  DEFAULT_CURRENCY_CODE,
   LOCALE_ID,
   inject,
   provideAppInitializer,
@@ -29,6 +30,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAppTranslations(),
     { provide: LOCALE_ID, useValue: DEFAULT_LANG },
+    { provide: DEFAULT_CURRENCY_CODE, useValue: 'BRL' },
     provideTaiga(),
     { provide: TUI_LANGUAGE, useValue: signal(TUI_PORTUGUESE_LANGUAGE) },
     provideAppInitializer(async () => {

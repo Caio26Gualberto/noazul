@@ -2,6 +2,10 @@
   "appName": "NoAzul",
   "nav": {
     "home": "Início",
+    "transactions": "Lançamentos",
+    "cards": "Cartões e contas",
+    "metrics": "Métricas",
+    "newPix": "Lançar Pix",
     "profile": "Perfil",
     "main": "Navegação principal",
     "openMenu": "Abrir menu",

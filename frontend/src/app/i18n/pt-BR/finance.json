@@ -1,0 +1,24 @@
+{
+  "categories": {
+    "groceries": "Mercado",
+    "home": "Casa",
+    "restaurants": "Restaurantes",
+    "transport": "Transporte",
+    "health": "Saúde",
+    "subscriptions": "Assinaturas",
+    "other": "Outros"
+  },
+  "origins": {
+    "card": "Cartão",
+    "account": "Conta",
+    "pix": "Pix"
+  },
+  "originWithBank": "{{origin}} {{bank}}",
+  "pending": "Pendente",
+  "installment": "Parcela {{current}} de {{total}}",
+  "brands": {
+    "mastercard": "Mastercard",
+    "visa": "Visa"
+  },
+  "mockNotice": "Dados de exemplo: a integração com os bancos ainda não existe."
+}

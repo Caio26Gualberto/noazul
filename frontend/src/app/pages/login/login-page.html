@@ -27,9 +27,9 @@
       <form class="app-form" novalidate [formGroup]="loginForm" (ngSubmit)="submitLogin()">
         <div>
           <tui-textfield>
-            <label tuiLabel for="entrar-email">{{ t('auth.fields.email') }}</label>
+            <label tuiLabel for="login-email">{{ t('auth.fields.email') }}</label>
             <input
-              id="entrar-email"
+              id="login-email"
               tuiInput
               type="email"
               formControlName="email"
@@ -46,9 +46,9 @@
 
         <div>
           <tui-textfield>
-            <label tuiLabel for="entrar-password">{{ t('auth.fields.password') }}</label>
+            <label tuiLabel for="login-password">{{ t('auth.fields.password') }}</label>
             <input
-              id="entrar-password"
+              id="login-password"
               tuiInput
               type="password"
               formControlName="password"
@@ -70,9 +70,9 @@
       <form class="app-form" novalidate [formGroup]="registerForm" (ngSubmit)="submitRegister()">
         <div>
           <tui-textfield>
-            <label tuiLabel for="cadastro-name">{{ t('auth.fields.name') }}</label>
+            <label tuiLabel for="register-name">{{ t('auth.fields.name') }}</label>
             <input
-              id="cadastro-name"
+              id="register-name"
               tuiInput
               type="text"
               formControlName="name"
@@ -89,9 +89,9 @@
 
         <div>
           <tui-textfield>
-            <label tuiLabel for="cadastro-email">{{ t('auth.fields.email') }}</label>
+            <label tuiLabel for="register-email">{{ t('auth.fields.email') }}</label>
             <input
-              id="cadastro-email"
+              id="register-email"
               tuiInput
               type="email"
               formControlName="email"
@@ -108,9 +108,9 @@
 
         <div>
           <tui-textfield>
-            <label tuiLabel for="cadastro-password">{{ t('auth.fields.password') }}</label>
+            <label tuiLabel for="register-password">{{ t('auth.fields.password') }}</label>
             <input
-              id="cadastro-password"
+              id="register-password"
               tuiInput
               type="password"
               formControlName="password"

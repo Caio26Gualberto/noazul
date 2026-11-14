@@ -14,7 +14,7 @@ import { AuthStore } from '../../auth/auth.store';
 import { matchesControl, passwordRule } from '../../auth/password-rules';
 
 @Component({
-  selector: 'app-trocar-senha-page',
+  selector: 'app-change-password-page',
   imports: [
     ReactiveFormsModule,
     TranslocoDirective,
@@ -25,9 +25,9 @@ import { matchesControl, passwordRule } from '../../auth/password-rules';
     TuiInput,
     TuiPassword,
   ],
-  templateUrl: './trocar-senha-page.html',
+  templateUrl: './change-password-page.html',
 })
-export class TrocarSenhaPage {
+export class ChangePasswordPage {
   private readonly auth = inject(AuthStore);
 
   protected readonly submitting = signal(false);

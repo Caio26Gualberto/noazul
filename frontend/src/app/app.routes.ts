@@ -11,7 +11,7 @@ export const routes: Routes = [
     path: 'definir-senha',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./pages/definir-senha/definir-senha-page').then((m) => m.DefinirSenhaPage),
+      import('./pages/set-password/set-password-page').then((m) => m.SetPasswordPage),
   },
   {
     path: '',
@@ -21,16 +21,34 @@ export const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./pages/inicio/inicio-page').then((m) => m.InicioPage),
+        loadComponent: () => import('./pages/home/home-page').then((m) => m.HomePage),
+      },
+      {
+        path: 'lancamentos',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./pages/transactions/transactions-page').then((m) => m.TransactionsPage),
+      },
+      {
+        path: 'lancamentos/novo-pix',
+        loadComponent: () => import('./pages/new-pix/new-pix-page').then((m) => m.NewPixPage),
+      },
+      {
+        path: 'cartoes',
+        loadComponent: () => import('./pages/cards/cards-page').then((m) => m.CardsPage),
+      },
+      {
+        path: 'metricas',
+        loadComponent: () => import('./pages/metrics/metrics-page').then((m) => m.MetricsPage),
       },
       {
         path: 'perfil',
-        loadComponent: () => import('./pages/perfil/perfil-page').then((m) => m.PerfilPage),
+        loadComponent: () => import('./pages/profile/profile-page').then((m) => m.ProfilePage),
       },
       {
         path: 'trocar-senha',
         loadComponent: () =>
-          import('./pages/trocar-senha/trocar-senha-page').then((m) => m.TrocarSenhaPage),
+          import('./pages/change-password/change-password-page').then((m) => m.ChangePasswordPage),
       },
     ],
   },

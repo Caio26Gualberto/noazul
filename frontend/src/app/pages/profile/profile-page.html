@@ -1,17 +1,17 @@
 <section *transloco="let t" class="app-page">
   <header class="app-page__header">
-    <h1 class="app-title">{{ t('perfil.title') }}</h1>
-    <p class="app-subtitle">{{ t('perfil.subtitle') }}</p>
+    <h1 class="app-title">{{ t('profile.title') }}</h1>
+    <p class="app-subtitle">{{ t('profile.subtitle') }}</p>
   </header>
 
   @if (auth.profile(); as profile) {
     <dl class="app-card details">
       <div class="details__row">
-        <dt>{{ t('perfil.email') }}</dt>
+        <dt>{{ t('profile.email') }}</dt>
         <dd>{{ profile.email }}</dd>
       </div>
       <div class="details__row">
-        <dt>{{ t('perfil.memberSince') }}</dt>
+        <dt>{{ t('profile.memberSince') }}</dt>
         <dd>{{ profile.createdAt | date: 'longDate' }}</dd>
       </div>
     </dl>
@@ -20,8 +20,8 @@
   <form class="app-form app-card" novalidate [formGroup]="form" (ngSubmit)="submit()">
     <div>
       <tui-textfield>
-        <label tuiLabel for="perfil-name">{{ t('auth.fields.name') }}</label>
-        <input id="perfil-name" tuiInput type="text" formControlName="name" autocomplete="name" />
+        <label tuiLabel for="profile-name">{{ t('auth.fields.name') }}</label>
+        <input id="profile-name" tuiInput type="text" formControlName="name" autocomplete="name" />
       </tui-textfield>
       @let name = form.controls.name;
       @if (name.touched && name.hasError('required')) {
@@ -32,7 +32,7 @@
     </div>
 
     <button tuiButton size="l" type="submit" [loading]="submitting()" [disabled]="form.pristine">
-      {{ t('perfil.save') }}
+      {{ t('profile.save') }}
     </button>
   </form>
 </section>

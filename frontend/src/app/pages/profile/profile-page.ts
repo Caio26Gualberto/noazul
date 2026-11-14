@@ -8,7 +8,7 @@ import { ignoreApiError } from '../../api/api-error';
 import { AuthStore } from '../../auth/auth.store';
 
 @Component({
-  selector: 'app-perfil-page',
+  selector: 'app-profile-page',
   imports: [
     DatePipe,
     ReactiveFormsModule,
@@ -18,10 +18,10 @@ import { AuthStore } from '../../auth/auth.store';
     TuiError,
     TuiInput,
   ],
-  templateUrl: './perfil-page.html',
-  styleUrl: './perfil-page.scss',
+  templateUrl: './profile-page.html',
+  styleUrl: './profile-page.scss',
 })
-export class PerfilPage {
+export class ProfilePage {
   protected readonly auth = inject(AuthStore);
 
   protected readonly submitting = signal(false);

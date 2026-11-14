@@ -3,7 +3,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthStore } from '../../auth/auth.store';
 
 @Component({
-  selector: 'app-inicio-page',
+  selector: 'app-home-page',
   imports: [TranslocoDirective],
   template: `
     <section *transloco="let t" class="app-page">
@@ -26,6 +26,6 @@ import { AuthStore } from '../../auth/auth.store';
     }
   `,
 })
-export class InicioPage {
+export class HomePage {
   protected readonly auth = inject(AuthStore);
 }

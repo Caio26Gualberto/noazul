@@ -12,7 +12,7 @@ import { AppRoutes } from '../../auth/routes';
 import { AppBrand } from '../../components/app-brand';
 
 @Component({
-  selector: 'app-definir-senha-page',
+  selector: 'app-set-password-page',
   imports: [
     AppBrand,
     ReactiveFormsModule,
@@ -24,9 +24,9 @@ import { AppBrand } from '../../components/app-brand';
     TuiInput,
     TuiPassword,
   ],
-  templateUrl: './definir-senha-page.html',
+  templateUrl: './set-password-page.html',
 })
-export class DefinirSenhaPage {
+export class SetPasswordPage {
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
 

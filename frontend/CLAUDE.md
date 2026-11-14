@@ -81,7 +81,7 @@ Recuperação de senha e verificação de e-mail não existem na API e não têm
 ## Textos (i18n)
 
 - Nenhum texto visível fica solto no template ou no código: tudo vem de `i18n/pt-BR/*.json`.
-- Um arquivo por assunto (`common`, `auth`, `perfil`, `api`). A chave leva o nome do arquivo na frente: `auth.login.title`.
+- Um arquivo por assunto (`common`, `auth`, `profile`, `api`, e um por tela ou domínio, como `finance`). A chave leva o nome do arquivo na frente: `auth.login.title`.
 - Assunto novo: arquivo novo e uma linha em `i18n/index.ts`.
 - No template: `*transloco="let t"` no elemento de fora e `{{ t('chave') }}`.
 - Só pt-BR. A interface de data e número usa o locale `pt-BR` (`LOCALE_ID`).
@@ -99,7 +99,7 @@ Recuperação de senha e verificação de e-mail não existem na API e não têm
 
 ## Formulários com Taiga
 
-- Campo: `<tui-textfield>` com `<label tuiLabel for="x">` e `<input tuiInput id="x" formControlName="…">`. O `for`/`id` explícito é exigido pelo lint e liga o rótulo ao campo; use o prefixo da tela (`entrar-email`, `perfil-name`).
+- Campo: `<tui-textfield>` com `<label tuiLabel for="x">` e `<input tuiInput id="x" formControlName="…">`. O `for`/`id` explícito é exigido pelo lint e liga o rótulo ao campo; use o prefixo da tela, em inglês (`login-email`, `profile-name`).
 - Senha: `<tui-icon tuiPassword />` dentro do `tui-textfield` faz o mostrar/ocultar.
 - Erro: `@if (campo.touched && campo.hasError('…')) { <tui-error [error]="t('auth.errors.…')" /> }`, logo abaixo do campo. O texto vem do Transloco, como todo texto.
 - Botão de envio: `tuiButton` com `[loading]="submitting()"` (`TuiButtonLoading`, do `kit`).
