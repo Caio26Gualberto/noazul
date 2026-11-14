@@ -24,19 +24,20 @@ import { TranslocoPipe } from '@jsverse/transloco';
     }
 
     .mark__ground {
-      fill: var(--mat-sys-primary);
+      fill: var(--tui-background-accent-1);
     }
 
     .mark__line {
       fill: none;
-      stroke: var(--mat-sys-on-primary);
+      stroke: var(--tui-text-primary-on-accent-1);
       stroke-width: 2.6;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
 
     .name {
-      font: var(--mat-sys-title-large);
+      font: var(--tui-typography-heading-h6);
+      font-family: var(--tui-typography-family-display);
       font-weight: 700;
     }
   `,

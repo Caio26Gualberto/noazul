@@ -13,7 +13,7 @@ O dono está aprendendo Angular neste projeto: prefira o caminho padrão e docum
 ## Stack
 
 - Angular 22: componentes standalone, signals, controle de fluxo no template (`@if`, `@for`), rotas com carregamento sob demanda.
-- Angular Material (tema Material 3) e Angular CDK.
+- Taiga UI 5 (`@taiga-ui/core`, `kit`, `layout`, `icons`, `i18n`), com o tema próprio do NoAzul por cima.
 - Formulários reativos tipados (`NonNullableFormBuilder`).
 - Transloco para os textos.
 - `HttpClient` com interceptor funcional.
@@ -58,7 +58,7 @@ Toda chamada HTTP passa por aqui. Página e componente nunca injetam `HttpClient
 - `token-storage.ts`: os dois tokens ficam no `localStorage` (`access_token`, `refresh_token`).
 - `api-codes.ts` + `i18n/pt-BR/api.json`: espelho dos codes da API. Code novo na API entra nos dois no mesmo commit.
 - `types.ts`: tipos dos DTOs, escritos à mão.
-- `feedback.service.ts`: o aviso na tela (snackbar). É o único lugar que abre aviso de API.
+- `feedback.service.ts`: o aviso na tela (notificação do Taiga, `TuiNotificationService`). É o único lugar que abre aviso de API.
 
 Serviço de feature novo: uma classe em `app/<feature>/` ou `app/pages/<feature>/` que injeta `ApiClient` e devolve `Observable<T>`, como `auth/auth.service.ts`.
 
@@ -89,11 +89,21 @@ Recuperação de senha e verificação de e-mail não existem na API e não têm
 ## Tema e cor
 
 - **Cor só em `theme/_colors.scss`**, em dois mapas: claro e escuro. Buscar `#` seguido de hexadecimal em `src/app` fora desse arquivo tem que voltar vazio.
-- `theme/_theme.scss` aplica o tema do Angular Material e liga cada cor do mapa a um token do Material. O modo claro ou escuro segue o sistema da pessoa (`color-scheme: light dark`).
-- Em componente, use os tokens: `var(--mat-sys-primary)`, `var(--mat-sys-on-surface-variant)`, e os próprios do projeto, `var(--app-color-*)`. Tipografia também por token: `font: var(--mat-sys-title-large)`.
+- `theme/_theme.scss` liga cada cor do mapa a uma variável do Taiga (`--tui-*`) com `light-dark()`. O modo claro ou escuro segue o sistema da pessoa.
+- As variáveis ficam em `:root` **e** em `[tuiTheme]`: o Taiga marca o `body` com `tuiTheme="dark"` e redefine a paleta dele ali, então só `:root` perderia para a do Taiga.
+- Em componente, use os tokens do Taiga: `var(--tui-background-base)`, `var(--tui-text-secondary)`, `var(--tui-border-normal)`, `var(--tui-background-accent-1)`, e os próprios do projeto, `var(--app-color-*)`. Tipografia também por token: `font: var(--tui-typography-body-m)`; título usa `font-family: var(--tui-typography-family-display)` (Space Grotesk).
 - `theme/_base.scss` tem as classes de layout compartilhadas (`app-page`, `app-card`, `app-form`, `app-title`, `app-subtitle`).
-- Ícones: SVG registrados em `components/app-icons.ts`, usados com `<mat-icon svgIcon="nome" />`. Ícone novo entra nesse arquivo.
+- Ícones: os do Taiga (Lucide), pelo nome: `<tui-icon icon="@tui.house" />` ou `iconStart="@tui.menu"` no botão. O `angular.json` copia os SVG para `assets/taiga-ui/icons`.
+- O `App` envolve tudo em `<tui-root>`: sem ele, dropdown, notificação e dica não aparecem.
 - Identidade "Azul calmo", decidida pelo dono. Mudar cor, fonte ou layout é decisão dele.
+
+## Formulários com Taiga
+
+- Campo: `<tui-textfield>` com `<label tuiLabel for="x">` e `<input tuiInput id="x" formControlName="…">`. O `for`/`id` explícito é exigido pelo lint e liga o rótulo ao campo; use o prefixo da tela (`entrar-email`, `perfil-name`).
+- Senha: `<tui-icon tuiPassword />` dentro do `tui-textfield` faz o mostrar/ocultar.
+- Erro: `@if (campo.touched && campo.hasError('…')) { <tui-error [error]="t('auth.errors.…')" /> }`, logo abaixo do campo. O texto vem do Transloco, como todo texto.
+- Botão de envio: `tuiButton` com `[loading]="submitting()"` (`TuiButtonLoading`, do `kit`).
+- Alternância de abas: `tui-segmented`.
 
 ## Convenções
 
@@ -121,6 +131,8 @@ Recuperação de senha e verificação de e-mail não existem na API e não têm
 - O logout da API exige um token válido: `AuthStore.logout` chama a API **antes** de limpar os tokens.
 - `environment.ts` (produção) tem `apiBaseUrl` vazio: a URL da API de produção entra ali quando o deploy for decidido.
 - O aviso de orçamento do build está em 700 kB para o pacote inicial.
+- O Taiga 5 espera o idioma como **signal**: `{ provide: TUI_LANGUAGE, useValue: signal(TUI_PORTUGUESE_LANGUAGE) }`. Com `of(...)` (o jeito do Taiga 4, que ainda aparece em exemplos) os campos quebram com "language is not a function" e derrubam a tela inteira.
+- O tema do Taiga é `.less`: o pacote `less` precisa estar nas devDependencies para o build.
 
 ## Como este arquivo evolui
 

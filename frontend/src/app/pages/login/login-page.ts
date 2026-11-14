@@ -1,12 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButton } from '@angular/material/button';
-import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-toggle';
-import { MatError, MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
-import { MatInput } from '@angular/material/input';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { TuiButton, TuiError, TuiIcon, TuiInput } from '@taiga-ui/core';
+import { TuiButtonLoading, TuiPassword, TuiSegmented } from '@taiga-ui/kit';
 import { catchError, map, of } from 'rxjs';
 import { ignoreApiError } from '../../api/api-error';
 import { AuthService } from '../../auth/auth.service';
@@ -14,7 +12,6 @@ import { AuthStore } from '../../auth/auth.store';
 import { passwordRule } from '../../auth/password-rules';
 import { AppRoutes } from '../../auth/routes';
 import { AppBrand } from '../../components/app-brand';
-import { AppPasswordToggle } from '../../components/app-password-toggle';
 
 type Mode = 'login' | 'register';
 
@@ -22,17 +19,15 @@ type Mode = 'login' | 'register';
   selector: 'app-login-page',
   imports: [
     AppBrand,
-    AppPasswordToggle,
-    MatButton,
-    MatButtonToggle,
-    MatButtonToggleGroup,
-    MatError,
-    MatFormField,
-    MatInput,
-    MatLabel,
-    MatSuffix,
     ReactiveFormsModule,
     TranslocoDirective,
+    TuiButton,
+    TuiButtonLoading,
+    TuiError,
+    TuiIcon,
+    TuiInput,
+    TuiPassword,
+    TuiSegmented,
   ],
   templateUrl: './login-page.html',
   styleUrl: './login-page.scss',

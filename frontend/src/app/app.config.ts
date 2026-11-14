@@ -7,15 +7,17 @@ import {
   inject,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
+  signal,
 } from '@angular/core';
-import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { provideRouter } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
+import { provideTaiga } from '@taiga-ui/core';
+import { TUI_LANGUAGE } from '@taiga-ui/i18n';
+import { TUI_PORTUGUESE_LANGUAGE } from '@taiga-ui/i18n/languages/portuguese';
 import { firstValueFrom } from 'rxjs';
 import { authInterceptor } from './api/auth.interceptor';
 import { routes } from './app.routes';
 import { AuthStore } from './auth/auth.store';
-import { registerAppIcons } from './components/app-icons';
 import { DEFAULT_LANG, provideAppTranslations } from './i18n';
 
 registerLocaleData(localePt);
@@ -27,9 +29,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAppTranslations(),
     { provide: LOCALE_ID, useValue: DEFAULT_LANG },
-    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' } },
+    provideTaiga(),
+    { provide: TUI_LANGUAGE, useValue: signal(TUI_PORTUGUESE_LANGUAGE) },
     provideAppInitializer(async () => {
-      registerAppIcons();
       const transloco = inject(TranslocoService);
       const auth = inject(AuthStore);
       await firstValueFrom(transloco.load(DEFAULT_LANG));

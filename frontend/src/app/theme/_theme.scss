@@ -1,60 +1,58 @@
 @use 'sass:map';
-@use '@angular/material' as mat;
 @use './colors';
 
 @function tone($name) {
   @return light-dark(map.get(colors.$light, $name), map.get(colors.$dark, $name));
 }
 
-html {
+:root,
+[tuiTheme] {
   color-scheme: light dark;
 
-  @include mat.theme(
-    (
-      color: mat.$azure-palette,
-      typography: (
-        plain-family: 'Inter Variable',
-        brand-family: 'Space Grotesk Variable',
-        bold-weight: 600,
-        medium-weight: 500,
-        regular-weight: 400,
-      ),
-      density: 0,
-    )
-  );
+  --tui-typography-family-text: 'Inter Variable', system-ui, sans-serif;
+  --tui-typography-family-display: 'Space Grotesk Variable', system-ui, sans-serif;
 
-  @include mat.theme-overrides(
-    (
-      primary: tone(primary),
-      on-primary: tone(on-primary),
-      primary-container: tone(primary-container),
-      on-primary-container: tone(on-primary-container),
-      secondary-container: tone(primary-container),
-      on-secondary-container: tone(on-primary-container),
-      background: tone(background),
-      on-background: tone(text),
-      surface: tone(surface),
-      on-surface: tone(text),
-      on-surface-variant: tone(text-muted),
-      surface-variant: tone(surface-soft),
-      surface-container-lowest: tone(surface),
-      surface-container-low: tone(surface),
-      surface-container: tone(surface),
-      surface-container-high: tone(surface-soft),
-      surface-container-highest: tone(surface-strong),
-      outline: tone(outline),
-      outline-variant: tone(border),
-      error: tone(danger),
-      on-error: tone(on-danger),
-      inverse-surface: tone(aside),
-      inverse-on-surface: tone(on-aside),
-    )
-  );
+  --tui-background-base: #{tone(surface)};
+  --tui-background-base-alt: #{tone(background)};
+  --tui-background-elevation-1: #{tone(surface)};
+  --tui-background-elevation-2: #{tone(surface)};
+  --tui-background-elevation-3: #{tone(surface)};
+  --tui-background-neutral-1: #{tone(surface-soft)};
+  --tui-background-neutral-1-hover: #{tone(surface-strong)};
+  --tui-background-neutral-1-pressed: #{tone(border)};
+  --tui-background-neutral-2: #{tone(surface-strong)};
+  --tui-background-neutral-2-hover: #{tone(border)};
+  --tui-background-neutral-2-pressed: #{tone(border-strong)};
+  --tui-background-accent-1: #{tone(primary)};
+  --tui-background-accent-1-hover: #{tone(primary-hover)};
+  --tui-background-accent-1-pressed: #{tone(primary-pressed)};
+  --tui-background-accent-2: #{tone(primary)};
+  --tui-background-accent-2-hover: #{tone(primary-hover)};
+  --tui-background-accent-2-pressed: #{tone(primary-pressed)};
+
+  --tui-text-primary: #{tone(text)};
+  --tui-text-secondary: #{tone(text-muted)};
+  --tui-text-tertiary: #{tone(outline)};
+  --tui-text-primary-on-accent-1: #{tone(on-primary)};
+  --tui-text-primary-on-accent-2: #{tone(on-primary)};
+  --tui-text-action: #{tone(primary)};
+  --tui-text-action-hover: #{tone(primary-pressed)};
+  --tui-text-positive: #{tone(positive)};
+  --tui-text-negative: #{tone(danger)};
+
+  --tui-border-normal: #{tone(border)};
+  --tui-border-hover: #{tone(border-strong)};
+  --tui-border-focus: #{tone(primary)};
+
+  --tui-status-positive: #{tone(positive)};
+  --tui-status-negative: #{tone(danger)};
+  --tui-status-neutral: #{tone(text-muted)};
 
   --app-color-positive: #{tone(positive)};
+  --app-color-primary-container: #{tone(primary-container)};
+  --app-color-on-primary-container: #{tone(on-primary-container)};
   --app-color-aside: #{tone(aside)};
   --app-color-on-aside: #{tone(on-aside)};
   --app-color-on-aside-muted: #{tone(on-aside-muted)};
-  --app-color-border: #{tone(border)};
   --app-radius: 14px;
 }

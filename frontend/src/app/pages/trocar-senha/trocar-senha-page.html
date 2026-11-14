@@ -11,56 +11,65 @@
     [formGroup]="form"
     (ngSubmit)="submit(formDirective)"
   >
-    <mat-form-field>
-      <mat-label>{{ t('auth.fields.currentPassword') }}</mat-label>
-      <input
-        #currentPassword
-        matInput
-        type="password"
-        formControlName="currentPassword"
-        autocomplete="current-password"
-      />
-      <app-password-toggle matSuffix [field]="currentPassword" />
-      @if (form.controls.currentPassword.hasError('required')) {
-        <mat-error>{{ t('auth.errors.required') }}</mat-error>
+    <div>
+      <tui-textfield>
+        <label tuiLabel for="trocar-currentPassword">{{ t('auth.fields.currentPassword') }}</label>
+        <input
+          id="trocar-currentPassword"
+          tuiInput
+          type="password"
+          formControlName="currentPassword"
+          autocomplete="current-password"
+        />
+        <tui-icon tuiPassword />
+      </tui-textfield>
+      @let currentPassword = form.controls.currentPassword;
+      @if (currentPassword.touched && currentPassword.hasError('required')) {
+        <tui-error [error]="t('auth.errors.required')" />
       }
-    </mat-form-field>
+    </div>
 
-    <mat-form-field>
-      <mat-label>{{ t('auth.fields.newPassword') }}</mat-label>
-      <input
-        #newPassword
-        matInput
-        type="password"
-        formControlName="newPassword"
-        autocomplete="new-password"
-      />
-      <app-password-toggle matSuffix [field]="newPassword" />
-      @if (form.controls.newPassword.hasError('required')) {
-        <mat-error>{{ t('auth.errors.required') }}</mat-error>
-      } @else if (form.controls.newPassword.hasError('pattern')) {
-        <mat-error>{{ t('auth.errors.passwordRule') }}</mat-error>
+    <div>
+      <tui-textfield>
+        <label tuiLabel for="trocar-newPassword">{{ t('auth.fields.newPassword') }}</label>
+        <input
+          id="trocar-newPassword"
+          tuiInput
+          type="password"
+          formControlName="newPassword"
+          autocomplete="new-password"
+        />
+        <tui-icon tuiPassword />
+      </tui-textfield>
+      @let newPassword = form.controls.newPassword;
+      @if (newPassword.touched && newPassword.hasError('required')) {
+        <tui-error [error]="t('auth.errors.required')" />
+      } @else if (newPassword.touched && newPassword.hasError('pattern')) {
+        <tui-error [error]="t('auth.errors.passwordRule')" />
       }
-    </mat-form-field>
+    </div>
 
-    <mat-form-field>
-      <mat-label>{{ t('auth.fields.confirmPassword') }}</mat-label>
-      <input
-        #confirmPassword
-        matInput
-        type="password"
-        formControlName="confirmPassword"
-        autocomplete="new-password"
-      />
-      <app-password-toggle matSuffix [field]="confirmPassword" />
-      @if (form.controls.confirmPassword.hasError('required')) {
-        <mat-error>{{ t('auth.errors.required') }}</mat-error>
-      } @else if (form.controls.confirmPassword.hasError('mismatch')) {
-        <mat-error>{{ t('auth.errors.passwordMismatch') }}</mat-error>
+    <div>
+      <tui-textfield>
+        <label tuiLabel for="trocar-confirmPassword">{{ t('auth.fields.confirmPassword') }}</label>
+        <input
+          id="trocar-confirmPassword"
+          tuiInput
+          type="password"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+        />
+        <tui-icon tuiPassword />
+      </tui-textfield>
+      @let confirmPassword = form.controls.confirmPassword;
+      @if (confirmPassword.touched && confirmPassword.hasError('required')) {
+        <tui-error [error]="t('auth.errors.required')" />
+      } @else if (confirmPassword.touched && confirmPassword.hasError('mismatch')) {
+        <tui-error [error]="t('auth.errors.passwordMismatch')" />
       }
-    </mat-form-field>
+    </div>
 
-    <button matButton="filled" type="submit" [disabled]="submitting()">
+    <button tuiButton size="l" type="submit" [loading]="submitting()">
       {{ t('auth.changePassword.submit') }}
     </button>
   </form>

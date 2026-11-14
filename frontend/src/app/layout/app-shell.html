@@ -1,71 +1,97 @@
-<mat-sidenav-container *transloco="let t" class="shell">
-  <mat-sidenav
-    #sidenav
-    class="shell__nav"
-    [mode]="isHandset() ? 'over' : 'side'"
-    [opened]="!isHandset()"
-  >
+<div *transloco="let t" class="shell" [class.shell--menu-open]="menuOpen()">
+  <aside class="shell__aside">
     <div class="shell__brand">
       <app-brand />
+      <button
+        tuiIconButton
+        appearance="flat"
+        size="s"
+        type="button"
+        iconStart="@tui.x"
+        class="shell__close"
+        [attr.aria-label]="t('common.nav.closeMenu')"
+        (click)="menuOpen.set(false)"
+      >
+        {{ t('common.nav.closeMenu') }}
+      </button>
     </div>
-    <mat-nav-list [attr.aria-label]="t('common.nav.main')">
+
+    <nav class="shell__nav" [attr.aria-label]="t('common.nav.main')">
       @for (item of navItems; track item.path) {
         <a
-          mat-list-item
-          #link="routerLinkActive"
-          routerLinkActive
+          class="shell__link"
+          routerLinkActive="shell__link--active"
+          ariaCurrentWhenActive="page"
           [routerLink]="item.path"
           [routerLinkActiveOptions]="{ exact: item.exact }"
-          [activated]="link.isActive"
-          (click)="closeOnHandset(sidenav)"
+          (click)="menuOpen.set(false)"
         >
-          <mat-icon matListItemIcon [svgIcon]="item.icon" />
-          <span matListItemTitle>{{ t(item.labelKey) }}</span>
+          <tui-icon [icon]="item.icon" />
+          <span>{{ t(item.labelKey) }}</span>
         </a>
       }
-    </mat-nav-list>
-  </mat-sidenav>
+    </nav>
+  </aside>
 
-  <mat-sidenav-content class="shell__main">
-    <mat-toolbar class="shell__bar">
-      @if (isHandset()) {
-        <button
-          matIconButton
-          type="button"
-          [attr.aria-label]="t('common.nav.openMenu')"
-          (click)="sidenav.open()"
-        >
-          <mat-icon svgIcon="menu" />
-        </button>
-      }
-      <span class="shell__spacer"></span>
+  <button
+    type="button"
+    class="shell__backdrop"
+    tabindex="-1"
+    [attr.aria-label]="t('common.nav.closeMenu')"
+    (click)="menuOpen.set(false)"
+  ></button>
+
+  <div class="shell__main">
+    <header class="shell__bar">
       <button
-        matButton
+        tuiIconButton
+        appearance="flat"
         type="button"
-        [matMenuTriggerFor]="userMenu"
-        [attr.aria-label]="t('common.nav.userMenu')"
+        iconStart="@tui.menu"
+        class="shell__menu"
+        [attr.aria-label]="t('common.nav.openMenu')"
+        (click)="menuOpen.set(true)"
       >
-        <mat-icon svgIcon="user" />
+        {{ t('common.nav.openMenu') }}
+      </button>
+
+      <span class="shell__spacer"></span>
+
+      <button
+        tuiButton
+        appearance="flat"
+        size="m"
+        type="button"
+        iconEnd="@tui.chevron-down"
+        class="shell__user"
+        [attr.aria-label]="t('common.nav.userMenu')"
+        [tuiDropdown]="userMenu"
+        [(tuiDropdownOpen)]="userMenuOpen"
+      >
+        <span tuiAvatar size="xs" appearance="accent">{{ initial(auth.profile()?.name) }}</span>
         {{ auth.profile()?.name }}
       </button>
-      <mat-menu #userMenu="matMenu">
-        <a mat-menu-item [routerLink]="routes.profile">
-          <mat-icon svgIcon="user" />
-          <span>{{ t('common.nav.profile') }}</span>
-        </a>
-        <a mat-menu-item [routerLink]="routes.changePassword">
-          <mat-icon svgIcon="key" />
-          <span>{{ t('common.actions.changePassword') }}</span>
-        </a>
-        <button mat-menu-item type="button" (click)="logout()">
-          <mat-icon svgIcon="logout" />
-          <span>{{ t('common.actions.logout') }}</span>
-        </button>
-      </mat-menu>
-    </mat-toolbar>
+
+      <ng-template #userMenu>
+        <tui-data-list>
+          <a tuiOption [routerLink]="routes.profile" (click)="userMenuOpen.set(false)">
+            <tui-icon icon="@tui.user" />
+            {{ t('common.nav.profile') }}
+          </a>
+          <a tuiOption [routerLink]="routes.changePassword" (click)="userMenuOpen.set(false)">
+            <tui-icon icon="@tui.key-round" />
+            {{ t('common.actions.changePassword') }}
+          </a>
+          <button tuiOption type="button" (click)="logout()">
+            <tui-icon icon="@tui.log-out" />
+            {{ t('common.actions.logout') }}
+          </button>
+        </tui-data-list>
+      </ng-template>
+    </header>
 
     <main class="shell__content">
       <router-outlet />
     </main>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  </div>
+</div>

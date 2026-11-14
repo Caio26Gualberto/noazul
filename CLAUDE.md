@@ -13,7 +13,7 @@ Fase atual: base do projeto, com autenticação funcionando de ponta a ponta (ca
 | Pasta | Projeto | Stack | Leia primeiro |
 |---|---|---|---|
 | `api/` | API | .NET 10 · EF Core (Postgres) · Identity + JWT · Hangfire | `api/CLAUDE.md` |
-| `frontend/` | Site | Angular 22 · Angular Material · Transloco | `frontend/CLAUDE.md` |
+| `frontend/` | Site | Angular 22 · Taiga UI · Transloco | `frontend/CLAUDE.md` |
 | `.github/workflows/` | CI (`ci.yml`, com o check `ci-ok`) | GitHub Actions | este arquivo |
 
 Ordem de trabalho: **api → frontend**. O frontend espelha codes e permissões da API; a API não sabe que ele existe.
@@ -49,7 +49,7 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
   - Cartões e contas: uma conexão por banco, com a última atualização, fatura, limite, fechamento, vencimento e saldo da conta.
   - Métricas: gasto por mês, divisão por origem, maiores gastos e categorias do mês contra o anterior.
   - Cada pessoa vê só a própria conta; não há visão da família junta.
-- Biblioteca de UI: Taiga UI no lugar do Angular Material. O dono achou o visual fraco e escolheu depois de comparar a tela de Início montada em Material, PrimeNG, Spartan UI e Taiga UI. Substitui a escolha do Angular Material; a identidade "Azul calmo" continua valendo, então as cores próprias do Taiga (como os gradientes dos cartões) seguem a paleta da marca. Até a migração terminar, o código do `frontend/` ainda usa Material (2026-11-14).
+- Biblioteca de UI: Taiga UI no lugar do Angular Material. O dono achou o visual fraco e escolheu depois de comparar a tela de Início montada em Material, PrimeNG, Spartan UI e Taiga UI. Substitui a escolha do Angular Material; a identidade "Azul calmo" continua valendo, então as cores próprias do Taiga (como os gradientes dos cartões) seguem a paleta da marca. A migração do `frontend/` foi feita no mesmo dia (2026-11-14).
 
 ## Como o agente trabalha aqui
 

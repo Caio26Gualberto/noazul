@@ -5,10 +5,10 @@
     "profile": "Perfil",
     "main": "Navegação principal",
     "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
     "userMenu": "Menu da conta"
   },
   "actions": {
-    "close": "Fechar",
     "logout": "Sair",
     "changePassword": "Trocar senha"
   },

@@ -6,27 +6,24 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatButton } from '@angular/material/button';
-import { MatError, MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
-import { MatInput } from '@angular/material/input';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { TuiButton, TuiError, TuiIcon, TuiInput } from '@taiga-ui/core';
+import { TuiButtonLoading, TuiPassword } from '@taiga-ui/kit';
 import { ignoreApiError } from '../../api/api-error';
 import { AuthStore } from '../../auth/auth.store';
 import { matchesControl, passwordRule } from '../../auth/password-rules';
-import { AppPasswordToggle } from '../../components/app-password-toggle';
 
 @Component({
   selector: 'app-trocar-senha-page',
   imports: [
-    AppPasswordToggle,
-    MatButton,
-    MatError,
-    MatFormField,
-    MatInput,
-    MatLabel,
-    MatSuffix,
     ReactiveFormsModule,
     TranslocoDirective,
+    TuiButton,
+    TuiButtonLoading,
+    TuiError,
+    TuiIcon,
+    TuiInput,
+    TuiPassword,
   ],
   templateUrl: './trocar-senha-page.html',
 })

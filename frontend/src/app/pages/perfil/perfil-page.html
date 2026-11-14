@@ -18,17 +18,20 @@
   }
 
   <form class="app-form app-card" novalidate [formGroup]="form" (ngSubmit)="submit()">
-    <mat-form-field>
-      <mat-label>{{ t('auth.fields.name') }}</mat-label>
-      <input matInput type="text" formControlName="name" autocomplete="name" />
-      @if (form.controls.name.hasError('required')) {
-        <mat-error>{{ t('auth.errors.required') }}</mat-error>
-      } @else if (form.controls.name.invalid) {
-        <mat-error>{{ t('auth.errors.nameLength') }}</mat-error>
+    <div>
+      <tui-textfield>
+        <label tuiLabel for="perfil-name">{{ t('auth.fields.name') }}</label>
+        <input id="perfil-name" tuiInput type="text" formControlName="name" autocomplete="name" />
+      </tui-textfield>
+      @let name = form.controls.name;
+      @if (name.touched && name.hasError('required')) {
+        <tui-error [error]="t('auth.errors.required')" />
+      } @else if (name.touched && name.invalid) {
+        <tui-error [error]="t('auth.errors.nameLength')" />
       }
-    </mat-form-field>
+    </div>
 
-    <button matButton="filled" type="submit" [disabled]="submitting() || form.pristine">
+    <button tuiButton size="l" type="submit" [loading]="submitting()" [disabled]="form.pristine">
       {{ t('perfil.save') }}
     </button>
   </form>

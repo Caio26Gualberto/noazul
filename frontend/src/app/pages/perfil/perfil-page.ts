@@ -1,10 +1,9 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButton } from '@angular/material/button';
-import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
-import { MatInput } from '@angular/material/input';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { TuiButton, TuiError, TuiInput } from '@taiga-ui/core';
+import { TuiButtonLoading } from '@taiga-ui/kit';
 import { ignoreApiError } from '../../api/api-error';
 import { AuthStore } from '../../auth/auth.store';
 
@@ -12,13 +11,12 @@ import { AuthStore } from '../../auth/auth.store';
   selector: 'app-perfil-page',
   imports: [
     DatePipe,
-    MatButton,
-    MatError,
-    MatFormField,
-    MatInput,
-    MatLabel,
     ReactiveFormsModule,
     TranslocoDirective,
+    TuiButton,
+    TuiButtonLoading,
+    TuiError,
+    TuiInput,
   ],
   templateUrl: './perfil-page.html',
   styleUrl: './perfil-page.scss',

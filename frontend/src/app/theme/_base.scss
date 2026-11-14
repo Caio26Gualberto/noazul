@@ -5,10 +5,15 @@ body {
 
 body {
   margin: 0;
-  background: var(--mat-sys-background);
-  color: var(--mat-sys-on-background);
-  font: var(--mat-sys-body-large);
+  background: var(--tui-background-base-alt);
+  color: var(--tui-text-primary);
+  font: var(--tui-typography-body-l);
   -webkit-font-smoothing: antialiased;
+}
+
+tui-root {
+  height: 100%;
+  background: var(--tui-background-base-alt);
 }
 
 h1,
@@ -19,24 +24,24 @@ p {
 }
 
 .app-title {
-  font: var(--mat-sys-headline-medium);
-  font-weight: 600;
+  font: var(--tui-typography-heading-h4);
+  font-family: var(--tui-typography-family-display);
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 .app-subtitle {
-  font: var(--mat-sys-body-large);
-  color: var(--mat-sys-on-surface-variant);
+  font: var(--tui-typography-body-l);
+  color: var(--tui-text-secondary);
 }
 
 .app-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
 }
 
 .app-form button[type='submit'] {
-  height: 48px;
   margin-top: 8px;
 }
 
@@ -54,8 +59,8 @@ p {
 }
 
 .app-card {
-  background: var(--mat-sys-surface);
-  border: 1px solid var(--app-color-border);
+  background: var(--tui-background-base);
+  border: 1px solid var(--tui-border-normal);
   border-radius: var(--app-radius);
   padding: 24px;
 }

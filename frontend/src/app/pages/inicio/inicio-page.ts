@@ -20,7 +20,8 @@ import { AuthStore } from '../../auth/auth.store';
   `,
   styles: `
     h2 {
-      font: var(--mat-sys-title-large);
+      font: var(--tui-typography-heading-h6);
+      font-family: var(--tui-typography-family-display);
       font-weight: 600;
     }
   `,

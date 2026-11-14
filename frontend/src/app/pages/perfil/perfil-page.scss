@@ -12,11 +12,12 @@
 }
 
 .details dt {
-  font: var(--mat-sys-label-large);
-  color: var(--mat-sys-on-surface-variant);
+  font: var(--tui-typography-body-s);
+  font-weight: 500;
+  color: var(--tui-text-secondary);
 }
 
 .details dd {
   margin: 0;
-  font: var(--mat-sys-body-large);
+  font: var(--tui-typography-body-l);
 }

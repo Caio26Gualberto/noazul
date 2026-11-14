@@ -1,31 +1,28 @@
 import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButton } from '@angular/material/button';
-import { MatError, MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
-import { MatInput } from '@angular/material/input';
 import { Router } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { TuiButton, TuiError, TuiIcon, TuiInput } from '@taiga-ui/core';
+import { TuiButtonLoading, TuiPassword } from '@taiga-ui/kit';
 import { ignoreApiError } from '../../api/api-error';
 import { AuthStore } from '../../auth/auth.store';
 import { matchesControl, passwordRule } from '../../auth/password-rules';
 import { AppRoutes } from '../../auth/routes';
 import { AppBrand } from '../../components/app-brand';
-import { AppPasswordToggle } from '../../components/app-password-toggle';
 
 @Component({
   selector: 'app-definir-senha-page',
   imports: [
     AppBrand,
-    AppPasswordToggle,
-    MatButton,
-    MatError,
-    MatFormField,
-    MatInput,
-    MatLabel,
-    MatSuffix,
     ReactiveFormsModule,
     TranslocoDirective,
+    TuiButton,
+    TuiButtonLoading,
+    TuiError,
+    TuiIcon,
+    TuiInput,
+    TuiPassword,
   ],
   templateUrl: './definir-senha-page.html',
 })
