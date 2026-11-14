@@ -1,0 +1,178 @@
+<section *transloco="let t" class="app-page metrics">
+  <header class="app-page__header">
+    <h1 class="app-title">{{ t('metrics.title') }}</h1>
+    <p class="app-subtitle">{{ t('metrics.subtitle') }}</p>
+    <p class="notice">
+      <tui-icon icon="@tui.info" />
+      {{ t('finance.mockNotice') }}
+    </p>
+  </header>
+
+  @if (loading()) {
+    <tui-loader size="l" class="loader" [textContent]="t('metrics.loading')" />
+  } @else {
+    <div class="kpis">
+      <div class="app-card kpi">
+        <span class="kpi__label">{{
+          t('metrics.kpis.currentMonth', { month: currentMonthName | titlecase })
+        }}</span>
+        <span class="kpi__value">{{ currentTotal() | currency }}</span>
+        <span class="kpi__hint">{{
+          t('metrics.kpis.daysElapsed', { day: currentDay, days: currentMonthDays })
+        }}</span>
+      </div>
+
+      <div class="app-card kpi">
+        <span class="kpi__label">{{ t('metrics.kpis.average', { range: closedRange() }) }}</span>
+        <span class="kpi__value">{{ closedAverage() | currency }}</span>
+        <span class="kpi__hint">{{
+          t('metrics.kpis.closedMonths', { count: closedMonthsCount() })
+        }}</span>
+      </div>
+
+      <div class="app-card kpi">
+        <span class="kpi__label">{{ t('metrics.kpis.mostExpensive') }}</span>
+        <span class="kpi__value">{{ mostExpensive()?.total | currency }}</span>
+        <span class="kpi__hint">{{ mostExpensive()?.name | titlecase }}</span>
+      </div>
+
+      <div class="app-card kpi">
+        <span class="kpi__label">{{
+          t('metrics.kpis.dailyAverage', { month: currentMonthName })
+        }}</span>
+        <span class="kpi__value">{{ currentDailyAverage() | currency }}</span>
+        <span class="kpi__hint">{{
+          t('metrics.kpis.previousDailyAverage', {
+            month: lastClosedName() | titlecase,
+            value: lastClosedDailyAverage() | currency,
+          })
+        }}</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <section class="app-card panel panel--wide">
+        <h2 class="panel__title">{{ t('metrics.byMonth.title') }}</h2>
+        <div class="bars" role="img" [attr.aria-label]="monthBarsDescription()">
+          @for (bar of monthBars(); track bar.month) {
+            <div class="bars__column" aria-hidden="true">
+              <div class="bars__track">
+                <span class="bars__value">{{
+                  t('metrics.byMonth.thousands', { value: bar.total / 1000 | number: '1.1-1' })
+                }}</span>
+                <div
+                  class="bars__bar"
+                  [class.bars__bar--in-progress]="bar.inProgress"
+                  [style.--bar-ratio]="bar.heightRatio"
+                ></div>
+              </div>
+              <span class="bars__label">{{ bar.label | titlecase }}</span>
+            </div>
+          }
+        </div>
+        <p class="panel__note">
+          {{ t('metrics.byMonth.inProgressNote', { month: currentMonthName | titlecase }) }}
+        </p>
+      </section>
+
+      <section class="app-card panel panel--narrow">
+        <h2 class="panel__title">
+          {{ t('metrics.byOrigin.title', { month: currentMonthName }) }}
+        </h2>
+        <div class="stack" aria-hidden="true">
+          @for (slice of originSlices(); track slice.origin) {
+            <div
+              class="stack__part"
+              [class]="'origin-' + slice.origin"
+              [style.width.%]="slice.percent"
+            ></div>
+          }
+        </div>
+        <ul class="legend">
+          @for (slice of originSlices(); track slice.origin) {
+            <li class="legend__item">
+              <span class="legend__name">
+                <span class="legend__swatch" [class]="'origin-' + slice.origin"></span>
+                {{ t('finance.origins.' + slice.origin) }}
+              </span>
+              <span class="legend__amount">
+                <strong>{{ slice.amount | currency }}</strong>
+                <span class="muted"> · {{ slice.percent | number: '1.0-0' }}%</span>
+              </span>
+            </li>
+          }
+        </ul>
+
+        <h3 class="panel__subtitle">{{ t('metrics.topExpenses.title') }}</h3>
+        <ol class="top">
+          @for (expense of topExpenses(); track expense.id; let position = $index) {
+            <li class="top__item">
+              <span class="top__description">
+                <span class="muted top__position">{{ position + 1 }}</span>
+                <span class="top__text">{{ expense.description }}</span>
+              </span>
+              <strong class="top__amount">{{ expense.amount | currency }}</strong>
+            </li>
+          }
+        </ol>
+      </section>
+    </div>
+
+    <section class="app-card panel">
+      <h2 class="panel__title">
+        {{
+          t('metrics.categories.title', { previous: lastClosedName(), current: currentMonthName })
+        }}
+      </h2>
+      <div class="table-wrap">
+        <table tuiTable size="m" class="table">
+          <thead>
+            <tr>
+              <th tuiTh>{{ t('metrics.categories.category') }}</th>
+              <th tuiTh class="numeric">
+                {{ t('metrics.categories.previous', { month: lastClosedName() | titlecase }) }}
+              </th>
+              <th tuiTh class="numeric">
+                {{
+                  t('metrics.categories.current', {
+                    month: currentMonthName | titlecase,
+                    date: today | date: 'dd/MM',
+                  })
+                }}
+              </th>
+              <th tuiTh class="progress-column">
+                {{ t('metrics.categories.progress', { month: lastClosedName() }) }}
+              </th>
+            </tr>
+          </thead>
+          <tbody tuiTbody>
+            @for (row of categories(); track row.category) {
+              <tr>
+                <td tuiTd class="strong">{{ t('finance.categories.' + row.category) }}</td>
+                <td tuiTd class="numeric muted">{{ row.previous | currency }}</td>
+                <td tuiTd class="numeric strong">{{ row.current | currency }}</td>
+                <td tuiTd>
+                  <div class="progress">
+                    <progress
+                      tuiProgressBar
+                      size="s"
+                      max="100"
+                      [value]="row.percent > 100 ? 100 : row.percent"
+                      [color]="row.exceeded ? 'var(--tui-status-negative)' : null"
+                      [attr.aria-label]="t('finance.categories.' + row.category)"
+                    ></progress>
+                    <span
+                      class="progress__percent"
+                      [class.progress__percent--exceeded]="row.exceeded"
+                      >{{ row.percent | number: '1.0-0' }}%</span
+                    >
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</section>

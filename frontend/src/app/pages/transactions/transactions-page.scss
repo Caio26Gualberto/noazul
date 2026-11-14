@@ -1,0 +1,135 @@
+.transactions {
+  max-width: 1120px;
+  gap: 20px;
+}
+
+.transactions__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.transactions__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.transactions__origins {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+.transactions__search {
+  flex: 1 1 220px;
+}
+
+.transactions__category {
+  flex: 0 1 220px;
+  min-width: 180px;
+}
+
+.transactions__summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 4px;
+  font: var(--tui-typography-body-m);
+  color: var(--tui-text-secondary);
+}
+
+.transactions__summary strong {
+  color: var(--tui-text-primary);
+}
+
+.transactions__table-card {
+  padding: 8px 12px;
+}
+
+.transactions__scroll {
+  overflow-x: auto;
+}
+
+.transactions__table {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.transactions__number {
+  text-align: right;
+}
+
+.transactions__amount {
+  font-variant-numeric: tabular-nums;
+}
+
+.transactions__strong {
+  font-weight: 600;
+}
+
+.transactions__muted {
+  color: var(--tui-text-secondary);
+}
+
+.transactions__description {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transactions__description-text {
+  font-weight: 500;
+}
+
+.transactions__origin {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--tui-text-secondary);
+}
+
+.transactions__marker {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.transactions__marker--card {
+  background: var(--tui-background-accent-1);
+}
+
+.transactions__marker--account {
+  background: var(--app-color-positive);
+}
+
+.transactions__marker--pix {
+  background: var(--tui-text-tertiary);
+}
+
+.transactions__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.transactions__state-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--tui-text-tertiary);
+}
+
+.transactions__state-title {
+  font: var(--tui-typography-heading-h6);
+  font-family: var(--tui-typography-family-display);
+  font-weight: 600;
+}

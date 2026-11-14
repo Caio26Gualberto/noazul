@@ -15,11 +15,5 @@
   "actions": {
     "logout": "Sair",
     "changePassword": "Trocar senha"
-  },
-  "home": {
-    "title": "Olá, {{name}}",
-    "subtitle": "Este é o seu início no NoAzul.",
-    "emptyTitle": "Seu painel de gastos vai aparecer aqui",
-    "emptyText": "Quando as contas forem conectadas e os lançamentos chegarem, você verá o resumo do mês nesta tela."
   }
 }

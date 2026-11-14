@@ -1,1 +1,46 @@
-{}
+{
+  "greeting": "Olá, {{name}}",
+  "monthFormat": "MMMM 'de' y",
+  "syncedToday": "Bancos atualizados hoje às {{time}}",
+  "syncedOn": "Bancos atualizados em {{date}} às {{time}}",
+  "loading": "Carregando o resumo do mês",
+  "kpis": {
+    "total": "Gasto no mês",
+    "previousMonth": "{{month}} fechou em {{amount}}",
+    "cards": "Cartões",
+    "openBills": {
+      "one": "{{count}} fatura aberta",
+      "other": "{{count}} faturas abertas"
+    },
+    "account": "Conta",
+    "accountHint": "Débitos e boletos",
+    "pix": "Pix lançados",
+    "pixCount": {
+      "one": "{{count}} lançamento à mão",
+      "other": "{{count}} lançamentos à mão"
+    }
+  },
+  "categories": {
+    "title": "Gastos por categoria",
+    "link": "Ver métricas",
+    "percent": "{{percent}}%"
+  },
+  "bills": {
+    "title": "Faturas abertas",
+    "link": "Cartões",
+    "name": "{{bank}} {{brand}}",
+    "lastDigits": "final {{last4}}",
+    "limitLabel": "Limite usado do cartão final {{last4}}",
+    "limitUsed": "{{percent}}% do limite de {{limit}}",
+    "dates": "Fecha {{closes}} · vence {{due}}"
+  },
+  "recent": {
+    "title": "Últimos lançamentos",
+    "link": "Ver todos",
+    "date": "Data",
+    "description": "Descrição",
+    "category": "Categoria",
+    "origin": "Origem",
+    "amount": "Valor"
+  }
+}

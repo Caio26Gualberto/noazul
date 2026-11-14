@@ -6,7 +6,7 @@
 
 O que ele **não** é: não movimenta dinheiro, não é produto comercial, não cuida de investimentos e não é em tempo real.
 
-Fase atual: autenticação pronta (login, cadastro com trava, definir senha, trocar senha, perfil) e uma tela de início vazia. As telas de gastos ainda não existem.
+Fase atual: autenticação pronta (login, cadastro com trava, definir senha, trocar senha, perfil) e as telas de gastos (Início, Lançamentos, Lançar Pix, Cartões e contas, Métricas) montadas com **dados de exemplo**, porque a API de gastos e a Pluggy ainda não existem. Veja "Domínio finance".
 
 O dono está aprendendo Angular neste projeto: prefira o caminho padrão e documentado do framework ao atalho esperto.
 
@@ -61,6 +61,18 @@ Toda chamada HTTP passa por aqui. Página e componente nunca injetam `HttpClient
 - `feedback.service.ts`: o aviso na tela (notificação do Taiga, `TuiNotificationService`). É o único lugar que abre aviso de API.
 
 Serviço de feature novo: uma classe em `app/<feature>/` ou `app/pages/<feature>/` que injeta `ApiClient` e devolve `Observable<T>`, como `auth/auth.service.ts`.
+
+## Domínio finance (`app/finance/`)
+
+Gastos, cartões, contas e métricas. Hoje roda sobre dados de exemplo em memória; a forma já é a de quando a API existir.
+
+- `finance.models.ts`: os tipos (`Transaction`, `NewPix`, `BankConnection`, `Card`, `Account`, `MonthSummary`) e as categorias fixas (`CATEGORIES`, ids em inglês; o nome na tela vem de `finance.categories.<id>`).
+- `finance.service.ts` (`FinanceService`): `transactions(month)`, `createPix(pix)`, `connections()` e `history()`, todos devolvendo `Observable` com uma latência falsa, como se fossem HTTP. O Pix criado fica só na memória e some ao recarregar a página.
+- `finance.mock.ts`: os dados de exemplo de novembro de 2026 (`CURRENT_MONTH`, `TODAY`). Os totais batem com o mock aprovado: R$ 4.812,40 no mês.
+- `finance.calc.ts`: somas por origem e por categoria, usadas pelo Início e pelas Métricas.
+- Textos compartilhados (categorias, origens, "Pendente", parcelas) em `i18n/pt-BR/finance.json`.
+
+Quando a API de gastos existir: o `FinanceService` passa a injetar `ApiClient` (como o `AuthService`), os tipos vão para `api/types.ts` espelhando os DTOs, e `finance.mock.ts` é apagado. As páginas não mudam, porque já consomem `Observable`.
 
 ## Autenticação (`app/auth/`)
 

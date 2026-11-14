@@ -1,0 +1,214 @@
+<section *transloco="let t" class="home">
+  <header class="home__top">
+    <hgroup tuiTitle>
+      <span tuiSubtitle class="home__hello">{{
+        t('home.greeting', { name: auth.profile()?.name })
+      }}</span>
+      <h1 class="home__month">{{ monthStart | date: t('home.monthFormat') }}</h1>
+    </hgroup>
+    @if (dashboard()?.lastSyncAt; as lastSyncAt) {
+      <span tuiChip appearance="outline-grayscale" size="s" class="home__sync">
+        <span class="home__sync-dot"></span>
+        @if (isToday(lastSyncAt)) {
+          {{ t('home.syncedToday', { time: (lastSyncAt | date: 'HH:mm' : timeZone) }) }}
+        } @else {
+          {{
+            t('home.syncedOn', {
+              date: (lastSyncAt | date: 'dd/MM' : timeZone),
+              time: (lastSyncAt | date: 'HH:mm' : timeZone),
+            })
+          }}
+        }
+      </span>
+    }
+  </header>
+
+  <p class="home__notice">
+    <tui-icon icon="@tui.info" />
+    {{ t('finance.mockNotice') }}
+  </p>
+
+  @if (dashboard(); as data) {
+    <div class="home__kpis">
+      <div tuiCardLarge="compact" appearance="primary" class="kpi">
+        <span class="kpi__label">{{ t('home.kpis.total') }}</span>
+        <span class="kpi__value kpi__value--large">{{ data.total | currency }}</span>
+        @if (data.previousMonth; as previous) {
+          <span class="kpi__hint kpi__hint--capitalized">{{
+            t('home.kpis.previousMonth', {
+              month: (previous.month + '-01' | date: 'MMMM'),
+              amount: (previous.total | currency),
+            })
+          }}</span>
+        }
+      </div>
+
+      <div tuiCardLarge="compact" appearance="outline-grayscale" class="kpi home__surface">
+        <span class="kpi__label">{{ t('home.kpis.cards') }}</span>
+        <span class="kpi__value">{{ data.byOrigin.card | currency }}</span>
+        <span class="kpi__hint">{{
+          t('home.kpis.openBills.' + plural(data.bills.length), { count: data.bills.length })
+        }}</span>
+      </div>
+
+      <div tuiCardLarge="compact" appearance="outline-grayscale" class="kpi home__surface">
+        <span class="kpi__label">{{ t('home.kpis.account') }}</span>
+        <span class="kpi__value">{{ data.byOrigin.account | currency }}</span>
+        <span class="kpi__hint">{{ t('home.kpis.accountHint') }}</span>
+      </div>
+
+      <div tuiCardLarge="compact" appearance="outline-grayscale" class="kpi home__surface">
+        <span class="kpi__label">{{ t('home.kpis.pix') }}</span>
+        <span class="kpi__value">{{ data.byOrigin.pix | currency }}</span>
+        <span class="kpi__hint">{{
+          t('home.kpis.pixCount.' + plural(data.pixCount), { count: data.pixCount })
+        }}</span>
+      </div>
+    </div>
+
+    <div class="home__row">
+      <section
+        tuiCardLarge="compact"
+        appearance="outline-grayscale"
+        class="panel panel--categories home__surface"
+      >
+        <header tuiHeader class="panel__head">
+          <h2 tuiTitle class="panel__title">{{ t('home.categories.title') }}</h2>
+          <a tuiLink [routerLink]="routes.metrics">{{ t('home.categories.link') }}</a>
+        </header>
+        <div class="categories">
+          @for (row of data.categories; track row.category) {
+            <div class="category">
+              <div class="category__line">
+                <span class="category__name">{{ t('finance.categories.' + row.category) }}</span>
+                <span class="home__number">
+                  <strong>{{ row.amount | currency }}</strong>
+                  <span class="home__muted">
+                    · {{ t('home.categories.percent', { percent: row.percent }) }}</span
+                  >
+                </span>
+              </div>
+              <progress
+                tuiProgressBar
+                size="s"
+                [value]="row.amount"
+                [max]="data.largestCategory"
+                [attr.aria-label]="t('finance.categories.' + row.category)"
+              ></progress>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section
+        tuiCardLarge="compact"
+        appearance="outline-grayscale"
+        class="panel panel--bills home__surface"
+      >
+        <header tuiHeader class="panel__head">
+          <h2 tuiTitle class="panel__title">{{ t('home.bills.title') }}</h2>
+          <a tuiLink [routerLink]="routes.cards">{{ t('home.bills.link') }}</a>
+        </header>
+        @for (bill of data.bills; track bill.card.id) {
+          <div class="bill">
+            <div class="bill__head">
+              <tui-thumbnail-card size="m" [paymentSystem]="bill.card.brand" class="bill__face">
+                {{ bill.card.last4 }}
+              </tui-thumbnail-card>
+              <span class="bill__name">{{
+                t('home.bills.name', {
+                  bank: bill.bank,
+                  brand: t('finance.brands.' + bill.card.brand),
+                })
+              }}</span>
+              <span class="home__muted home__small">{{
+                t('home.bills.lastDigits', { last4: bill.card.last4 })
+              }}</span>
+            </div>
+            <span class="bill__value home__number">{{ bill.card.openBill | currency }}</span>
+            <progress
+              tuiProgressBar
+              size="s"
+              [value]="bill.card.openBill"
+              [max]="bill.card.limit"
+              [attr.aria-label]="t('home.bills.limitLabel', { last4: bill.card.last4 })"
+            ></progress>
+            <div class="bill__foot home__muted home__small">
+              <span>{{
+                t('home.bills.limitUsed', {
+                  percent: bill.usedPercent,
+                  limit: (bill.card.limit | currency),
+                })
+              }}</span>
+              <span>{{
+                t('home.bills.dates', {
+                  closes: (bill.card.closesOn | date: 'dd/MM'),
+                  due: (bill.card.dueOn | date: 'dd/MM'),
+                })
+              }}</span>
+            </div>
+          </div>
+        }
+      </section>
+    </div>
+
+    <section tuiCardLarge="compact" appearance="outline-grayscale" class="panel home__surface">
+      <header tuiHeader class="panel__head">
+        <h2 tuiTitle class="panel__title">{{ t('home.recent.title') }}</h2>
+        <a tuiLink [routerLink]="routes.transactions">{{ t('home.recent.link') }}</a>
+      </header>
+      <div class="recent">
+        <table tuiTable size="m" class="recent__table">
+          <thead>
+            <tr>
+              <th tuiTh>{{ t('home.recent.date') }}</th>
+              <th tuiTh>{{ t('home.recent.description') }}</th>
+              <th tuiTh>{{ t('home.recent.category') }}</th>
+              <th tuiTh>{{ t('home.recent.origin') }}</th>
+              <th tuiTh class="recent__amount">{{ t('home.recent.amount') }}</th>
+            </tr>
+          </thead>
+          <tbody tuiTbody>
+            @for (transaction of data.recent; track transaction.id) {
+              <tr>
+                <td tuiTd class="home__muted home__number">
+                  {{ transaction.date | date: 'dd/MM' }}
+                </td>
+                <td tuiTd>
+                  <span class="recent__description">{{ transaction.description }}</span>
+                  @if (transaction.pending) {
+                    <span tuiBadge appearance="neutral" size="s" class="recent__pending">{{
+                      t('finance.pending')
+                    }}</span>
+                  }
+                </td>
+                <td tuiTd>
+                  <span tuiChip size="xs" appearance="secondary-grayscale">{{
+                    t('finance.categories.' + transaction.category)
+                  }}</span>
+                </td>
+                <td tuiTd class="home__muted">
+                  @if (transaction.bank) {
+                    {{
+                      t('finance.originWithBank', {
+                        origin: t('finance.origins.' + transaction.origin),
+                        bank: transaction.bank,
+                      })
+                    }}
+                  } @else {
+                    {{ t('finance.origins.' + transaction.origin) }}
+                  }
+                </td>
+                <td tuiTd class="recent__amount home__number">
+                  {{ transaction.amount | currency }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  } @else {
+    <tui-loader size="xl" class="home__loader" [textContent]="t('home.loading')" />
+  }
+</section>

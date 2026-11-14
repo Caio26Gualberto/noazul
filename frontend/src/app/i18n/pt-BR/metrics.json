@@ -1,1 +1,35 @@
-{}
+{
+  "title": "Métricas",
+  "subtitle": "Como o seu dinheiro saiu nos últimos meses",
+  "loading": "Carregando as métricas…",
+  "kpis": {
+    "currentMonth": "{{month}} até agora",
+    "daysElapsed": "{{day}} de {{days}} dias",
+    "average": "Média mensal ({{range}})",
+    "closedMonths": "{{count}} meses fechados",
+    "mostExpensive": "Mês mais caro",
+    "dailyAverage": "Média por dia em {{month}}",
+    "previousDailyAverage": "{{month}}: {{value}}"
+  },
+  "byMonth": {
+    "title": "Gasto por mês",
+    "thousands": "{{value}} mil",
+    "description": "Gasto por mês: {{values}}",
+    "value": "{{month}} {{value}}",
+    "valueInProgress": "{{month}} {{value}} até agora",
+    "inProgressNote": "{{month}} em tom mais suave: mês ainda em andamento."
+  },
+  "byOrigin": {
+    "title": "De onde saiu, em {{month}}"
+  },
+  "topExpenses": {
+    "title": "Maiores gastos do mês"
+  },
+  "categories": {
+    "title": "Categorias: {{previous}} × {{current}}",
+    "category": "Categoria",
+    "previous": "{{month}} (fechado)",
+    "current": "{{month}} (até {{date}})",
+    "progress": "Quanto de {{month}} já foi"
+  }
+}

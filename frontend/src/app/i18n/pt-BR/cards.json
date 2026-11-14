@@ -1,1 +1,36 @@
-{}
+{
+  "title": "Cartões e contas",
+  "subtitle": "Os bancos mandam os dados uma vez por dia, de manhã, pela Pluggy.",
+  "connectBank": "Conectar banco",
+  "manage": "Gerenciar",
+  "comingWithPluggy": "Disponível quando a integração com a Pluggy estiver pronta.",
+  "loading": "Carregando cartões e contas",
+  "empty": "Nenhum banco conectado ainda.",
+  "sync": {
+    "today": "Atualizado hoje às {{time}} · próxima amanhã de manhã",
+    "past": "Atualizado em {{date}} às {{time}} · próxima amanhã de manhã"
+  },
+  "card": {
+    "title": "Cartão {{brand}}",
+    "last4": "final {{last4}}",
+    "openBill": "Fatura aberta",
+    "limitUsage": "Limite usado",
+    "limitUsed": "{{used}} usados de {{limit}} de limite",
+    "closesOn": "Fecha",
+    "dueOn": "Vence",
+    "previousBill": "Fatura anterior",
+    "futureInstallments": "Parcelas futuras"
+  },
+  "account": {
+    "title": "Conta corrente",
+    "branch": "ag. {{branch}}",
+    "balanceAt": "Saldo em {{date}}",
+    "monthOutflow": "Saídas no mês",
+    "monthCount": "Lançamentos no mês"
+  },
+  "expired": {
+    "title": "{{bank}} · precisa de atenção",
+    "text": "A autorização expirou em {{date}}. Os dados desta conta pararam nessa data.",
+    "reconnect": "Reconectar"
+  }
+}

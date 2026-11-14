@@ -1,31 +1,147 @@
-import { Component, inject } from '@angular/core';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { TuiThumbnailCard } from '@taiga-ui/addon-commerce';
+import { TuiTable } from '@taiga-ui/addon-table';
+import { TuiIcon, TuiLink, TuiLoader, TuiTitle } from '@taiga-ui/core';
+import { TuiBadge, TuiChip, TuiProgress } from '@taiga-ui/kit';
+import { TuiCardLarge, TuiHeader } from '@taiga-ui/layout';
 import { AuthStore } from '../../auth/auth.store';
+import { AppRoutes } from '../../auth/routes';
+import { sumAmounts, totalsByCategory, totalsByOrigin } from '../../finance/finance.calc';
+import { CURRENT_MONTH, TODAY } from '../../finance/finance.mock';
+import {
+  BankConnection,
+  Card,
+  CATEGORIES,
+  Category,
+  MonthSummary,
+  Transaction,
+} from '../../finance/finance.models';
+import { FinanceService } from '../../finance/finance.service';
+
+const RECENT_TRANSACTIONS_COUNT = 6;
+const PRODUCT_TIME_ZONE_OFFSET = '-0300';
+
+interface CategoryRow {
+  category: Category;
+  amount: number;
+  percent: number;
+}
+
+interface OpenBill {
+  bank: string;
+  card: Card;
+  usedPercent: number;
+}
+
+interface Dashboard {
+  total: number;
+  byOrigin: Record<Transaction['origin'], number>;
+  pixCount: number;
+  categories: CategoryRow[];
+  largestCategory: number;
+  bills: OpenBill[];
+  recent: Transaction[];
+  previousMonth: MonthSummary | null;
+  lastSyncAt: string | null;
+}
 
 @Component({
   selector: 'app-home-page',
-  imports: [TranslocoDirective],
-  template: `
-    <section *transloco="let t" class="app-page">
-      <header class="app-page__header">
-        <h1 class="app-title">{{ t('common.home.title', { name: auth.profile()?.name }) }}</h1>
-        <p class="app-subtitle">{{ t('common.home.subtitle') }}</p>
-      </header>
-
-      <div class="app-card app-page__header">
-        <h2>{{ t('common.home.emptyTitle') }}</h2>
-        <p class="app-subtitle">{{ t('common.home.emptyText') }}</p>
-      </div>
-    </section>
-  `,
-  styles: `
-    h2 {
-      font: var(--tui-typography-heading-h6);
-      font-family: var(--tui-typography-family-display);
-      font-weight: 600;
-    }
-  `,
+  imports: [
+    TranslocoDirective,
+    RouterLink,
+    CurrencyPipe,
+    DatePipe,
+    TuiTitle,
+    TuiLink,
+    TuiIcon,
+    TuiLoader,
+    TuiCardLarge,
+    TuiHeader,
+    TuiProgress,
+    TuiChip,
+    TuiBadge,
+    TuiTable,
+    TuiThumbnailCard,
+  ],
+  templateUrl: './home-page.html',
+  styleUrl: './home-page.scss',
 })
 export class HomePage {
+  private readonly finance = inject(FinanceService);
+
   protected readonly auth = inject(AuthStore);
+  protected readonly routes = AppRoutes;
+  protected readonly timeZone = PRODUCT_TIME_ZONE_OFFSET;
+  protected readonly monthStart = `${CURRENT_MONTH}-01`;
+
+  private readonly transactions = toSignal(this.finance.transactions(CURRENT_MONTH));
+  private readonly connections = toSignal(this.finance.connections());
+  private readonly history = toSignal(this.finance.history());
+
+  protected readonly dashboard = computed<Dashboard | null>(() => {
+    const transactions = this.transactions();
+    const connections = this.connections();
+    const history = this.history();
+    if (!transactions || !connections || !history) {
+      return null;
+    }
+    const total = sumAmounts(transactions);
+    const categories = this.categoryRows(transactions, total);
+    return {
+      total,
+      byOrigin: totalsByOrigin(transactions),
+      pixCount: transactions.filter((transaction) => transaction.origin === 'pix').length,
+      categories,
+      largestCategory: categories[0]?.amount ?? 0,
+      bills: this.openBills(connections),
+      recent: transactions.slice(0, RECENT_TRANSACTIONS_COUNT),
+      previousMonth: this.previousMonth(history),
+      lastSyncAt: this.lastSyncAt(connections),
+    };
+  });
+
+  protected plural(count: number): 'one' | 'other' {
+    return count === 1 ? 'one' : 'other';
+  }
+
+  protected isToday(dateTime: string): boolean {
+    return dateTime.startsWith(TODAY);
+  }
+
+  private categoryRows(transactions: Transaction[], total: number): CategoryRow[] {
+    const totals = totalsByCategory(transactions);
+    return CATEGORIES.map((category) => ({
+      category,
+      amount: totals[category],
+      percent: total > 0 ? Math.round((totals[category] / total) * 100) : 0,
+    })).sort((a, b) => b.amount - a.amount);
+  }
+
+  private openBills(connections: BankConnection[]): OpenBill[] {
+    return connections.flatMap((connection) =>
+      connection.cards.map((card) => ({
+        bank: connection.bank,
+        card,
+        usedPercent: Math.round((card.openBill / card.limit) * 100),
+      })),
+    );
+  }
+
+  private previousMonth(history: MonthSummary[]): MonthSummary | null {
+    const before = history.filter((summary) => summary.month < CURRENT_MONTH);
+    return before.at(-1) ?? null;
+  }
+
+  private lastSyncAt(connections: BankConnection[]): string | null {
+    const syncs = connections
+      .filter((connection) => connection.status === 'ok')
+      .map((connection) => connection.lastSyncAt)
+      .sort();
+    return syncs.at(-1) ?? null;
+  }
 }

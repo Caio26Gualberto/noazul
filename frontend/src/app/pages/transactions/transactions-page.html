@@ -1,0 +1,153 @@
+<section *transloco="let t" class="app-page transactions">
+  <header class="transactions__header">
+    <div class="app-page__header">
+      <h1 class="app-title">{{ t('transactions.title') }}</h1>
+      <p class="app-subtitle">{{ t('transactions.subtitle', { month: monthLabel }) }}</p>
+    </div>
+    <a
+      tuiButton
+      appearance="outline-grayscale"
+      size="l"
+      iconStart="@tui.plus"
+      [routerLink]="routes.newPix"
+    >
+      {{ t('transactions.newPix') }}
+    </a>
+  </header>
+
+  <div
+    class="app-card transactions__filters"
+    role="search"
+    [attr.aria-label]="t('transactions.filters.label')"
+  >
+    <tui-segmented
+      class="transactions__origins"
+      size="l"
+      [attr.aria-label]="t('transactions.filters.origin')"
+      [activeItemIndex]="originFilters.indexOf(origin())"
+    >
+      @for (option of originFilters; track option) {
+        <button type="button" (click)="origin.set(option)">
+          {{ t('transactions.filters.origins.' + option) }}
+        </button>
+      }
+    </tui-segmented>
+
+    <tui-textfield class="transactions__search" iconStart="@tui.search">
+      <label tuiLabel for="transactions-search">{{ t('transactions.filters.search') }}</label>
+      <input
+        id="transactions-search"
+        tuiInput
+        type="search"
+        autocomplete="off"
+        [(ngModel)]="search"
+      />
+    </tui-textfield>
+
+    <tui-textfield class="transactions__category" tuiChevron [stringify]="stringifyCategory">
+      <label tuiLabel for="transactions-category">{{ t('transactions.filters.category') }}</label>
+      <input id="transactions-category" tuiSelect [(ngModel)]="category" />
+      <tui-data-list-wrapper *tuiDropdown [items]="categoryFilters" />
+    </tui-textfield>
+  </div>
+
+  @if (loading()) {
+    <div class="app-card transactions__state">
+      <tui-loader size="l" [textContent]="t('transactions.loading')" />
+    </div>
+  } @else if (filtered().length === 0) {
+    <div class="app-card transactions__state">
+      <tui-icon icon="@tui.search-x" class="transactions__state-icon" />
+      <h2 class="transactions__state-title">{{ t('transactions.empty.title') }}</h2>
+      <p class="app-subtitle">{{ t('transactions.empty.text') }}</p>
+      <button tuiButton type="button" appearance="secondary" size="m" (click)="clearFilters()">
+        {{ t('transactions.empty.clear') }}
+      </button>
+    </div>
+  } @else {
+    <div class="transactions__summary">
+      <span>
+        {{
+          filtered().length === 1
+            ? t('transactions.summary.one')
+            : t('transactions.summary.other', { count: filtered().length })
+        }}
+      </span>
+      <span>
+        {{ t('transactions.summary.total') }}
+        <strong class="transactions__amount">{{ total() | currency }}</strong>
+      </span>
+    </div>
+
+    <section class="app-card transactions__table-card">
+      <div class="transactions__scroll">
+        <table tuiTable size="m" class="transactions__table">
+          <thead>
+            <tr>
+              <th tuiTh>{{ t('transactions.table.date') }}</th>
+              <th tuiTh>{{ t('transactions.table.description') }}</th>
+              <th tuiTh>{{ t('transactions.table.category') }}</th>
+              <th tuiTh>{{ t('transactions.table.origin') }}</th>
+              <th tuiTh class="transactions__number">{{ t('transactions.table.amount') }}</th>
+            </tr>
+          </thead>
+          <tbody tuiTbody>
+            @for (transaction of filtered(); track transaction.id) {
+              <tr>
+                <td tuiTd class="transactions__muted transactions__amount">
+                  {{ transaction.date | date: 'dd/MM' : 'UTC' }}
+                </td>
+                <td tuiTd>
+                  <span class="transactions__description">
+                    <span class="transactions__description-text">{{
+                      transaction.description
+                    }}</span>
+                    @if (transaction.pending) {
+                      <span tuiBadge appearance="neutral" size="s">{{ t('finance.pending') }}</span>
+                    }
+                    @if (transaction.installment; as installment) {
+                      <span tuiBadge appearance="info" size="s">
+                        {{
+                          t('finance.installment', {
+                            current: installment.current,
+                            total: installment.total,
+                          })
+                        }}
+                      </span>
+                    }
+                  </span>
+                </td>
+                <td tuiTd>
+                  <span tuiChip size="xs" appearance="secondary-grayscale">
+                    {{ t('finance.categories.' + transaction.category) }}
+                  </span>
+                </td>
+                <td tuiTd>
+                  <span class="transactions__origin">
+                    <span
+                      class="transactions__marker"
+                      [class]="'transactions__marker--' + transaction.origin"
+                    ></span>
+                    @if (transaction.bank) {
+                      {{
+                        t('finance.originWithBank', {
+                          origin: t('finance.origins.' + transaction.origin),
+                          bank: transaction.bank,
+                        })
+                      }}
+                    } @else {
+                      {{ t('finance.origins.' + transaction.origin) }}
+                    }
+                  </span>
+                </td>
+                <td tuiTd class="transactions__number transactions__amount transactions__strong">
+                  {{ transaction.amount | currency }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</section>

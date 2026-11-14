@@ -1,0 +1,264 @@
+:host {
+  display: block;
+}
+
+.home {
+  max-width: 1120px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.home__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.home__hello {
+  font: var(--tui-typography-body-l);
+  color: var(--tui-text-secondary);
+}
+
+.home__month {
+  font: var(--tui-typography-heading-h4);
+  font-family: var(--tui-typography-family-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
+}
+
+.home__sync {
+  gap: 8px;
+  border-radius: 999px;
+  padding-inline: 14px;
+  background: var(--tui-background-base);
+  color: var(--tui-text-secondary);
+}
+
+.home__sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tui-status-positive);
+}
+
+.home__notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -12px;
+  font: var(--tui-typography-body-s);
+  color: var(--tui-text-tertiary);
+
+  tui-icon {
+    font-size: 16px;
+  }
+}
+
+.home__loader {
+  min-height: 320px;
+}
+
+.home__surface {
+  background: var(--tui-background-base);
+}
+
+.home__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 16px;
+}
+
+.home__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.home__number {
+  font-variant-numeric: tabular-nums;
+}
+
+.home__muted {
+  color: var(--tui-text-secondary);
+}
+
+.home__small {
+  font: var(--tui-typography-body-s);
+}
+
+.kpi {
+  gap: 8px;
+  border-radius: var(--app-radius);
+}
+
+.kpi__label {
+  font: var(--tui-typography-body-m);
+  font-weight: 500;
+  color: var(--tui-text-secondary);
+}
+
+.kpi__value {
+  font: var(--tui-typography-heading-h5);
+  font-family: var(--tui-typography-family-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi__value--large {
+  font: var(--tui-typography-heading-h4);
+  font-family: var(--tui-typography-family-display);
+  font-weight: 700;
+}
+
+.kpi__hint {
+  display: block;
+  font: var(--tui-typography-body-s);
+  color: var(--tui-text-secondary);
+}
+
+.kpi__hint--capitalized::first-letter {
+  text-transform: uppercase;
+}
+
+.kpi[appearance='primary'] {
+  .kpi__label,
+  .kpi__hint {
+    color: var(--app-color-primary-container);
+  }
+}
+
+.panel {
+  min-width: 0;
+  border-radius: var(--app-radius);
+}
+
+.panel--categories {
+  flex: 3 1 min(420px, 100%);
+}
+
+.panel--bills {
+  flex: 2 1 min(320px, 100%);
+}
+
+.panel__head {
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+
+  a {
+    flex-shrink: 0;
+    font: var(--tui-typography-body-m);
+    font-weight: 600;
+  }
+}
+
+.panel__title {
+  font: var(--tui-typography-heading-h6);
+  font-family: var(--tui-typography-family-display);
+  font-weight: 600;
+}
+
+progress[tuiProgressBar] {
+  color: var(--tui-background-accent-1);
+  background-color: var(--tui-background-neutral-1);
+}
+
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.category {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.category__line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font: var(--tui-typography-body-m);
+}
+
+.category__name {
+  font-weight: 500;
+}
+
+.bill {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--tui-border-normal);
+  border-radius: 12px;
+}
+
+.bill__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bill__face {
+  background: var(--tui-background-accent-1);
+  color: var(--tui-text-primary-on-accent-1);
+}
+
+.bill__name {
+  flex: 1;
+  font: var(--tui-typography-body-m);
+  font-weight: 600;
+}
+
+.bill__value {
+  font: var(--tui-typography-heading-h5);
+  font-family: var(--tui-typography-family-display);
+  font-weight: 700;
+}
+
+.bill__foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recent {
+  overflow-x: auto;
+}
+
+.recent__table {
+  width: 100%;
+
+  th {
+    white-space: nowrap;
+    color: var(--tui-text-secondary);
+  }
+
+  td {
+    white-space: nowrap;
+  }
+}
+
+.recent__amount {
+  text-align: right;
+  font-weight: 600;
+}
+
+.recent__description {
+  font-weight: 500;
+}
+
+.recent__pending {
+  margin-left: 8px;
+  vertical-align: middle;
+}

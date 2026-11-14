@@ -1,0 +1,277 @@
+.metrics {
+  max-width: 1120px;
+  --metrics-strong: var(--tui-background-accent-1);
+  --metrics-medium: color-mix(
+    in srgb,
+    var(--tui-background-accent-1) 55%,
+    var(--tui-background-base)
+  );
+  --metrics-soft: color-mix(
+    in srgb,
+    var(--tui-background-accent-1) 28%,
+    var(--tui-background-base)
+  );
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--tui-typography-body-s);
+  color: var(--tui-text-secondary);
+
+  tui-icon {
+    font-size: 1rem;
+  }
+}
+
+.loader {
+  min-height: 320px;
+}
+
+.muted {
+  color: var(--tui-text-secondary);
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kpi__label {
+  font: var(--tui-typography-body-m);
+  font-weight: 500;
+  color: var(--tui-text-secondary);
+}
+
+.kpi__value {
+  font: var(--tui-typography-heading-h5);
+  font-family: var(--tui-typography-family-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi__hint {
+  font: var(--tui-typography-body-s);
+  color: var(--tui-text-secondary);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.panel--wide {
+  flex: 3 1 440px;
+}
+
+.panel--narrow {
+  flex: 2 1 320px;
+}
+
+.panel__title {
+  font: var(--tui-typography-heading-h6);
+  font-family: var(--tui-typography-family-display);
+  font-weight: 600;
+}
+
+.panel__subtitle {
+  margin-top: 8px;
+  font: var(--tui-typography-body-m);
+  font-weight: 600;
+}
+
+.panel__note {
+  font: var(--tui-typography-body-s);
+  color: var(--tui-text-secondary);
+}
+
+.bars {
+  display: flex;
+  gap: 12px;
+  height: 280px;
+}
+
+.bars__column {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.bars__track {
+  flex: 1 1 auto;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-bottom: 1px solid var(--tui-border-normal);
+}
+
+.bars__value {
+  font: var(--tui-typography-body-s);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bars__bar {
+  width: 100%;
+  max-width: 64px;
+  height: calc((100% - 28px) * var(--bar-ratio));
+  border-radius: 8px 8px 0 0;
+  background: var(--metrics-strong);
+}
+
+.bars__bar--in-progress {
+  background: var(--metrics-soft);
+}
+
+.bars__label {
+  font: var(--tui-typography-body-s);
+  color: var(--tui-text-secondary);
+}
+
+.stack {
+  display: flex;
+  gap: 2px;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.origin-card {
+  background: var(--metrics-strong);
+}
+
+.origin-account {
+  background: var(--metrics-medium);
+}
+
+.origin-pix {
+  background: var(--metrics-soft);
+}
+
+.legend,
+.top {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend__item,
+.top__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font: var(--tui-typography-body-m);
+}
+
+.legend__name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legend__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  box-sizing: border-box;
+  border: 1px solid var(--tui-border-normal);
+}
+
+.legend__amount,
+.top__amount {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.top__description {
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.top__position {
+  width: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.top__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+
+  td,
+  th {
+    white-space: nowrap;
+  }
+}
+
+.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-column {
+  width: 40%;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 140px;
+
+  progress {
+    flex: 1 1 auto;
+  }
+}
+
+.progress__percent {
+  width: 44px;
+  text-align: right;
+  font: var(--tui-typography-body-s);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress__percent--exceeded {
+  color: var(--tui-text-negative);
+  font-weight: 600;
+}
