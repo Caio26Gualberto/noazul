@@ -31,7 +31,7 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
 - Nome do projeto: NoAzul (2026-11-14).
 - Escopo: organização financeira pessoal para o dono e o pai; não movimenta dinheiro, não é produto comercial, não cuida de investimentos, não é em tempo real (2026-11-14).
 - Templates: só API e frontend; sem desktop, mobile ou Atalog (2026-11-14).
-- Frontend em Angular com Angular Material, escolhido para o dono aprender Angular com a biblioteca oficial (2026-11-14).
+- Frontend em Angular, escolhido para o dono aprender Angular (2026-11-14). A biblioteca de UI começou como Angular Material e foi trocada pela Taiga UI (ver abaixo).
 - Idioma: só pt-BR (2026-11-14).
 - Fuso do produto: `America/Sao_Paulo`; o banco fica em UTC (2026-11-14).
 - Dono no GitHub: `Caio26Gualberto` (2026-11-14).
@@ -39,6 +39,17 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
 - Cadastro com trava: `Auth:AllowRegistration` liga e desliga a criação de contas; em produção fica desligado depois que as duas contas existirem (2026-11-14).
 - Banco: Postgres (2026-11-14).
 - Dados bancários virão da Pluggy, pela modalidade gratuita de uso pessoal (Meu Pluggy), com atualização diária (2026-11-14).
+- Tempo real reavaliado e descartado: nem o plano pago da Pluggy entrega (no máximo de hora em hora, a partir de R$ 2.500/mês); fica a atualização diária do Meu Pluggy (2026-11-14).
+- Módulos, aprovados pelo dono sobre o mock "NoAzul — Módulos" (https://claude.ai/artifact/M9YeXSTjB7U4kAwaTkZqKL) (2026-11-14):
+  - Menu: Início, Lançamentos, Cartões e contas, Métricas e Perfil, com "Lançar Pix" como ação de destaque.
+  - Início: total do mês, divisão entre cartões, conta e Pix, gastos por categoria, faturas abertas e últimos lançamentos.
+  - Lançamentos: lista única de cartões, conta e Pix, com filtros por origem, categoria, mês e busca.
+  - Categorias: lista própria de sete (Mercado, Casa, Restaurantes, Transporte, Saúde, Assinaturas, Outros).
+  - Pix manual: lançamento próprio, sem depender de conta conectada.
+  - Cartões e contas: uma conexão por banco, com a última atualização, fatura, limite, fechamento, vencimento e saldo da conta.
+  - Métricas: gasto por mês, divisão por origem, maiores gastos e categorias do mês contra o anterior.
+  - Cada pessoa vê só a própria conta; não há visão da família junta.
+- Biblioteca de UI: Taiga UI no lugar do Angular Material. O dono achou o visual fraco e escolheu depois de comparar a tela de Início montada em Material, PrimeNG, Spartan UI e Taiga UI. Substitui a escolha do Angular Material; a identidade "Azul calmo" continua valendo, então as cores próprias do Taiga (como os gradientes dos cartões) seguem a paleta da marca. Até a migração terminar, o código do `frontend/` ainda usa Material (2026-11-14).
 
 ## Como o agente trabalha aqui
 
