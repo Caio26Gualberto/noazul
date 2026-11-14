@@ -1,0 +1,35 @@
+<section *transloco="let t" class="app-page">
+  <header class="app-page__header">
+    <h1 class="app-title">{{ t('perfil.title') }}</h1>
+    <p class="app-subtitle">{{ t('perfil.subtitle') }}</p>
+  </header>
+
+  @if (auth.profile(); as profile) {
+    <dl class="app-card details">
+      <div class="details__row">
+        <dt>{{ t('perfil.email') }}</dt>
+        <dd>{{ profile.email }}</dd>
+      </div>
+      <div class="details__row">
+        <dt>{{ t('perfil.memberSince') }}</dt>
+        <dd>{{ profile.createdAt | date: 'longDate' }}</dd>
+      </div>
+    </dl>
+  }
+
+  <form class="app-form app-card" novalidate [formGroup]="form" (ngSubmit)="submit()">
+    <mat-form-field>
+      <mat-label>{{ t('auth.fields.name') }}</mat-label>
+      <input matInput type="text" formControlName="name" autocomplete="name" />
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>{{ t('auth.errors.required') }}</mat-error>
+      } @else if (form.controls.name.invalid) {
+        <mat-error>{{ t('auth.errors.nameLength') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <button matButton="filled" type="submit" [disabled]="submitting() || form.pristine">
+      {{ t('perfil.save') }}
+    </button>
+  </form>
+</section>

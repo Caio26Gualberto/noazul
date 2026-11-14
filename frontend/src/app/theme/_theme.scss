@@ -1,0 +1,60 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+@use './colors';
+
+@function tone($name) {
+  @return light-dark(map.get(colors.$light, $name), map.get(colors.$dark, $name));
+}
+
+html {
+  color-scheme: light dark;
+
+  @include mat.theme(
+    (
+      color: mat.$azure-palette,
+      typography: (
+        plain-family: 'Inter Variable',
+        brand-family: 'Space Grotesk Variable',
+        bold-weight: 600,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
+      density: 0,
+    )
+  );
+
+  @include mat.theme-overrides(
+    (
+      primary: tone(primary),
+      on-primary: tone(on-primary),
+      primary-container: tone(primary-container),
+      on-primary-container: tone(on-primary-container),
+      secondary-container: tone(primary-container),
+      on-secondary-container: tone(on-primary-container),
+      background: tone(background),
+      on-background: tone(text),
+      surface: tone(surface),
+      on-surface: tone(text),
+      on-surface-variant: tone(text-muted),
+      surface-variant: tone(surface-soft),
+      surface-container-lowest: tone(surface),
+      surface-container-low: tone(surface),
+      surface-container: tone(surface),
+      surface-container-high: tone(surface-soft),
+      surface-container-highest: tone(surface-strong),
+      outline: tone(outline),
+      outline-variant: tone(border),
+      error: tone(danger),
+      on-error: tone(on-danger),
+      inverse-surface: tone(aside),
+      inverse-on-surface: tone(on-aside),
+    )
+  );
+
+  --app-color-positive: #{tone(positive)};
+  --app-color-aside: #{tone(aside)};
+  --app-color-on-aside: #{tone(on-aside)};
+  --app-color-on-aside-muted: #{tone(on-aside-muted)};
+  --app-color-border: #{tone(border)};
+  --app-radius: 14px;
+}

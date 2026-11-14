@@ -1,0 +1,127 @@
+# CLAUDE.md — Frontend (Angular)
+
+## Sobre este projeto
+
+**NoAzul** é um sistema de organização financeira pessoal: mostra os gastos de cartão e de conta vindos da Pluggy, aceita lançamento manual de Pix e calcula métricas do mês. É usado por duas pessoas (o dono e o pai dele), cada uma com a própria conta. Este frontend é o site que elas usam.
+
+O que ele **não** é: não movimenta dinheiro, não é produto comercial, não cuida de investimentos e não é em tempo real.
+
+Fase atual: autenticação pronta (login, cadastro com trava, definir senha, trocar senha, perfil) e uma tela de início vazia. As telas de gastos ainda não existem.
+
+O dono está aprendendo Angular neste projeto: prefira o caminho padrão e documentado do framework ao atalho esperto.
+
+## Stack
+
+- Angular 22: componentes standalone, signals, controle de fluxo no template (`@if`, `@for`), rotas com carregamento sob demanda.
+- Angular Material (tema Material 3) e Angular CDK.
+- Formulários reativos tipados (`NonNullableFormBuilder`).
+- Transloco para os textos.
+- `HttpClient` com interceptor funcional.
+- ESLint (`angular-eslint`) e Prettier.
+- Fontes auto-hospedadas: Inter (texto) e Space Grotesk (títulos), via `@fontsource-variable`.
+
+## Comandos
+
+| Comando | O que faz |
+|---|---|
+| `npm start` | sobe em `http://localhost:4200`, apontando para a API em `http://localhost:5041` |
+| `npm run lint` | ESLint em `.ts` e `.html` |
+| `npm run typecheck` | checagem de tipos |
+| `npm run build` | build de produção em `dist/` |
+| `npm run format` | Prettier em `src/` |
+
+O CI roda `lint`, `typecheck` e `build`. Não há projeto de teste: a verificação é rodando de verdade, com a API local.
+
+## Estrutura de pastas
+
+```
+src/
+  environments/      URL da API por ambiente (o de desenvolvimento substitui o padrão no ng serve)
+  styles.scss        só importa o tema
+  app/
+    api/             única porta de saída HTTP
+    auth/            sessão, guards, permissões, rotas
+    i18n/pt-BR/      textos, um arquivo por assunto
+    theme/           único lugar de cor
+    layout/          casca logada (barra e menu) e nav-config
+    components/      componentes globais, prefixo App
+    pages/           uma pasta por tela
+```
+
+## Camada de API (`app/api/`)
+
+Toda chamada HTTP passa por aqui. Página e componente nunca injetam `HttpClient`.
+
+- `api-client.ts` (`ApiClient`): `get`, `post` e `patch`. Abre o envelope `{ isSuccess, code, message, data }`, devolve só o `data` e transforma qualquer falha em `ApiError(code, status)`. Mostra o erro na tela uma vez, traduzido pelo `code`; `silent: true` desliga isso, `announce: true` mostra também a mensagem de sucesso.
+- `auth.interceptor.ts`: põe o `Authorization: Bearer` nas chamadas para a API. Num 401 **sem corpo** (token vencido, recusado antes de chegar ao controller), renova o token e repete a chamada. Um 401 **com envelope** (`INVALID_CREDENTIALS`, por exemplo) é resposta de negócio e segue adiante.
+- `token-refresher.ts` (`TokenRefresher`): faz a renovação uma vez só, mesmo com várias chamadas falhando juntas, usando um `HttpClient` sem interceptor. Se a renovação é recusada, limpa os tokens e avisa por `sessionExpired$`.
+- `token-storage.ts`: os dois tokens ficam no `localStorage` (`access_token`, `refresh_token`).
+- `api-codes.ts` + `i18n/pt-BR/api.json`: espelho dos codes da API. Code novo na API entra nos dois no mesmo commit.
+- `types.ts`: tipos dos DTOs, escritos à mão.
+- `feedback.service.ts`: o aviso na tela (snackbar). É o único lugar que abre aviso de API.
+
+Serviço de feature novo: uma classe em `app/<feature>/` ou `app/pages/<feature>/` que injeta `ApiClient` e devolve `Observable<T>`, como `auth/auth.service.ts`.
+
+## Autenticação (`app/auth/`)
+
+- `auth.store.ts` (`AuthStore`): o estado da sessão em signals (`profile`, `isAuthenticated`, `needsPasswordChange`) e as ações (`login`, `register`, `logout`, `updateName`, `changePassword`, `setInitialPassword`). Componentes leem os signals e chamam as ações; ninguém mais guarda perfil ou token.
+- A sessão é restaurada antes de a primeira rota abrir (`provideAppInitializer` em `app.config.ts`), então os guards sempre encontram o estado pronto.
+- `auth.guard.ts`: `authGuard` manda quem não está logado para `/login` (guardando o destino em `?voltar=`) e quem tem senha temporária para `/definir-senha`; `guestGuard` tira quem já está logado do `/login`.
+- `routes.ts`: os caminhos das rotas. Não escreva caminho solto em componente.
+- `permissions.ts`: espelho das permissões da API, string idêntica. Hoje nenhuma tela usa permissão: qualquer conta logada entra. Esconder algo por permissão é só experiência de uso; a segurança é a policy do endpoint.
+- Senha: mínimo de 6 caracteres e um número (`password-rules.ts`), igual à regra da API.
+- A aba "Criar conta" só aparece se `GET /api/auth/registration` disser que o cadastro está ligado.
+
+Recuperação de senha e verificação de e-mail não existem na API e não têm tela.
+
+## Navegação
+
+`layout/nav-config.ts` é a fonte única do menu lateral. Tela nova que aparece no menu: uma rota em `app.routes.ts` (filha da casca, com `loadComponent`) e um item no `nav-config`.
+
+## Textos (i18n)
+
+- Nenhum texto visível fica solto no template ou no código: tudo vem de `i18n/pt-BR/*.json`.
+- Um arquivo por assunto (`common`, `auth`, `perfil`, `api`). A chave leva o nome do arquivo na frente: `auth.login.title`.
+- Assunto novo: arquivo novo e uma linha em `i18n/index.ts`.
+- No template: `*transloco="let t"` no elemento de fora e `{{ t('chave') }}`.
+- Só pt-BR. A interface de data e número usa o locale `pt-BR` (`LOCALE_ID`).
+
+## Tema e cor
+
+- **Cor só em `theme/_colors.scss`**, em dois mapas: claro e escuro. Buscar `#` seguido de hexadecimal em `src/app` fora desse arquivo tem que voltar vazio.
+- `theme/_theme.scss` aplica o tema do Angular Material e liga cada cor do mapa a um token do Material. O modo claro ou escuro segue o sistema da pessoa (`color-scheme: light dark`).
+- Em componente, use os tokens: `var(--mat-sys-primary)`, `var(--mat-sys-on-surface-variant)`, e os próprios do projeto, `var(--app-color-*)`. Tipografia também por token: `font: var(--mat-sys-title-large)`.
+- `theme/_base.scss` tem as classes de layout compartilhadas (`app-page`, `app-card`, `app-form`, `app-title`, `app-subtitle`).
+- Ícones: SVG registrados em `components/app-icons.ts`, usados com `<mat-icon svgIcon="nome" />`. Ícone novo entra nesse arquivo.
+- Identidade "Azul calmo", decidida pelo dono. Mudar cor, fonte ou layout é decisão dele.
+
+## Convenções
+
+- Componentes globais têm prefixo `App` na classe e `app-` no seletor (`AppBrand`, `app-brand`). Páginas terminam em `Page` e ficam em `pages/<tela>/<tela>-page.ts`.
+- Arquivos em kebab-case. Template e estilo em arquivos separados quando passam de poucas linhas.
+- Estado em signals; `Observable` só na borda HTTP e em eventos.
+- Injeção por `inject()`, não por construtor.
+- Membros usados só pelo template são `protected`.
+- **Nenhum comentário no código**, em `.ts`, `.html` ou `.scss`. O nome explica; o porquê mora aqui ou numa rule.
+- Erro de API em ação de formulário: `try`/`catch` com `ignoreApiError(error)`. O aviso já foi mostrado pelo `ApiClient`; o `catch` só impede que um `ApiError` vire erro não tratado.
+
+## Checklist: nova página
+
+1. Pasta em `pages/<tela>/` com `<tela>-page.ts` (e `.html`/`.scss` se precisar).
+2. Rota em `app.routes.ts` com `loadComponent`; caminho em `auth/routes.ts`.
+3. Item no `layout/nav-config.ts`, se entra no menu.
+4. Textos em `i18n/pt-BR/`.
+5. Chamadas HTTP num serviço que usa `ApiClient`; tipos em `api/types.ts`.
+6. Codes novos em `api/api-codes.ts` e `i18n/pt-BR/api.json`.
+7. `npm run lint`, `npm run typecheck`, `npm run build`, e testar no navegador com a API local.
+
+## Armadilhas conhecidas
+
+- O 401 de token vencido chega **sem corpo**. Quem decide se renova é o interceptor, pela ausência de `code` no corpo; não tente tratar esse caso lendo o envelope.
+- O logout da API exige um token válido: `AuthStore.logout` chama a API **antes** de limpar os tokens.
+- `environment.ts` (produção) tem `apiBaseUrl` vazio: a URL da API de produção entra ali quando o deploy for decidido.
+- O aviso de orçamento do build está em 700 kB para o pacote inicial.
+
+## Como este arquivo evolui
+
+Convenção nova ou mudada entra aqui no mesmo commit do código. Decisão com porquê longo vira uma rule em `frontend/.claude/rules/`, com `paths:`, e ganha uma linha neste arquivo.

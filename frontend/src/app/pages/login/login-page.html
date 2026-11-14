@@ -1,0 +1,108 @@
+<div *transloco="let t" class="login">
+  <main class="login__panel">
+    <app-brand />
+
+    <header class="login__header">
+      <h1 class="app-title">
+        {{ t(mode() === 'login' ? 'auth.login.title' : 'auth.register.title') }}
+      </h1>
+      <p class="app-subtitle">
+        {{ t(mode() === 'login' ? 'auth.login.subtitle' : 'auth.register.subtitle') }}
+      </p>
+    </header>
+
+    @if (registrationEnabled()) {
+      <mat-button-toggle-group
+        class="login__mode"
+        hideSingleSelectionIndicator
+        [attr.aria-label]="t('auth.mode')"
+        [value]="mode()"
+        (change)="mode.set($event.value)"
+      >
+        <mat-button-toggle value="login">{{ t('auth.login.tab') }}</mat-button-toggle>
+        <mat-button-toggle value="register">{{ t('auth.register.tab') }}</mat-button-toggle>
+      </mat-button-toggle-group>
+    }
+
+    @if (mode() === 'login') {
+      <form class="app-form" novalidate [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+        <mat-form-field>
+          <mat-label>{{ t('auth.fields.email') }}</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+          @if (loginForm.controls.email.hasError('required')) {
+            <mat-error>{{ t('auth.errors.required') }}</mat-error>
+          } @else if (loginForm.controls.email.hasError('email')) {
+            <mat-error>{{ t('auth.errors.email') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>{{ t('auth.fields.password') }}</mat-label>
+          <input
+            #loginPassword
+            matInput
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+          />
+          <app-password-toggle matSuffix [field]="loginPassword" />
+          @if (loginForm.controls.password.hasError('required')) {
+            <mat-error>{{ t('auth.errors.required') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <button matButton="filled" type="submit" [disabled]="submitting()">
+          {{ t('auth.login.submit') }}
+        </button>
+      </form>
+    } @else {
+      <form class="app-form" novalidate [formGroup]="registerForm" (ngSubmit)="submitRegister()">
+        <mat-form-field>
+          <mat-label>{{ t('auth.fields.name') }}</mat-label>
+          <input matInput type="text" formControlName="name" autocomplete="name" />
+          @if (registerForm.controls.name.hasError('required')) {
+            <mat-error>{{ t('auth.errors.required') }}</mat-error>
+          } @else if (registerForm.controls.name.invalid) {
+            <mat-error>{{ t('auth.errors.nameLength') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>{{ t('auth.fields.email') }}</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+          @if (registerForm.controls.email.hasError('required')) {
+            <mat-error>{{ t('auth.errors.required') }}</mat-error>
+          } @else if (registerForm.controls.email.hasError('email')) {
+            <mat-error>{{ t('auth.errors.email') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>{{ t('auth.fields.password') }}</mat-label>
+          <input
+            #registerPassword
+            matInput
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+          />
+          <app-password-toggle matSuffix [field]="registerPassword" />
+          @if (registerForm.controls.password.hasError('required')) {
+            <mat-error>{{ t('auth.errors.required') }}</mat-error>
+          } @else if (registerForm.controls.password.hasError('pattern')) {
+            <mat-error>{{ t('auth.errors.passwordRule') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <button matButton="filled" type="submit" [disabled]="submitting()">
+          {{ t('auth.register.submit') }}
+        </button>
+      </form>
+    }
+  </main>
+
+  <aside class="login__aside">
+    <h2 class="login__aside-title">{{ t('auth.aside.title') }}</h2>
+    <p class="login__aside-text">{{ t('auth.aside.text') }}</p>
+  </aside>
+</div>

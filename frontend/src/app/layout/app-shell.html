@@ -1,0 +1,71 @@
+<mat-sidenav-container *transloco="let t" class="shell">
+  <mat-sidenav
+    #sidenav
+    class="shell__nav"
+    [mode]="isHandset() ? 'over' : 'side'"
+    [opened]="!isHandset()"
+  >
+    <div class="shell__brand">
+      <app-brand />
+    </div>
+    <mat-nav-list [attr.aria-label]="t('common.nav.main')">
+      @for (item of navItems; track item.path) {
+        <a
+          mat-list-item
+          #link="routerLinkActive"
+          routerLinkActive
+          [routerLink]="item.path"
+          [routerLinkActiveOptions]="{ exact: item.exact }"
+          [activated]="link.isActive"
+          (click)="closeOnHandset(sidenav)"
+        >
+          <mat-icon matListItemIcon [svgIcon]="item.icon" />
+          <span matListItemTitle>{{ t(item.labelKey) }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="shell__main">
+    <mat-toolbar class="shell__bar">
+      @if (isHandset()) {
+        <button
+          matIconButton
+          type="button"
+          [attr.aria-label]="t('common.nav.openMenu')"
+          (click)="sidenav.open()"
+        >
+          <mat-icon svgIcon="menu" />
+        </button>
+      }
+      <span class="shell__spacer"></span>
+      <button
+        matButton
+        type="button"
+        [matMenuTriggerFor]="userMenu"
+        [attr.aria-label]="t('common.nav.userMenu')"
+      >
+        <mat-icon svgIcon="user" />
+        {{ auth.profile()?.name }}
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <a mat-menu-item [routerLink]="routes.profile">
+          <mat-icon svgIcon="user" />
+          <span>{{ t('common.nav.profile') }}</span>
+        </a>
+        <a mat-menu-item [routerLink]="routes.changePassword">
+          <mat-icon svgIcon="key" />
+          <span>{{ t('common.actions.changePassword') }}</span>
+        </a>
+        <button mat-menu-item type="button" (click)="logout()">
+          <mat-icon svgIcon="logout" />
+          <span>{{ t('common.actions.logout') }}</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <main class="shell__content">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

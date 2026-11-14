@@ -1,0 +1,22 @@
+.details {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.details__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.details dt {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.details dd {
+  margin: 0;
+  font: var(--mat-sys-body-large);
+}

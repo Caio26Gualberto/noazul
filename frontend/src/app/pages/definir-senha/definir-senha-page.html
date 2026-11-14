@@ -1,0 +1,52 @@
+<main *transloco="let t" class="app-centered">
+  <div class="app-centered__card app-card">
+    <app-brand />
+
+    <header class="app-page__header">
+      <h1 class="app-title">{{ t('auth.setPassword.title') }}</h1>
+      <p class="app-subtitle">{{ t('auth.setPassword.subtitle') }}</p>
+    </header>
+
+    <form class="app-form" novalidate [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field>
+        <mat-label>{{ t('auth.fields.newPassword') }}</mat-label>
+        <input
+          #newPassword
+          matInput
+          type="password"
+          formControlName="newPassword"
+          autocomplete="new-password"
+        />
+        <app-password-toggle matSuffix [field]="newPassword" />
+        @if (form.controls.newPassword.hasError('required')) {
+          <mat-error>{{ t('auth.errors.required') }}</mat-error>
+        } @else if (form.controls.newPassword.hasError('pattern')) {
+          <mat-error>{{ t('auth.errors.passwordRule') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>{{ t('auth.fields.confirmPassword') }}</mat-label>
+        <input
+          #confirmPassword
+          matInput
+          type="password"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+        />
+        <app-password-toggle matSuffix [field]="confirmPassword" />
+        @if (form.controls.confirmPassword.hasError('required')) {
+          <mat-error>{{ t('auth.errors.required') }}</mat-error>
+        } @else if (form.controls.confirmPassword.hasError('mismatch')) {
+          <mat-error>{{ t('auth.errors.passwordMismatch') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <button matButton="filled" type="submit" [disabled]="submitting()">
+        {{ t('auth.setPassword.submit') }}
+      </button>
+    </form>
+
+    <button matButton type="button" (click)="logout()">{{ t('common.actions.logout') }}</button>
+  </div>
+</main>

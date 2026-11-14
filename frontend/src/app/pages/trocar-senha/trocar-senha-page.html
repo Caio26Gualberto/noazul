@@ -1,0 +1,67 @@
+<section *transloco="let t" class="app-page">
+  <header class="app-page__header">
+    <h1 class="app-title">{{ t('auth.changePassword.title') }}</h1>
+    <p class="app-subtitle">{{ t('auth.changePassword.subtitle') }}</p>
+  </header>
+
+  <form
+    #formDirective="ngForm"
+    class="app-form app-card"
+    novalidate
+    [formGroup]="form"
+    (ngSubmit)="submit(formDirective)"
+  >
+    <mat-form-field>
+      <mat-label>{{ t('auth.fields.currentPassword') }}</mat-label>
+      <input
+        #currentPassword
+        matInput
+        type="password"
+        formControlName="currentPassword"
+        autocomplete="current-password"
+      />
+      <app-password-toggle matSuffix [field]="currentPassword" />
+      @if (form.controls.currentPassword.hasError('required')) {
+        <mat-error>{{ t('auth.errors.required') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>{{ t('auth.fields.newPassword') }}</mat-label>
+      <input
+        #newPassword
+        matInput
+        type="password"
+        formControlName="newPassword"
+        autocomplete="new-password"
+      />
+      <app-password-toggle matSuffix [field]="newPassword" />
+      @if (form.controls.newPassword.hasError('required')) {
+        <mat-error>{{ t('auth.errors.required') }}</mat-error>
+      } @else if (form.controls.newPassword.hasError('pattern')) {
+        <mat-error>{{ t('auth.errors.passwordRule') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>{{ t('auth.fields.confirmPassword') }}</mat-label>
+      <input
+        #confirmPassword
+        matInput
+        type="password"
+        formControlName="confirmPassword"
+        autocomplete="new-password"
+      />
+      <app-password-toggle matSuffix [field]="confirmPassword" />
+      @if (form.controls.confirmPassword.hasError('required')) {
+        <mat-error>{{ t('auth.errors.required') }}</mat-error>
+      } @else if (form.controls.confirmPassword.hasError('mismatch')) {
+        <mat-error>{{ t('auth.errors.passwordMismatch') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <button matButton="filled" type="submit" [disabled]="submitting()">
+      {{ t('auth.changePassword.submit') }}
+    </button>
+  </form>
+</section>

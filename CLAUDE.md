@@ -1,0 +1,68 @@
+# CLAUDE.md — NoAzul (monorepo)
+
+## Sobre este projeto
+
+**NoAzul** é um sistema de organização financeira pessoal: mostra os gastos de cartão e de conta vindos da Pluggy, aceita lançamento manual de Pix e calcula métricas do mês. É usado por duas pessoas (o dono e o pai dele), cada uma com a própria conta.
+
+O que ele **não** é: não movimenta dinheiro (só lê e organiza), não é produto comercial (sem cadastro aberto ao público, sem planos), não cuida de investimentos e não é em tempo real (os dados do banco chegam uma vez por dia).
+
+Fase atual: base do projeto, com autenticação funcionando de ponta a ponta (cadastro com trava, login, renovação de sessão, perfil, troca de senha). A integração com a Pluggy, os lançamentos, as métricas e o deploy ainda não existem.
+
+## Mapa
+
+| Pasta | Projeto | Stack | Leia primeiro |
+|---|---|---|---|
+| `api/` | API | .NET 10 · EF Core (Postgres) · Identity + JWT · Hangfire | `api/CLAUDE.md` |
+| `frontend/` | Site | Angular 22 · Angular Material · Transloco | `frontend/CLAUDE.md` |
+| `.github/workflows/` | CI (`ci.yml`, com o check `ci-ok`) | GitHub Actions | este arquivo |
+
+Ordem de trabalho: **api → frontend**. O frontend espelha codes e permissões da API; a API não sabe que ele existe.
+
+Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.claude/rules/` são **decisões** (o porquê, carregadas pelo `paths:` quando o agente toca os arquivos). Se o projeto tiver `docs/specs/`, elas dizem o **comportamento** de cada funcionalidade. Não confunda.
+
+## Contratos entre projetos
+
+- **Envelope** `{ isSuccess, code, message, data }` (camelCase). `code` é SCREAMING_SNAKE, estável e específico; é a chave de i18n no frontend. Code novo na API → espelhado em `frontend/src/app/api/api-codes.ts` + `frontend/src/app/i18n/pt-BR/api.json`, no mesmo commit.
+- **Permissões** `Area.Recurso.Acao`: catálogo na API (`PermissionCatalog`), espelho em `frontend/src/app/auth/permissions.ts`, string idêntica. Gate do front é UX; segurança é a policy do endpoint.
+- **DTOs**: os tipos do frontend são escritos à mão em `frontend/src/app/api/types.ts`. DTO que muda na API muda lá no mesmo commit.
+
+## Decisões fechadas que não se reabrem sem o dono
+
+- Nome do projeto: NoAzul (2026-11-14).
+- Escopo: organização financeira pessoal para o dono e o pai; não movimenta dinheiro, não é produto comercial, não cuida de investimentos, não é em tempo real (2026-11-14).
+- Templates: só API e frontend; sem desktop, mobile ou Atalog (2026-11-14).
+- Frontend em Angular com Angular Material, escolhido para o dono aprender Angular com a biblioteca oficial (2026-11-14).
+- Idioma: só pt-BR (2026-11-14).
+- Fuso do produto: `America/Sao_Paulo`; o banco fica em UTC (2026-11-14).
+- Dono no GitHub: `Caio26Gualberto` (2026-11-14).
+- Identidade visual "Azul calmo", escolhida pelo dono entre três mockups: claro por padrão com escuro automático, azul vivo como cor principal, fontes Space Grotesk (títulos) e Inter (2026-11-14).
+- Cadastro com trava: `Auth:AllowRegistration` liga e desliga a criação de contas; em produção fica desligado depois que as duas contas existirem (2026-11-14).
+- Banco: Postgres (2026-11-14).
+- Dados bancários virão da Pluggy, pela modalidade gratuita de uso pessoal (Meu Pluggy), com atualização diária (2026-11-14).
+
+## Como o agente trabalha aqui
+
+1. Antes de qualquer task: ler este arquivo, o `CLAUDE.md` do projeto tocado e a rule do domínio.
+2. Decisão de produto, marca, cor, layout, lib de UI ou comportamento **não** se preenche com preferência própria: pergunta-se ao dono, com alternativas e recomendação, e espera-se a decisão. Silêncio não é aprovação.
+3. Não provisionar infraestrutura nem publicar nada sem aprovação explícita e separada.
+4. Verificação é por execução real, com o roteiro da rule ou da spec. Doc e código vão no mesmo commit.
+5. Divergência entre doc e código se registra (em "Armadilhas conhecidas" do projeto), não se apaga.
+6. Push e PR seguem a skill `abrir-pr` (`.claude/skills/abrir-pr/SKILL.md`), que chama o subagente `revisor` (`.claude/agents/revisor.md`, só leitura, veredito APROVADO/BLOQUEADO) antes de subir. A `main` é protegida por ruleset: só o dono (`Caio26Gualberto`) faz push direto; todo o resto entra por PR, com `ci-ok` verde e aprovação do dono, merge por squash.
+7. A fonte da verdade das skills e subagentes é `.claude/skills/` e `.claude/agents/`. Para outras ferramentas (Cursor, Codex), `.agents/` tem uma cópia fina de cada um que aponta para a do `.claude/`, e o `AGENTS.md` aponta para elas. Skill ou agente novo ou alterado: atualizar as duas cópias (a fina só muda se o nome ou a descrição mudar).
+8. **Um assunto por branch.** Quem não é o dono trabalha sempre numa branch própria do assunto, nunca na `main`. Pedido sem relação com o assunto da branch atual: avise, commite o pendente e crie uma branch nova a partir da `main` atualizada (`git fetch origin && git switch -c <tipo>/<assunto> origin/main`). Se o pedido novo depende da branch atual, pergunte se entra nela ou espera o merge.
+
+## Hierarquia de regras
+
+1. Rule do domínio (`<projeto>/.claude/rules/*.md`).
+2. `CLAUDE.md` do projeto.
+3. Este arquivo.
+4. Spec (para comportamento), se o projeto tiver.
+5. Convenção do framework.
+
+Uma rule que contradiz o `CLAUDE.md` do projeto diz por quê; se não diz, está errada.
+
+## Ambientes
+
+Development (local) e Production. Segredos só em `api/src/NoAzul.Api/appsettings.Development.json` e no `.env` da raiz (os dois fora do Git) e nas variáveis do ambiente de produção.
+
+O banco local é um Postgres só deste projeto, em container (`docker-compose.yml` da raiz), na porta **5440** para não bater com outros bancos da máquina. A senha fica no `.env` da raiz (modelo em `.env.example`) e tem que ser a mesma da connection string do `appsettings.Development.json`. O passo a passo para rodar está no `README.md`. Os arquivos `frontend/src/environments/*.ts` são versionados e só guardam a URL pública da API.

@@ -1,0 +1,21 @@
+{
+  "appName": "NoAzul",
+  "nav": {
+    "home": "Início",
+    "profile": "Perfil",
+    "main": "Navegação principal",
+    "openMenu": "Abrir menu",
+    "userMenu": "Menu da conta"
+  },
+  "actions": {
+    "close": "Fechar",
+    "logout": "Sair",
+    "changePassword": "Trocar senha"
+  },
+  "home": {
+    "title": "Olá, {{name}}",
+    "subtitle": "Este é o seu início no NoAzul.",
+    "emptyTitle": "Seu painel de gastos vai aparecer aqui",
+    "emptyText": "Quando as contas forem conectadas e os lançamentos chegarem, você verá o resumo do mês nesta tela."
+  }
+}

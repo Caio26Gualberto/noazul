@@ -1,0 +1,76 @@
+﻿# Build output
+[Bb]in/
+[Oo]bj/
+out/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# .NET / NuGet
+*.nupkg
+*.snupkg
+project.assets.json
+project.nuget.cache
+*.AssemblyInfo.cs
+*.GeneratedMSBuildEditorConfig.editorconfig
+
+# Test output / coverage
+TestResults/
+coverage/
+coverage.*
+*.trx
+*.coverage
+*.coveragexml
+
+# Logs
+*.log
+logs/
+
+# Local env / secrets
+.env
+.env.*
+*.env
+!.env.production.example
+secrets.json
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+!appsettings.Production.json
+appsettings.Staging.json
+appsettings.Test.json
+appsettings.*.local.json
+
+# Certificates / keys
+*.pfx
+*.p12
+*.pem
+*.key
+*.crt
+*.cer
+
+# Docker local overrides
+docker-compose.override.yml
+docker-compose*.local.yml
+Dockerfile.*.local
+
+# Frontend artifacts, if any
+node_modules/
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

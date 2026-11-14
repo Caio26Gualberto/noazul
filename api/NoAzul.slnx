@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src\NoAzul.Workers\NoAzul.Workers.csproj" />
+    <Project Path="src\NoAzul.Api\NoAzul.Api.csproj" />
+    <Project Path="src\NoAzul.Application\NoAzul.Application.csproj" />
+    <Project Path="src\NoAzul.Domain\NoAzul.Domain.csproj" />
+    <Project Path="src\NoAzul.Infra.Data\NoAzul.Infra.Data.csproj" />
+    <Project Path="src\NoAzul.Infra.IoC\NoAzul.Infra.IoC.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,86 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - id: filter
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
+        run: |
+          all() { echo "api=true" >> "$GITHUB_OUTPUT"; echo "frontend=true" >> "$GITHUB_OUTPUT"; exit 0; }
+          if [ "$EVENT" = "pull_request" ]; then
+            files=$(git diff --name-only "$PR_BASE...$PR_HEAD") || all
+          else
+            if [ -z "$PUSH_BEFORE" ] || ! git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then all; fi
+            files=$(git diff --name-only "$PUSH_BEFORE" "$PUSH_AFTER") || all
+          fi
+          echo "$files"
+          if grep -qx ".github/workflows/ci.yml" <<< "$files"; then all; fi
+          has() { grep -qE "$1" <<< "$files" && echo true || echo false; }
+          echo "api=$(has '^api/')" >> "$GITHUB_OUTPUT"
+          echo "frontend=$(has '^frontend/')" >> "$GITHUB_OUTPUT"
+
+  api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet build NoAzul.slnx -c Release -warnaserror
+
+  frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+
+  ci-ok:
+    needs: [changes, api, frontend]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "$RESULTS"
+          for r in $RESULTS; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then echo "Algum job falhou"; exit 1; fi
+          done

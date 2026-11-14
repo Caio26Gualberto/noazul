@@ -1,0 +1,23 @@
+name: noazul
+
+services:
+  postgres:
+    image: postgres:18
+    container_name: noazul-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: noazul
+      POSTGRES_USER: noazul
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no arquivo .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5440}:5432"
+    volumes:
+      - noazul-pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U noazul -d noazul"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  noazul-pgdata:
