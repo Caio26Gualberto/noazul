@@ -36,8 +36,13 @@ export class AppShell {
     return name?.trim().charAt(0).toUpperCase() ?? '';
   }
 
-  protected logout(): void {
+  protected closeMenus(): void {
     this.userMenuOpen.set(false);
+    this.menuOpen.set(false);
+  }
+
+  protected logout(): void {
+    this.closeMenus();
     void this.auth.logout();
   }
 }

@@ -42,6 +42,39 @@
         </a>
       }
     </nav>
+
+    <button
+      type="button"
+      class="shell__user"
+      tuiDropdownDirection="top"
+      [attr.aria-label]="t('common.nav.userMenu')"
+      [tuiDropdown]="userMenu"
+      [(tuiDropdownOpen)]="userMenuOpen"
+    >
+      <span tuiAvatar size="s" class="shell__avatar">{{ initial(auth.profile()?.name) }}</span>
+      <span class="shell__user-text">
+        <span class="shell__user-name">{{ auth.profile()?.name }}</span>
+        <span class="shell__user-email">{{ auth.profile()?.email }}</span>
+      </span>
+      <tui-icon icon="@tui.chevrons-up-down" class="shell__user-chevron" />
+    </button>
+
+    <ng-template #userMenu>
+      <tui-data-list>
+        <a tuiOption [routerLink]="routes.profile" (click)="closeMenus()">
+          <tui-icon icon="@tui.user" />
+          {{ t('common.nav.profile') }}
+        </a>
+        <a tuiOption [routerLink]="routes.changePassword" (click)="closeMenus()">
+          <tui-icon icon="@tui.key-round" />
+          {{ t('common.actions.changePassword') }}
+        </a>
+        <button tuiOption type="button" (click)="logout()">
+          <tui-icon icon="@tui.log-out" />
+          {{ t('common.actions.logout') }}
+        </button>
+      </tui-data-list>
+    </ng-template>
   </aside>
 
   <button
@@ -59,46 +92,12 @@
         appearance="flat"
         type="button"
         iconStart="@tui.menu"
-        class="shell__menu"
         [attr.aria-label]="t('common.nav.openMenu')"
         (click)="menuOpen.set(true)"
       >
         {{ t('common.nav.openMenu') }}
       </button>
-
-      <span class="shell__spacer"></span>
-
-      <button
-        tuiButton
-        appearance="flat"
-        size="m"
-        type="button"
-        iconEnd="@tui.chevron-down"
-        class="shell__user"
-        [attr.aria-label]="t('common.nav.userMenu')"
-        [tuiDropdown]="userMenu"
-        [(tuiDropdownOpen)]="userMenuOpen"
-      >
-        <span tuiAvatar size="xs" appearance="accent">{{ initial(auth.profile()?.name) }}</span>
-        {{ auth.profile()?.name }}
-      </button>
-
-      <ng-template #userMenu>
-        <tui-data-list>
-          <a tuiOption [routerLink]="routes.profile" (click)="userMenuOpen.set(false)">
-            <tui-icon icon="@tui.user" />
-            {{ t('common.nav.profile') }}
-          </a>
-          <a tuiOption [routerLink]="routes.changePassword" (click)="userMenuOpen.set(false)">
-            <tui-icon icon="@tui.key-round" />
-            {{ t('common.actions.changePassword') }}
-          </a>
-          <button tuiOption type="button" (click)="logout()">
-            <tui-icon icon="@tui.log-out" />
-            {{ t('common.actions.logout') }}
-          </button>
-        </tui-data-list>
-      </ng-template>
+      <app-brand />
     </header>
 
     <main class="shell__content">

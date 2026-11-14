@@ -31,7 +31,7 @@ export const appConfig: ApplicationConfig = {
     provideAppTranslations(),
     { provide: LOCALE_ID, useValue: DEFAULT_LANG },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'BRL' },
-    provideTaiga(),
+    provideTaiga({ mode: 'light' }),
     { provide: TUI_LANGUAGE, useValue: signal(TUI_PORTUGUESE_LANGUAGE) },
     provideAppInitializer(async () => {
       const transloco = inject(TranslocoService);

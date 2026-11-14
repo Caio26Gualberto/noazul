@@ -35,7 +35,7 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
 - Idioma: só pt-BR (2026-11-14).
 - Fuso do produto: `America/Sao_Paulo`; o banco fica em UTC (2026-11-14).
 - Dono no GitHub: `Caio26Gualberto` (2026-11-14).
-- Identidade visual "Azul calmo", escolhida pelo dono entre três mockups: claro por padrão com escuro automático, azul vivo como cor principal, fontes Space Grotesk (títulos) e Inter (2026-11-14).
+- Identidade visual "Azul calmo", escolhida pelo dono entre três mockups: claro por padrão com escuro automático, azul vivo como cor principal, fontes Space Grotesk (títulos) e Inter (2026-11-14). Atualizado no mesmo dia: o dono pediu o tema **sempre claro**, como no mock dos módulos; o modo escuro automático foi desligado (o mapa escuro continua em `_colors.scss`, sem uso) (2026-11-14).
 - Cadastro com trava: `Auth:AllowRegistration` liga e desliga a criação de contas; em produção fica desligado depois que as duas contas existirem (2026-11-14).
 - Banco: Postgres (2026-11-14).
 - Dados bancários virão da Pluggy, pela modalidade gratuita de uso pessoal (Meu Pluggy), com atualização diária (2026-11-14).

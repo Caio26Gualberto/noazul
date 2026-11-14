@@ -101,7 +101,7 @@ Recuperação de senha e verificação de e-mail não existem na API e não têm
 ## Tema e cor
 
 - **Cor só em `theme/_colors.scss`**, em dois mapas: claro e escuro. Buscar `#` seguido de hexadecimal em `src/app` fora desse arquivo tem que voltar vazio.
-- `theme/_theme.scss` liga cada cor do mapa a uma variável do Taiga (`--tui-*`) com `light-dark()`. O modo claro ou escuro segue o sistema da pessoa.
+- `theme/_theme.scss` liga cada cor do mapa a uma variável do Taiga (`--tui-*`) com `light-dark()`. O tema é **sempre claro** por decisão do dono: `color-scheme: light` no tema e `provideTaiga({ mode: 'light' })`. O mapa escuro fica guardado para se um dia o dono quiser o escuro de volta.
 - As variáveis ficam em `:root` **e** em `[tuiTheme]`: o Taiga marca o `body` com `tuiTheme="dark"` e redefine a paleta dele ali, então só `:root` perderia para a do Taiga.
 - Em componente, use os tokens do Taiga: `var(--tui-background-base)`, `var(--tui-text-secondary)`, `var(--tui-border-normal)`, `var(--tui-background-accent-1)`, e os próprios do projeto, `var(--app-color-*)`. Tipografia também por token: `font: var(--tui-typography-body-m)`; título usa `font-family: var(--tui-typography-family-display)` (Space Grotesk).
 - `theme/_base.scss` tem as classes de layout compartilhadas (`app-page`, `app-card`, `app-form`, `app-title`, `app-subtitle`).
