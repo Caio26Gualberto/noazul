@@ -1,4 +1,4 @@
 export const environment = {
-  apiBaseUrl: '',
+  apiBaseUrl: 'https://api.noazul.space',
   pluggyIncludeSandbox: false,
 };

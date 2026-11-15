@@ -1,0 +1,54 @@
+name: noazul-prod
+
+services:
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: noazul
+      POSTGRES_USER: noazul
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no deploy/.env}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U noazul -d noazul"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ../api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=noazul;Username=noazul;Password=${POSTGRES_PASSWORD}
+      JWT__SecretKey: ${JWT_SECRET_KEY:?defina JWT_SECRET_KEY no deploy/.env}
+      Cors__AllowedOrigins__0: https://${SITE_DOMAIN:?defina SITE_DOMAIN no deploy/.env}
+      Cors__AllowedOrigins__1: https://www.${SITE_DOMAIN}
+      Auth__AllowRegistration: ${ALLOW_REGISTRATION:-false}
+      Pluggy__ClientId: ${PLUGGY_CLIENT_ID:?defina PLUGGY_CLIENT_ID no deploy/.env}
+      Pluggy__ClientSecret: ${PLUGGY_CLIENT_SECRET:?defina PLUGGY_CLIENT_SECRET no deploy/.env}
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?defina API_DOMAIN no deploy/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  pgdata:
+  caddy-data:
+  caddy-config:

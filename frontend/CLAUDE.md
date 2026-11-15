@@ -148,7 +148,7 @@ Recuperação de senha e verificação de e-mail não existem na API e não têm
 
 - O 401 de token vencido chega **sem corpo**. Quem decide se renova é o interceptor, pela ausência de `code` no corpo; não tente tratar esse caso lendo o envelope.
 - O logout da API exige um token válido: `AuthStore.logout` chama a API **antes** de limpar os tokens.
-- `environment.ts` (produção) tem `apiBaseUrl` vazio: a URL da API de produção entra ali quando o deploy for decidido.
+- ~~`environment.ts` (produção) tem `apiBaseUrl` vazio.~~ Desde 2026-11-15 aponta para `https://api.noazul.space` (ver `DEPLOY.md`).
 - O aviso de orçamento do build está em 700 kB para o pacote inicial.
 - O Taiga 5 espera o idioma como **signal**: `{ provide: TUI_LANGUAGE, useValue: signal(TUI_PORTUGUESE_LANGUAGE) }`. Com `of(...)` (o jeito do Taiga 4, que ainda aparece em exemplos) os campos quebram com "language is not a function" e derrubam a tela inteira.
 - O tema do Taiga é `.less`: o pacote `less` precisa estar nas devDependencies para o build.
