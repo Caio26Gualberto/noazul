@@ -27,10 +27,10 @@ Os arquivos usados aqui já estão no repositório:
 
 ## 1. Domínio na Cloudflare
 
-1. Na Cloudflare, **Domain Registration → Register Domains**, compre `noazul.space`. A zona de DNS é criada sozinha.
-2. Deixe a aba **DNS** aberta: você volta nela nos passos 3 e 8.
+1. `noazul.space` foi comprado pelo dono na Cloudflare em 2026-11-15 (**Domain Registration**), e a zona de DNS já existe lá.
+2. Deixe a aba **DNS** do domínio aberta: você volta nela nos passos 3 e 8.
 
-> Em 2026-11-15 a consulta pública (RDAP) já mostrava `noazul.space` como registrado. Se não foi você quem comprou, escolha outro nome e troque `noazul.space` em `deploy/.env` e em `frontend/src/environments/environment.ts`.
+Se um dia o domínio mudar, troque em `deploy/.env` (no servidor) e em `frontend/src/environments/environment.ts`.
 
 ## 2. Servidor no Lightsail
 
