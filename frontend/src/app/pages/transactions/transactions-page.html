@@ -2,7 +2,7 @@
   <header class="transactions__header">
     <div class="app-page__header">
       <h1 class="app-title">{{ t('transactions.title') }}</h1>
-      <p class="app-subtitle">{{ t('transactions.subtitle', { month: monthLabel }) }}</p>
+      <p class="app-subtitle">{{ t('transactions.subtitle', { month: monthLabel() }) }}</p>
     </div>
     <a
       tuiButton
@@ -44,10 +44,26 @@
       />
     </tui-textfield>
 
-    <tui-textfield class="transactions__category" tuiChevron [stringify]="stringifyCategory">
+    <tui-textfield
+      class="transactions__category"
+      tuiChevron
+      [stringify]="stringifyCategory"
+      [tuiTextfieldCleaner]="false"
+    >
       <label tuiLabel for="transactions-category">{{ t('transactions.filters.category') }}</label>
       <input id="transactions-category" tuiSelect [(ngModel)]="category" />
       <tui-data-list-wrapper *tuiDropdown [items]="categoryFilters" />
+    </tui-textfield>
+
+    <tui-textfield
+      class="transactions__month"
+      tuiChevron
+      [stringify]="stringifyMonth"
+      [tuiTextfieldCleaner]="false"
+    >
+      <label tuiLabel for="transactions-month">{{ t('transactions.filters.month') }}</label>
+      <input id="transactions-month" tuiSelect [(ngModel)]="month" />
+      <tui-data-list-wrapper *tuiDropdown [items]="months" />
     </tui-textfield>
   </div>
 

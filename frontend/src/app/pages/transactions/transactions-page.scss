@@ -28,7 +28,8 @@
   flex: 1 1 220px;
 }
 
-.transactions__category {
+.transactions__category,
+.transactions__month {
   flex: 0 1 220px;
   min-width: 180px;
 }

@@ -71,7 +71,7 @@ Gastos, cartões, contas e métricas, todos vindos da API. Só o Pix manual aind
 - `bank-connection.mapper.ts`: transforma `BankConnectionDto` no `BankConnection` da tela (cartões e contas separados pelo tipo, bandeira em `CardBrand` e `paymentSystem` do Taiga, status `needsReconnect`/`failed` viram `expired`).
 - `pluggy-connect.service.ts` (`PluggyConnectService`): abre a janela da Pluggy (`pluggy-connect-sdk`, carregado só no clique, por `import()`) e devolve `connected` com o `itemId`, `closed` ou `failed`. Em desenvolvimento mostra também os bancos de teste da Pluggy (`environment.pluggyIncludeSandbox`).
 - `transaction.mapper.ts`: `TransactionDto` → `Transaction` (a data vira o dia na zona do produto) e `MonthSummaryDto` → `MonthSummary`; categoria desconhecida vira `other`.
-- `finance.dates.ts`: `today()`, `currentMonth()` e `toProductDay()`, sempre em `America/Sao_Paulo`. É o único lugar do frontend que sabe que dia é hoje.
+- `finance.dates.ts`: `today()`, `currentMonth()`, `recentMonths(n)` (o seletor de mês de Lançamentos oferece 12, o mesmo que a primeira sincronização traz) e `toProductDay()`, sempre em `America/Sao_Paulo`. É o único lugar do frontend que sabe que dia é hoje.
 - `finance.calc.ts`: somas por origem e por categoria, usadas pelo Início e pelas Métricas.
 - Textos compartilhados (categorias, origens, "Pendente", parcelas) em `i18n/pt-BR/finance.json`.
 
@@ -149,6 +149,7 @@ Recuperação de senha e verificação de e-mail não existem na API e não têm
 - O aviso de orçamento do build está em 700 kB para o pacote inicial.
 - O Taiga 5 espera o idioma como **signal**: `{ provide: TUI_LANGUAGE, useValue: signal(TUI_PORTUGUESE_LANGUAGE) }`. Com `of(...)` (o jeito do Taiga 4, que ainda aparece em exemplos) os campos quebram com "language is not a function" e derrubam a tela inteira.
 - O tema do Taiga é `.less`: o pacote `less` precisa estar nas devDependencies para o build.
+- Select de filtro que não pode ficar vazio (Categoria e Mês em Lançamentos) leva `[tuiTextfieldCleaner]="false"` (`TuiTextfieldOptionsDirective`): o "×" do Taiga deixaria o valor `null` e a lista vazia.
 - O `pluggy-connect-sdk` depende do `zoid`, que não é ESM: ele está em `allowedCommonJsDependencies` no `angular.json` para o build não avisar. Versão fixada (sem `^`) porque é a janela que mexe com login de banco.
 
 ## Como este arquivo evolui

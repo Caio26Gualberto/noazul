@@ -1,11 +1,17 @@
 import { CurrencyPipe, DatePipe, formatDate } from '@angular/common';
 import { Component, LOCALE_ID, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { TuiTable } from '@taiga-ui/addon-table';
-import { TuiButton, TuiIcon, TuiInput, TuiLoader } from '@taiga-ui/core';
+import {
+  TuiButton,
+  TuiIcon,
+  TuiInput,
+  TuiLoader,
+  TuiTextfieldOptionsDirective,
+} from '@taiga-ui/core';
 import {
   TuiBadge,
   TuiChevron,
@@ -16,7 +22,8 @@ import {
 } from '@taiga-ui/kit';
 import { AppRoutes } from '../../auth/routes';
 import { sumAmounts } from '../../finance/finance.calc';
-import { currentMonth } from '../../finance/finance.dates';
+import { switchMap, startWith } from 'rxjs';
+import { currentMonth, recentMonths } from '../../finance/finance.dates';
 import { CATEGORIES, Category, Origin } from '../../finance/finance.models';
 import { FinanceService } from '../../finance/finance.service';
 
@@ -25,6 +32,7 @@ type CategoryFilter = 'all' | Category;
 
 const ORIGIN_FILTERS: readonly OriginFilter[] = ['all', 'card', 'account', 'pix'];
 const CATEGORY_FILTERS: readonly CategoryFilter[] = ['all', ...CATEGORIES];
+const MONTHS_AVAILABLE = 12;
 
 @Component({
   selector: 'app-transactions-page',
@@ -45,6 +53,7 @@ const CATEGORY_FILTERS: readonly CategoryFilter[] = ['all', ...CATEGORIES];
     TuiSegmented,
     TuiSelect,
     TuiTable,
+    TuiTextfieldOptionsDirective,
   ],
   templateUrl: './transactions-page.html',
   styleUrl: './transactions-page.scss',
@@ -56,9 +65,17 @@ export class TransactionsPage {
   protected readonly routes = AppRoutes;
   protected readonly originFilters = ORIGIN_FILTERS;
   protected readonly categoryFilters = CATEGORY_FILTERS;
-  protected readonly monthLabel = this.formatMonth(currentMonth());
+  protected readonly months = recentMonths(MONTHS_AVAILABLE);
+  protected readonly month = signal(currentMonth());
+  protected readonly monthLabel = computed(() => this.formatMonth(this.month()));
 
-  protected readonly transactions = toSignal(inject(FinanceService).transactions(currentMonth()));
+  private readonly finance = inject(FinanceService);
+
+  protected readonly transactions = toSignal(
+    toObservable(this.month).pipe(
+      switchMap((month) => this.finance.transactions(month).pipe(startWith(undefined))),
+    ),
+  );
   protected readonly loading = computed(() => this.transactions() === undefined);
 
   protected readonly origin = signal<OriginFilter>('all');
@@ -83,6 +100,8 @@ export class TransactionsPage {
     category === 'all'
       ? this.transloco.translate('transactions.filters.allCategories')
       : this.transloco.translate(`finance.categories.${category}`);
+
+  protected readonly stringifyMonth = (month: string): string => this.formatMonth(month);
 
   protected clearFilters(): void {
     this.origin.set('all');

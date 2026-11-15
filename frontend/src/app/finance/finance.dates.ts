@@ -13,3 +13,11 @@ export function today(): string {
 export function currentMonth(): string {
   return today().slice(0, 7);
 }
+
+export function recentMonths(count: number): string[] {
+  const [year, month] = currentMonth().split('-').map(Number);
+  return Array.from({ length: count }, (_, offset) => {
+    const date = new Date(Date.UTC(year, month - 1 - offset, 1));
+    return date.toISOString().slice(0, 7);
+  });
+}
