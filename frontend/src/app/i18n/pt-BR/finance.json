@@ -1,11 +1,15 @@
 {
   "categories": {
     "groceries": "Mercado",
-    "home": "Casa",
     "restaurants": "Restaurantes",
     "transport": "Transporte",
     "health": "Saúde",
     "subscriptions": "Assinaturas",
+    "home": "Casa",
+    "shopping": "Compras",
+    "leisure": "Lazer e viagem",
+    "education": "Educação",
+    "fees": "Tarifas e impostos",
     "other": "Outros"
   },
   "origins": {
@@ -23,6 +27,5 @@
     "amex": "American Express",
     "hipercard": "Hipercard",
     "other": "Cartão"
-  },
-  "mockNotice": "Dados de exemplo: a integração com os bancos ainda não existe."
+  }
 }

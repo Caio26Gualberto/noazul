@@ -60,5 +60,10 @@
   "BANK_CONNECTION_ITEM_NOT_FOUND": "A Pluggy não encontrou esta conexão. Tente conectar de novo.",
   "BANK_CONNECTION_TAKEN": "Esta conexão já pertence a outra conta do NoAzul",
   "PLUGGY_NOT_CONFIGURED": "A integração com os bancos ainda não foi configurada no servidor",
-  "PLUGGY_UNAVAILABLE": "Não foi possível falar com a Pluggy. Tente de novo em alguns minutos."
+  "PLUGGY_UNAVAILABLE": "Não foi possível falar com a Pluggy. Tente de novo em alguns minutos.",
+  "TRANSACTIONS_LOADED": "Lançamentos carregados",
+  "TRANSACTION_MONTH_INVALID": "Mês inválido",
+  "TRANSACTION_SEARCH_TOO_LONG": "A busca pode ter até 100 caracteres",
+  "TRANSACTION_SUMMARY_LOADED": "Resumo dos meses carregado",
+  "TRANSACTION_SUMMARY_MONTHS_INVALID": "O resumo vai de 1 a 24 meses"
 }

@@ -4,11 +4,15 @@ export type Origin = 'card' | 'account' | 'pix';
 
 export const CATEGORIES = [
   'groceries',
-  'home',
   'restaurants',
   'transport',
   'health',
   'subscriptions',
+  'home',
+  'shopping',
+  'leisure',
+  'education',
+  'fees',
   'other',
 ] as const;
 

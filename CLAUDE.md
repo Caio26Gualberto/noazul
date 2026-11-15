@@ -6,7 +6,7 @@
 
 O que ele **não** é: não movimenta dinheiro (só lê e organiza), não é produto comercial (sem cadastro aberto ao público, sem planos), não cuida de investimentos e não é em tempo real (os dados do banco chegam uma vez por dia).
 
-Fase atual: autenticação funcionando de ponta a ponta (cadastro com trava, login, renovação de sessão, perfil, troca de senha) e a tela Cartões e contas ligada à Pluggy (conectar banco, sincronização diária de cartões e contas). Os lançamentos, as métricas e o deploy ainda não existem.
+Fase atual: autenticação funcionando de ponta a ponta (cadastro com trava, login, renovação de sessão, perfil, troca de senha); Cartões e contas, Lançamentos, Início e Métricas com dados reais da Pluggy (sincronização diária). O Pix manual ainda fica só na memória do navegador, e o deploy não existe.
 
 ## Mapa
 
@@ -44,7 +44,7 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
   - Menu: Início, Lançamentos, Cartões e contas, Métricas e Perfil, com "Lançar Pix" como ação de destaque.
   - Início: total do mês, divisão entre cartões, conta e Pix, gastos por categoria, faturas abertas e últimos lançamentos.
   - Lançamentos: lista única de cartões, conta e Pix, com filtros por origem, categoria, mês e busca.
-  - Categorias: lista própria de sete (Mercado, Casa, Restaurantes, Transporte, Saúde, Assinaturas, Outros).
+  - Categorias: lista própria de sete (Mercado, Casa, Restaurantes, Transporte, Saúde, Assinaturas, Outros). Ampliada para onze em 2026-11-15 (ver abaixo).
   - Pix manual: lançamento próprio, sem depender de conta conectada.
   - Cartões e contas: uma conexão por banco, com a última atualização, fatura, limite, fechamento, vencimento e saldo da conta.
   - Métricas: gasto por mês, divisão por origem, maiores gastos e categorias do mês contra o anterior.
@@ -52,6 +52,9 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
 - Biblioteca de UI: Taiga UI no lugar do Angular Material. O dono achou o visual fraco e escolheu depois de comparar a tela de Início montada em Material, PrimeNG, Spartan UI e Taiga UI. Substitui a escolha do Angular Material; a identidade "Azul calmo" continua valendo, então as cores próprias do Taiga (como os gradientes dos cartões) seguem a paleta da marca. A migração do `frontend/` foi feita no mesmo dia (2026-11-14).
 - Conexão com o banco: botão "Conectar banco" na tela Cartões e contas, que abre a janela oficial da Pluggy (Pluggy Connect); o NoAzul guarda a conexão sozinho. Descartado: colar o Item ID copiado do meu.pluggy.ai (2026-11-15).
 - Cor por banco: o quadrado da marca e a miniatura de cada cartão usam a cor do banco (Itaú laranja, Nubank roxo…), em Cartões e contas e nas faturas do Início. Substitui, só nesses dois lugares, a regra de que as cores dos cartões seguem a paleta da marca; o resto continua "Azul calmo". Banco sem cor conhecida fica neutro na marca e azul no cartão (2026-11-15).
+- Categorias passam a ser onze: Mercado, Restaurantes, Transporte, Saúde, Assinaturas, Casa, Compras, Lazer e viagem, Educação, Tarifas e impostos e Outros. A categoria da Pluggy de cada lançamento é traduzida por uma tabela fixa (rule `api/.claude/rules/lancamentos.md`); o que não se encaixa vai para Outros (2026-11-15).
+- Gasto é só saída: compras no cartão e débitos da conta. Ficam de fora as entradas (pagamento de fatura no cartão, estorno, Pix recebido, rendimento), o pagamento de fatura feito pela conta, a transferência entre contas da mesma pessoa e a aplicação em investimento. Estorno não desconta (2026-11-15).
+- Histórico: a primeira sincronização de cada conta traz 12 meses; depois, a diária relê os últimos 30 dias (2026-11-15).
 - Cada pessoa usa o próprio Meu Pluggy e conecta só os próprios bancos; o NoAzul usa um único `client_id`/`client_secret`, da aplicação do dono no dashboard da Pluggy (2026-11-15).
 
 ## Como o agente trabalha aqui

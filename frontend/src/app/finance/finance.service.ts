@@ -1,38 +1,50 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, delay, map, of } from 'rxjs';
+import { EMPTY, Observable, expand, map, of, reduce } from 'rxjs';
 import { ApiClient } from '../api/api-client';
-import { BankConnectionDto, ConnectTokenDto, PagedResultDto } from '../api/types';
+import {
+  BankConnectionDto,
+  ConnectTokenDto,
+  MonthSummaryDto,
+  PagedResultDto,
+  TransactionDto,
+} from '../api/types';
 import { toBankConnection } from './bank-connection.mapper';
-import { INITIAL_TRANSACTIONS, MONTHLY_HISTORY } from './finance.mock';
+import { currentMonth } from './finance.dates';
 import { BankConnection, MonthSummary, NewPix, Transaction } from './finance.models';
+import { toMonthSummary, toTransaction } from './transaction.mapper';
 
-const FAKE_LATENCY_MS = 300;
 const CONNECTIONS_PAGE_SIZE = 100;
+const TRANSACTIONS_PAGE_SIZE = 100;
+const HISTORY_MONTHS = 6;
 
 @Injectable({ providedIn: 'root' })
 export class FinanceService {
   private readonly api = inject(ApiClient);
 
-  private transactionsInMemory = [...INITIAL_TRANSACTIONS];
+  private pixInMemory: Transaction[] = [];
 
   transactions(month: string): Observable<Transaction[]> {
-    const ofMonth = this.transactionsInMemory
-      .filter((transaction) => transaction.date.startsWith(month))
-      .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
-    return of(ofMonth).pipe(delay(FAKE_LATENCY_MS));
+    const pix = this.pixInMemory.filter((transaction) => transaction.date.startsWith(month));
+    return this.transactionsPage(month, 1).pipe(
+      expand((page) => (page.hasNext ? this.transactionsPage(month, page.page + 1) : EMPTY)),
+      reduce((all, page) => [...all, ...page.items.map(toTransaction)], [] as Transaction[]),
+      map((fromApi) =>
+        [...fromApi, ...pix].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id),
+      ),
+    );
   }
 
   createPix(pix: NewPix): Observable<Transaction> {
     const created: Transaction = {
       ...pix,
-      id: Math.max(...this.transactionsInMemory.map((transaction) => transaction.id)) + 1,
+      id: -(this.pixInMemory.length + 1),
       origin: 'pix',
       bank: null,
       pending: false,
       installment: null,
     };
-    this.transactionsInMemory = [...this.transactionsInMemory, created];
-    return of(created).pipe(delay(FAKE_LATENCY_MS));
+    this.pixInMemory = [...this.pixInMemory, created];
+    return of(created);
   }
 
   connections(): Observable<BankConnection[]> {
@@ -56,6 +68,22 @@ export class FinanceService {
   }
 
   history(): Observable<MonthSummary[]> {
-    return of(MONTHLY_HISTORY).pipe(delay(FAKE_LATENCY_MS));
+    const month = currentMonth();
+    return this.api
+      .get<MonthSummaryDto[]>(`/api/transactions/monthly-summary?months=${HISTORY_MONTHS}`)
+      .pipe(
+        map((summaries) =>
+          summaries.filter((summary) => summary.month < month).map(toMonthSummary),
+        ),
+      );
+  }
+
+  private transactionsPage(
+    month: string,
+    page: number,
+  ): Observable<PagedResultDto<TransactionDto>> {
+    return this.api.get<PagedResultDto<TransactionDto>>(
+      `/api/transactions?month=${month}&page=${page}&pageSize=${TRANSACTIONS_PAGE_SIZE}`,
+    );
   }
 }

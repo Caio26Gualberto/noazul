@@ -49,19 +49,6 @@
   background: var(--tui-status-positive);
 }
 
-.home__notice {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: -12px;
-  font: var(--tui-typography-body-s);
-  color: var(--tui-text-tertiary);
-
-  tui-icon {
-    font-size: 16px;
-  }
-}
-
 .home__loader {
   min-height: 320px;
 }

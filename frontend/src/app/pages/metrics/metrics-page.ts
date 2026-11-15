@@ -11,11 +11,11 @@ import { Component, DEFAULT_CURRENCY_CODE, LOCALE_ID, computed, inject } from '@
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { TuiTable } from '@taiga-ui/addon-table';
-import { TuiIcon, TuiLoader } from '@taiga-ui/core';
+import { TuiLoader } from '@taiga-ui/core';
 import { TuiProgress } from '@taiga-ui/kit';
 import { forkJoin } from 'rxjs';
 import { sumAmounts, totalsByCategory, totalsByOrigin } from '../../finance/finance.calc';
-import { CURRENT_MONTH, TODAY } from '../../finance/finance.mock';
+import { currentMonth, today } from '../../finance/finance.dates';
 import { CATEGORIES, Category, Origin } from '../../finance/finance.models';
 import { FinanceService } from '../../finance/finance.service';
 
@@ -71,7 +71,6 @@ function percentOf(part: number, whole: number): number {
     DecimalPipe,
     TitleCasePipe,
     TranslocoDirective,
-    TuiIcon,
     TuiLoader,
     TuiProgress,
     TuiTable,
@@ -88,7 +87,7 @@ export class MetricsPage {
   private readonly data = toSignal(
     forkJoin({
       history: this.finance.history(),
-      transactions: this.finance.transactions(CURRENT_MONTH),
+      transactions: this.finance.transactions(currentMonth()),
     }),
   );
 
@@ -98,10 +97,10 @@ export class MetricsPage {
   private readonly transactions = computed(() => this.data()?.transactions ?? []);
   private readonly lastClosed = computed(() => this.history().at(-1));
 
-  protected readonly today = parseDay(TODAY);
+  protected readonly today = parseDay(today());
   protected readonly currentDay = this.today.getDate();
-  protected readonly currentMonthDays = daysInMonth(CURRENT_MONTH);
-  protected readonly currentMonthName = this.monthName(CURRENT_MONTH);
+  protected readonly currentMonthDays = daysInMonth(currentMonth());
+  protected readonly currentMonthName = this.monthName(currentMonth());
 
   protected readonly currentTotal = computed(() => sumAmounts(this.transactions()));
   protected readonly currentDailyAverage = computed(() => this.currentTotal() / this.currentDay);
@@ -145,7 +144,7 @@ export class MetricsPage {
         total: month.total,
         inProgress: false,
       })),
-      { month: CURRENT_MONTH, total: this.currentTotal(), inProgress: true },
+      { month: currentMonth(), total: this.currentTotal(), inProgress: true },
     ];
     const highest = Math.max(...months.map((month) => month.total));
     return months.map((month) => ({

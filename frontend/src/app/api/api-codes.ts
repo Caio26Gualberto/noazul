@@ -68,6 +68,12 @@ export const ApiCodes = {
   bankConnectionTaken: 'BANK_CONNECTION_TAKEN',
   pluggyNotConfigured: 'PLUGGY_NOT_CONFIGURED',
   pluggyUnavailable: 'PLUGGY_UNAVAILABLE',
+
+  transactionsLoaded: 'TRANSACTIONS_LOADED',
+  transactionMonthInvalid: 'TRANSACTION_MONTH_INVALID',
+  transactionSearchTooLong: 'TRANSACTION_SEARCH_TOO_LONG',
+  transactionSummaryLoaded: 'TRANSACTION_SUMMARY_LOADED',
+  transactionSummaryMonthsInvalid: 'TRANSACTION_SUMMARY_MONTHS_INVALID',
 } as const;
 
 export type ApiCode = (typeof ApiCodes)[keyof typeof ApiCodes];

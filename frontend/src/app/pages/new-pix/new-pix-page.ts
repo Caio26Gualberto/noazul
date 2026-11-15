@@ -34,7 +34,7 @@ import { firstValueFrom } from 'rxjs';
 import { ignoreApiError } from '../../api/api-error';
 import { AppRoutes } from '../../auth/routes';
 import { sumAmounts } from '../../finance/finance.calc';
-import { CURRENT_MONTH, TODAY } from '../../finance/finance.mock';
+import { currentMonth, today } from '../../finance/finance.dates';
 import { CATEGORIES, Category, NewPix, Transaction } from '../../finance/finance.models';
 import { FinanceService } from '../../finance/finance.service';
 
@@ -80,8 +80,8 @@ export class NewPixPage {
 
   protected readonly routes = AppRoutes;
   protected readonly categories = CATEGORIES;
-  protected readonly today = TuiDay.jsonParse(TODAY);
-  protected readonly monthStart = `${CURRENT_MONTH}-01`;
+  protected readonly today = TuiDay.jsonParse(today());
+  protected readonly monthStart = `${currentMonth()}-01`;
   protected readonly noteMaxLength = NOTE_MAX_LENGTH;
   protected readonly moneyFormat = { decimalSeparator: ',', thousandSeparator: '.' };
   protected readonly dateFormat = { mode: 'dd/mm/yyyy', separator: '/' } as const;
@@ -105,7 +105,7 @@ export class NewPixPage {
   });
 
   protected readonly monthTransactions = rxResource({
-    stream: () => this.finance.transactions(CURRENT_MONTH),
+    stream: () => this.finance.transactions(currentMonth()),
   });
 
   protected readonly monthPix = computed(() =>

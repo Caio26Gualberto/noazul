@@ -6,7 +6,7 @@
 
 O que ele **não** é: não movimenta dinheiro, não é produto comercial, não cuida de investimentos e não é em tempo real.
 
-Fase atual: autenticação pronta (login, cadastro com trava, definir senha, trocar senha, perfil). Cartões e contas usa a API de verdade (conexão com a Pluggy); Início, Lançamentos, Lançar Pix e Métricas ainda usam **dados de exemplo** para os lançamentos. Veja "Domínio finance".
+Fase atual: autenticação pronta (login, cadastro com trava, definir senha, trocar senha, perfil). Início, Lançamentos, Cartões e contas e Métricas usam a API de verdade (dados da Pluggy). Lançar Pix ainda guarda o Pix só na memória do navegador. Veja "Domínio finance".
 
 O dono está aprendendo Angular neste projeto: prefira o caminho padrão e documentado do framework ao atalho esperto.
 
@@ -64,17 +64,18 @@ Serviço de feature novo: uma classe em `app/<feature>/` ou `app/pages/<feature>
 
 ## Domínio finance (`app/finance/`)
 
-Gastos, cartões, contas e métricas. Os cartões e contas vêm da API; os lançamentos e o histórico ainda são dados de exemplo em memória, já na forma de quando a API existir.
+Gastos, cartões, contas e métricas, todos vindos da API. Só o Pix manual ainda fica na memória do navegador.
 
-- `finance.models.ts`: os tipos (`Transaction`, `NewPix`, `BankConnection`, `Card`, `Account`, `MonthSummary`) e as categorias fixas (`CATEGORIES`, ids em inglês; o nome na tela vem de `finance.categories.<id>`).
-- `finance.service.ts` (`FinanceService`): `connections()`, `createConnectToken()` e `registerConnection(itemId)` chamam a API (`/api/bank-connections`) pelo `ApiClient`. `transactions(month)`, `createPix(pix)` e `history()` ainda devolvem dados de exemplo com uma latência falsa; o Pix criado fica só na memória e some ao recarregar a página.
+- `finance.models.ts`: os tipos (`Transaction`, `NewPix`, `BankConnection`, `Card`, `Account`, `MonthSummary`) e as onze categorias (`CATEGORIES`, ids em inglês, iguais ao enum da API em camelCase; o nome na tela vem de `finance.categories.<id>`).
+- `finance.service.ts` (`FinanceService`): tudo pela API via `ApiClient`. `transactions(month)` pede **todas** as páginas do mês (`expand` até `hasNext` falso, 100 por página) e junta o Pix da memória; `history()` pede `monthly-summary?months=6` e devolve só os meses fechados; `connections()`, `createConnectToken()` e `registerConnection(itemId)` são de Cartões e contas. `createPix` ainda guarda só na memória (id negativo) e some ao recarregar.
 - `bank-connection.mapper.ts`: transforma `BankConnectionDto` no `BankConnection` da tela (cartões e contas separados pelo tipo, bandeira em `CardBrand` e `paymentSystem` do Taiga, status `needsReconnect`/`failed` viram `expired`).
 - `pluggy-connect.service.ts` (`PluggyConnectService`): abre a janela da Pluggy (`pluggy-connect-sdk`, carregado só no clique, por `import()`) e devolve `connected` com o `itemId`, `closed` ou `failed`. Em desenvolvimento mostra também os bancos de teste da Pluggy (`environment.pluggyIncludeSandbox`).
-- `finance.mock.ts`: os lançamentos e o histórico de exemplo de novembro de 2026 (`CURRENT_MONTH`, `TODAY`). Os totais batem com o mock aprovado: R$ 4.812,40 no mês.
+- `transaction.mapper.ts`: `TransactionDto` → `Transaction` (a data vira o dia na zona do produto) e `MonthSummaryDto` → `MonthSummary`; categoria desconhecida vira `other`.
+- `finance.dates.ts`: `today()`, `currentMonth()` e `toProductDay()`, sempre em `America/Sao_Paulo`. É o único lugar do frontend que sabe que dia é hoje.
 - `finance.calc.ts`: somas por origem e por categoria, usadas pelo Início e pelas Métricas.
 - Textos compartilhados (categorias, origens, "Pendente", parcelas) em `i18n/pt-BR/finance.json`.
 
-Quando a API de lançamentos existir: `transactions`, `createPix` e `history` passam a chamar a API como `connections()`, os tipos vão para `api/types.ts`, e `finance.mock.ts` é apagado. As páginas não mudam, porque já consomem `Observable`. Enquanto isso, o Início mistura as faturas reais com os lançamentos de exemplo.
+Quando o Pix manual ganhar endpoint: `createPix` passa a chamar a API e a lista em memória sai do `FinanceService`.
 
 ## Autenticação (`app/auth/`)
 

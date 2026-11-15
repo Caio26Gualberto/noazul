@@ -7,5 +7,6 @@ namespace NoAzul.Application.Interfaces.Pluggy
         Task<PluggyItem?> GetItemAsync(string itemId);
         Task<IReadOnlyList<PluggyAccount>> ListAccountsAsync(string itemId);
         Task<IReadOnlyList<PluggyBill>> ListBillsAsync(string accountId);
+        Task<IReadOnlyList<PluggyTransaction>> ListTransactionsAsync(string accountId, DateOnly from);
     }
 }

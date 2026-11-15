@@ -12,6 +12,7 @@ namespace NoAzul.Infra.Data.Pluggy
     {
         private const string ApiKeyCacheKey = "pluggy:api-key";
         private const int PageSize = 100;
+        private const int MaxCursorPages = 200;
         private static readonly TimeSpan ApiKeyTtl = TimeSpan.FromMinutes(100);
 
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -88,6 +89,38 @@ namespace NoAzul.Infra.Data.Pluggy
             var bills = await ListAllAsync<BillResponse>($"bills?accountId={Uri.EscapeDataString(accountId)}");
 
             return bills.Select(b => new PluggyBill(b.Id, DateOnly.FromDateTime(b.DueDate), b.TotalAmount)).ToList();
+        }
+
+        public async Task<IReadOnlyList<PluggyTransaction>> ListTransactionsAsync(string accountId, DateOnly from)
+        {
+            var all = new List<PluggyTransaction>();
+            const string endpoint = "v2/transactions";
+            var query = $"?accountId={Uri.EscapeDataString(accountId)}&dateFrom={from:yyyy-MM-dd}";
+
+            for (var page = 0; page < MaxCursorPages; page++)
+            {
+                using var request = await AuthorizedAsync(HttpMethod.Get, endpoint + query);
+                var response = await SendAsync<CursorPageResponse<TransactionResponse>>(request);
+
+                all.AddRange((response.Results ?? []).Select(t => new PluggyTransaction(
+                    t.Id,
+                    t.Description ?? string.Empty,
+                    t.Amount,
+                    t.Date,
+                    t.Type,
+                    t.Status,
+                    t.CategoryId,
+                    t.CreditCardMetadata?.InstallmentNumber,
+                    t.CreditCardMetadata?.TotalInstallments)));
+
+                if (string.IsNullOrEmpty(response.Next))
+                    return all;
+
+                query = response.Next.StartsWith('?') ? response.Next : "?" + response.Next;
+            }
+
+            throw new InvalidOperationException(
+                $"A Pluggy devolveu mais de {MaxCursorPages} páginas de lançamentos para uma conta.");
         }
 
         private async Task<List<T>> ListAllAsync<T>(string path)
@@ -221,5 +254,19 @@ namespace NoAzul.Infra.Data.Pluggy
         private sealed record BankDataResponse(string? TransferNumber);
 
         private sealed record BillResponse(string Id, DateTime DueDate, decimal TotalAmount);
+
+        private sealed record CursorPageResponse<T>(List<T>? Results, string? Next);
+
+        private sealed record CreditCardMetadataResponse(int? InstallmentNumber, int? TotalInstallments);
+
+        private sealed record TransactionResponse(
+            string Id,
+            string? Description,
+            decimal Amount,
+            DateTime Date,
+            string? Type,
+            string? Status,
+            string? CategoryId,
+            CreditCardMetadataResponse? CreditCardMetadata);
     }
 }

@@ -13,18 +13,6 @@
   );
 }
 
-.notice {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font: var(--tui-typography-body-s);
-  color: var(--tui-text-secondary);
-
-  tui-icon {
-    font-size: 1rem;
-  }
-}
-
 .loader {
   min-height: 320px;
 }

@@ -26,6 +26,7 @@ namespace NoAzul.Infra.Data.Context
         public DbSet<Item> Items => Set<Item>();
         public DbSet<BankConnection> BankConnections => Set<BankConnection>();
         public DbSet<FinancialAccount> FinancialAccounts => Set<FinancialAccount>();
+        public DbSet<Transaction> Transactions => Set<Transaction>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -163,6 +164,34 @@ namespace NoAzul.Infra.Data.Context
                     .HasFilter(softDeleteFilter);
 
                 b.HasIndex(a => a.BankConnectionId);
+            });
+
+            builder.Entity<Transaction>(b =>
+            {
+                b.ToTable("Transactions");
+                b.HasKey(t => t.Id);
+
+                b.Property(t => t.PluggyTransactionId).HasMaxLength(64);
+                b.Property(t => t.Description).HasMaxLength(200).IsRequired();
+                b.Property(t => t.ProviderCategoryId).HasMaxLength(16);
+                b.Property(t => t.Amount).HasPrecision(18, 2);
+
+                b.HasOne(t => t.User)
+                    .WithMany()
+                    .HasForeignKey(t => t.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasOne(t => t.FinancialAccount)
+                    .WithMany()
+                    .HasForeignKey(t => t.FinancialAccountId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasIndex(t => t.PluggyTransactionId)
+                    .IsUnique()
+                    .HasFilter(softDeleteFilter);
+
+                b.HasIndex(t => new { t.UserId, t.OccurredAt });
+                b.HasIndex(t => new { t.FinancialAccountId, t.OccurredAt });
             });
 
             builder.Entity<AuthorizationAuditLog>(b =>

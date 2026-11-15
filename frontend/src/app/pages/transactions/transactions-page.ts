@@ -16,7 +16,7 @@ import {
 } from '@taiga-ui/kit';
 import { AppRoutes } from '../../auth/routes';
 import { sumAmounts } from '../../finance/finance.calc';
-import { CURRENT_MONTH } from '../../finance/finance.mock';
+import { currentMonth } from '../../finance/finance.dates';
 import { CATEGORIES, Category, Origin } from '../../finance/finance.models';
 import { FinanceService } from '../../finance/finance.service';
 
@@ -56,9 +56,9 @@ export class TransactionsPage {
   protected readonly routes = AppRoutes;
   protected readonly originFilters = ORIGIN_FILTERS;
   protected readonly categoryFilters = CATEGORY_FILTERS;
-  protected readonly monthLabel = this.formatMonth(CURRENT_MONTH);
+  protected readonly monthLabel = this.formatMonth(currentMonth());
 
-  protected readonly transactions = toSignal(inject(FinanceService).transactions(CURRENT_MONTH));
+  protected readonly transactions = toSignal(inject(FinanceService).transactions(currentMonth()));
   protected readonly loading = computed(() => this.transactions() === undefined);
 
   protected readonly origin = signal<OriginFilter>('all');

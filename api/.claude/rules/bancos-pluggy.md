@@ -105,4 +105,4 @@ Pelo conector MeuPluggy, `item.connector.name` é sempre "MeuPluggy" e o `imageU
 ## Em aberto
 
 - Reconectar (Pluggy Connect com `updateItem`) e desconectar ainda não existem; os botões ficam desligados na tela.
-- Lançamentos (`/transactions`) ainda não são sincronizados.
+- ~~Lançamentos ainda não são sincronizados.~~ Sincronizados desde 2026-11-15, ver `lancamentos.md`.

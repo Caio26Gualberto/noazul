@@ -7,6 +7,7 @@ namespace NoAzul.Application.Abstractions.Logging
         Users,
         Items,
         BankConnections,
+        Transactions,
         BackgroundJobs,
         Email
     }

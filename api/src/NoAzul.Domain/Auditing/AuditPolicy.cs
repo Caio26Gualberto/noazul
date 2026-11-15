@@ -12,6 +12,7 @@ namespace NoAzul.Domain.Auditing
             nameof(AuthorizationAuditLog),
             nameof(BackgroundJobRun),
             nameof(FinancialAccount),
+            nameof(Transaction),
         ];
 
         private static readonly HashSet<string> AlwaysOmittedProperties =

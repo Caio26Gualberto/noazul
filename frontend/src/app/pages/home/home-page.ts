@@ -5,13 +5,13 @@ import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { TuiThumbnailCard } from '@taiga-ui/addon-commerce';
 import { TuiTable } from '@taiga-ui/addon-table';
-import { TuiIcon, TuiLink, TuiLoader, TuiTitle } from '@taiga-ui/core';
+import { TuiLink, TuiLoader, TuiTitle } from '@taiga-ui/core';
 import { TuiBadge, TuiChip, TuiProgress } from '@taiga-ui/kit';
 import { TuiCardLarge, TuiHeader } from '@taiga-ui/layout';
 import { AuthStore } from '../../auth/auth.store';
 import { AppRoutes } from '../../auth/routes';
 import { sumAmounts, totalsByCategory, totalsByOrigin } from '../../finance/finance.calc';
-import { CURRENT_MONTH, TODAY } from '../../finance/finance.mock';
+import { currentMonth, today } from '../../finance/finance.dates';
 import {
   BankConnection,
   Card,
@@ -60,7 +60,6 @@ interface Dashboard {
     DatePipe,
     TuiTitle,
     TuiLink,
-    TuiIcon,
     TuiLoader,
     TuiCardLarge,
     TuiHeader,
@@ -79,9 +78,9 @@ export class HomePage {
   protected readonly auth = inject(AuthStore);
   protected readonly routes = AppRoutes;
   protected readonly timeZone = PRODUCT_TIME_ZONE_OFFSET;
-  protected readonly monthStart = `${CURRENT_MONTH}-01`;
+  protected readonly monthStart = `${currentMonth()}-01`;
 
-  private readonly transactions = toSignal(this.finance.transactions(CURRENT_MONTH));
+  private readonly transactions = toSignal(this.finance.transactions(currentMonth()));
   private readonly connections = toSignal(this.finance.connections());
   private readonly history = toSignal(this.finance.history());
 
@@ -112,7 +111,7 @@ export class HomePage {
   }
 
   protected isToday(dateTime: string): boolean {
-    return dateTime.startsWith(TODAY);
+    return dateTime.startsWith(today());
   }
 
   private categoryRows(transactions: Transaction[], total: number): CategoryRow[] {
@@ -136,7 +135,7 @@ export class HomePage {
   }
 
   private previousMonth(history: MonthSummary[]): MonthSummary | null {
-    const before = history.filter((summary) => summary.month < CURRENT_MONTH);
+    const before = history.filter((summary) => summary.month < currentMonth());
     return before.at(-1) ?? null;
   }
 

@@ -29,6 +29,8 @@ using NoAzul.Application.Items;
 using NoAzul.Application.Items.Interfaces;
 using NoAzul.Application.Profiles;
 using NoAzul.Application.Profiles.Interfaces;
+using NoAzul.Application.Transactions;
+using NoAzul.Application.Transactions.Interfaces;
 using NoAzul.Application.Users;
 using NoAzul.Application.Users.Interfaces;
 using NoAzul.Domain.Constants;
@@ -47,6 +49,7 @@ using NoAzul.Infra.Data.Repositories;
 using NoAzul.Infra.Data.Repositories.AuditLogs;
 using NoAzul.Infra.Data.Repositories.BackgroundJobRuns;
 using NoAzul.Infra.Data.Repositories.Items;
+using NoAzul.Infra.Data.Repositories.Transactions;
 using NoAzul.Infra.Data.Repositories.UnitOfWork;
 using NoAzul.Workers.Dispatch;
 using NoAzul.Workers.Monitoring;
@@ -147,6 +150,7 @@ namespace NoAzul.Infra.IoC
             // Services
             services.AddScoped<IItemAppService, ItemAppService>();
             services.AddScoped<IBankConnectionAppService, BankConnectionAppService>();
+            services.AddScoped<ITransactionAppService, TransactionAppService>();
 
             // External services
             services.AddScoped<IEmailService, ConsoleEmailService>();
@@ -177,6 +181,7 @@ namespace NoAzul.Infra.IoC
             services.AddScoped<IAuditLogRepository, AuditLogRepository>();
             services.AddScoped<IBackgroundJobRunRepository, BackgroundJobRunRepository>();
             services.AddScoped<IItemRepository, ItemRepository>();
+            services.AddScoped<ITransactionRepository, TransactionRepository>();
 
             return services;
         }

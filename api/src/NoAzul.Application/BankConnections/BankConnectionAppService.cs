@@ -8,6 +8,7 @@ using NoAzul.Application.Common.Time;
 using NoAzul.Application.Interfaces.Pluggy;
 using NoAzul.Application.Pagination;
 using NoAzul.Application.Response;
+using NoAzul.Application.Transactions.Interfaces;
 using NoAzul.Domain.Entities;
 using NoAzul.Domain.Enums.BankConnections;
 
@@ -22,6 +23,7 @@ namespace NoAzul.Application.BankConnections
         private readonly IRepository<BankConnection> _connections;
         private readonly IRepository<FinancialAccount> _accounts;
         private readonly IPluggyClient _pluggy;
+        private readonly ITransactionAppService _transactions;
         private readonly IEnqueuedJobDispatcher _dispatcher;
         private readonly ICurrentUser _currentUser;
         private readonly IApplicationLogger _logger;
@@ -30,6 +32,7 @@ namespace NoAzul.Application.BankConnections
             IRepository<BankConnection> connections,
             IRepository<FinancialAccount> accounts,
             IPluggyClient pluggy,
+            ITransactionAppService transactions,
             IEnqueuedJobDispatcher dispatcher,
             ICurrentUser currentUser,
             IApplicationLoggerFactory loggerFactory)
@@ -37,6 +40,7 @@ namespace NoAzul.Application.BankConnections
             _connections = connections;
             _accounts = accounts;
             _pluggy = pluggy;
+            _transactions = transactions;
             _dispatcher = dispatcher;
             _currentUser = currentUser;
             _logger = loggerFactory.Create(LogContext.BankConnections);
@@ -284,6 +288,7 @@ namespace NoAzul.Application.BankConnections
             });
 
             var seen = new HashSet<string>();
+            var synced = new List<FinancialAccount>();
 
             foreach (var remote in remoteAccounts)
             {
@@ -319,6 +324,7 @@ namespace NoAzul.Application.BankConnections
                 if (isNew)
                 {
                     await _accounts.AddAsync(local);
+                    synced.Add(local);
                     continue;
                 }
 
@@ -330,7 +336,11 @@ namespace NoAzul.Application.BankConnections
                 }
 
                 await _accounts.UpdateAsync(local);
+                synced.Add(local);
             }
+
+            foreach (var account in synced)
+                await _transactions.SyncFromProvider(account, connection.UserId);
 
             foreach (var gone in localAccounts.Where(a => !a.IsDeleted && !seen.Contains(a.PluggyAccountId)))
                 await _accounts.SoftDelete(gone);

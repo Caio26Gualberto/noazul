@@ -2,7 +2,7 @@
 
 Organização financeira pessoal: gastos de cartão e conta vindos da Pluggy, lançamento manual de Pix e métricas do mês.
 
-Fase atual: autenticação (cadastro com trava, login, perfil, troca de senha) e a tela Cartões e contas ligada à Pluggy. Lançamentos e métricas ainda usam dados de exemplo.
+Fase atual: autenticação (cadastro com trava, login, perfil, troca de senha) e as telas de gastos com dados reais da Pluggy. O Pix lançado à mão ainda fica só no navegador.
 
 ## O que precisa estar instalado
 

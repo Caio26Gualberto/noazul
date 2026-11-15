@@ -33,6 +33,9 @@ export interface PagedResultDto<T> {
   page: number;
   pageSize: number;
   totalCount: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
 }
 
 export type BankConnectionStatusDto = 'ok' | 'updating' | 'needsReconnect' | 'failed';
@@ -69,4 +72,25 @@ export interface BankConnectionDto {
 
 export interface ConnectTokenDto {
   accessToken: string;
+}
+
+export type TransactionOriginDto = 'card' | 'account' | 'pix';
+
+export interface TransactionDto {
+  id: number;
+  occurredAt: string;
+  description: string;
+  category: string;
+  origin: TransactionOriginDto;
+  bank: string | null;
+  amount: number;
+  isPending: boolean;
+  installmentNumber: number | null;
+  installmentTotal: number | null;
+}
+
+export interface MonthSummaryDto {
+  month: string;
+  total: number;
+  byCategory: Record<string, number>;
 }
