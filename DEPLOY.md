@@ -34,15 +34,28 @@ O domínio já está na Cloudflare, e a zona existe. Os registros entram nos pas
 
 ## 2. S3: o bucket do backup
 
-1. **S3 → Create bucket.** Nome `noazul-backups`, região São Paulo, **Block all public access** ligado (o padrão), versionamento desligado. Crie.
-2. No bucket, **Management → Create lifecycle rule**: nome `apagar-30-dias`, escopo prefixo `postgres/`, ação **Expire current versions of objects** com **30 dias**.
+1. No console (região São Paulo), busque **S3** → **Create bucket**.
+2. **Bucket name:** `noazul-backups`. Deixe **Block all public access** marcado e o resto no padrão (versionamento desligado) → **Create bucket**.
+3. Abra o bucket → aba **Management** → **Create lifecycle rule**:
+   - **Rule name:** `apagar-30-dias`;
+   - **Limit the scope of this rule using one or more filters** → **Prefix:** `postgres/`;
+   - em **Lifecycle rule actions**, marque **Expire current versions of objects** → **Days after object creation:** `30`;
+   - **Create rule**.
 
 ## 3. IAM: o usuário do backup
 
 O Lightsail não tem IAM role como o EC2, então o `backup.sh` usa a chave de um usuário com o mínimo.
 
-1. **IAM → Users → Create user** `noazul-backup`, sem acesso ao console.
-2. **Add permissions → Create inline policy → JSON**:
+**3.1 Criar o usuário**
+
+1. No console, busque **IAM** → menu da esquerda **Users** → **Create user**.
+2. **User name:** `noazul-backup`. **Não** marque "Provide user access to the AWS Management Console" → **Next**.
+3. Em **Permissions options**, não escolha grupo nem política → **Next** → **Create user**.
+
+**3.2 Dar permissão só no bucket do backup**
+
+1. Em **Users**, clique em `noazul-backup` → aba **Permissions** → **Add permissions** → **Create inline policy**.
+2. Troque de **Visual** para **JSON**, apague o que estiver lá e cole:
    ```json
    {
      "Version": "2012-10-17",
@@ -61,8 +74,13 @@ O Lightsail não tem IAM role como o EC2, então o `backup.sh` usa a chave de um
      ]
    }
    ```
-   Nome `noazul-backup-s3`.
-3. No usuário, **Security credentials → Create access key → Other**. Guarde o Access key ID e o Secret: usa no passo 7.
+3. **Next** → **Policy name:** `noazul-backup-s3` → **Create policy**.
+
+**3.3 Gerar o Access Key ID e o Secret (usados no passo 7)**
+
+1. Ainda no usuário `noazul-backup`, aba **Security credentials** → seção **Access keys** → **Create access key**.
+2. **Use case:** **Other** → **Next**. A **Description tag** é opcional (ex.: `lightsail-backup`) → **Create access key**.
+3. A tela mostra o **Access key ID** e o **Secret access key**. O secret **só aparece nessa tela**: clique em **Show** e copie, ou use **Download .csv file**. Guarde os dois no gerenciador de senhas. Se perder o secret, apague a chave e crie outra.
 
 ## 4. Lightsail: o servidor da API
 
