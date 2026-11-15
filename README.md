@@ -1,8 +1,12 @@
 # NoAzul
 
+[![Watch a one-minute video tour of noazul](https://gitdiagram.com/video-badge.svg)](https://gitdiagram.com/caio26gualberto/noazul/video)
+
 Organização financeira pessoal: gastos de cartão e conta vindos da Pluggy e métricas do mês.
 
-Fase atual: autenticação (cadastro com trava, login, perfil, troca de senha) e as telas de gastos com dados reais da Pluggy.
+[![caio26gualberto/noazul, explained in a one-minute video](https://gitdiagram.com/api/video/file?username=caio26gualberto&repo=noazul&format=poster)](https://gitdiagram.com/caio26gualberto/noazul/video)
+
+Fase atual: no ar em https://noazul.space, com autenticação (cadastro com trava, login, perfil, troca de senha) e as telas de gastos com dados reais da Pluggy. O deploy está em `DEPLOY.md`.
 
 ## O que precisa estar instalado
 
