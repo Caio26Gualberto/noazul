@@ -29,6 +29,10 @@ export class ApiClient {
     return this.send<T>('PATCH', path, body, options);
   }
 
+  put<T>(path: string, body?: unknown, options: RequestOptions = {}): Observable<T> {
+    return this.send<T>('PUT', path, body, options);
+  }
+
   private send<T>(
     method: string,
     path: string,

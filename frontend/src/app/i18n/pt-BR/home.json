@@ -13,12 +13,7 @@
       "other": "{{count}} faturas abertas"
     },
     "account": "Conta",
-    "accountHint": "Débitos e boletos",
-    "pix": "Pix lançados",
-    "pixCount": {
-      "one": "{{count}} lançamento à mão",
-      "other": "{{count}} lançamentos à mão"
-    }
+    "accountHint": "Débitos e boletos"
   },
   "categories": {
     "title": "Gastos por categoria",

@@ -2,11 +2,11 @@
 
 ## Sobre este projeto
 
-**NoAzul** é um sistema de organização financeira pessoal: mostra os gastos de cartão e de conta vindos da Pluggy, aceita lançamento manual de Pix e calcula métricas do mês. É usado por duas pessoas (o dono e o pai dele), cada uma com a própria conta.
+**NoAzul** é um sistema de organização financeira pessoal: mostra os gastos de cartão e de conta vindos da Pluggy e calcula métricas do mês. É usado por duas pessoas (o dono e o pai dele), cada uma com a própria conta.
 
 O que ele **não** é: não movimenta dinheiro (só lê e organiza), não é produto comercial (sem cadastro aberto ao público, sem planos), não cuida de investimentos e não é em tempo real (os dados do banco chegam uma vez por dia).
 
-Fase atual: autenticação funcionando de ponta a ponta (cadastro com trava, login, renovação de sessão, perfil, troca de senha); Cartões e contas, Lançamentos, Início e Métricas com dados reais da Pluggy (sincronização diária). O Pix manual ainda fica só na memória do navegador, e o deploy não existe.
+Fase atual: autenticação funcionando de ponta a ponta (cadastro com trava, login, renovação de sessão, perfil, troca de senha); Cartões e contas, Lançamentos, Início e Métricas com dados reais da Pluggy (sincronização diária). O deploy não existe.
 
 ## Mapa
 
@@ -41,11 +41,11 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
 - Dados bancários virão da Pluggy, pela modalidade gratuita de uso pessoal (Meu Pluggy), com atualização diária (2026-11-14).
 - Tempo real reavaliado e descartado: nem o plano pago da Pluggy entrega (no máximo de hora em hora, a partir de R$ 2.500/mês); fica a atualização diária do Meu Pluggy (2026-11-14).
 - Módulos, aprovados pelo dono sobre o mock "NoAzul — Módulos" (https://claude.ai/artifact/M9YeXSTjB7U4kAwaTkZqKL) (2026-11-14):
-  - Menu: Início, Lançamentos, Cartões e contas, Métricas e Perfil, com "Lançar Pix" como ação de destaque.
+  - Menu: Início, Lançamentos, Cartões e contas, Métricas e Perfil, com "Lançar Pix" como ação de destaque. O "Lançar Pix" saiu em 2026-11-15 (ver abaixo).
   - Início: total do mês, divisão entre cartões, conta e Pix, gastos por categoria, faturas abertas e últimos lançamentos.
   - Lançamentos: lista única de cartões, conta e Pix, com filtros por origem, categoria, mês e busca.
   - Categorias: lista própria de sete (Mercado, Casa, Restaurantes, Transporte, Saúde, Assinaturas, Outros). Ampliada para onze em 2026-11-15 (ver abaixo).
-  - Pix manual: lançamento próprio, sem depender de conta conectada.
+  - Pix manual: lançamento próprio, sem depender de conta conectada. Removido em 2026-11-15 (ver abaixo).
   - Cartões e contas: uma conexão por banco, com a última atualização, fatura, limite, fechamento, vencimento e saldo da conta.
   - Métricas: gasto por mês, divisão por origem, maiores gastos e categorias do mês contra o anterior.
   - Cada pessoa vê só a própria conta; não há visão da família junta.
@@ -54,6 +54,8 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
 - Cor por banco: o quadrado da marca e a miniatura de cada cartão usam a cor do banco (Itaú laranja, Nubank roxo…), em Cartões e contas e nas faturas do Início. Substitui, só nesses dois lugares, a regra de que as cores dos cartões seguem a paleta da marca; o resto continua "Azul calmo". Banco sem cor conhecida fica neutro na marca e azul no cartão (2026-11-15).
 - Categorias passam a ser onze: Mercado, Restaurantes, Transporte, Saúde, Assinaturas, Casa, Compras, Lazer e viagem, Educação, Tarifas e impostos e Outros. A categoria da Pluggy de cada lançamento é traduzida por uma tabela fixa (rule `api/.claude/rules/lancamentos.md`); o que não se encaixa vai para Outros (2026-11-15).
 - Gasto é só saída: compras no cartão e débitos da conta. Ficam de fora as entradas (pagamento de fatura no cartão, estorno, Pix recebido, rendimento), o pagamento de fatura feito pela conta, a transferência entre contas da mesma pessoa e a aplicação em investimento. Estorno não desconta (2026-11-15).
+- Sem lançamento manual: o "Lançar Pix" saiu do menu, de Lançamentos e da API (a origem "Pix" e o card "Pix lançados" do Início também). Os Pix que saem das contas conectadas já vêm da Pluggy, e lançar à mão contaria duas vezes. Gasto em dinheiro vivo e de banco não conectado fica fora do NoAzul. Início e Lançamentos passam a dividir entre cartões e conta (2026-11-15).
+- Trocar categoria e "não é gasto": em Lançamentos, clicar na categoria abre a lista das onze mais "Não é gasto". A escolha vale para todos os lançamentos da pessoa com a descrição idêntica, os que já existem e os que chegarem depois. "Não é gasto" tira dos totais do Início, das Métricas e de Lançamentos, mas o lançamento continua na lista, apagado (2026-11-15).
 - Histórico: a primeira sincronização de cada conta traz 12 meses; depois, a diária relê os últimos 30 dias (2026-11-15).
 - Cada pessoa usa o próprio Meu Pluggy e conecta só os próprios bancos; o NoAzul usa um único `client_id`/`client_secret`, da aplicação do dono no dashboard da Pluggy (2026-11-15).
 

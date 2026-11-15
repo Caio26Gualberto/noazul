@@ -42,7 +42,7 @@ interface CategoryComparison {
 }
 
 const TOP_EXPENSES = 5;
-const ORIGINS: Origin[] = ['card', 'account', 'pix'];
+const ORIGINS: Origin[] = ['card', 'account'];
 
 function parseMonth(month: string): Date {
   const [year, monthNumber] = month.split('-').map(Number);
@@ -94,7 +94,9 @@ export class MetricsPage {
   protected readonly loading = computed(() => this.data() === undefined);
 
   private readonly history = computed(() => this.data()?.history ?? []);
-  private readonly transactions = computed(() => this.data()?.transactions ?? []);
+  private readonly transactions = computed(() =>
+    (this.data()?.transactions ?? []).filter((transaction) => !transaction.ignored),
+  );
   private readonly lastClosed = computed(() => this.history().at(-1));
 
   protected readonly today = parseDay(today());

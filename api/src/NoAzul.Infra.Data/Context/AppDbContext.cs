@@ -27,6 +27,7 @@ namespace NoAzul.Infra.Data.Context
         public DbSet<BankConnection> BankConnections => Set<BankConnection>();
         public DbSet<FinancialAccount> FinancialAccounts => Set<FinancialAccount>();
         public DbSet<Transaction> Transactions => Set<Transaction>();
+        public DbSet<CategoryRule> CategoryRules => Set<CategoryRule>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -192,6 +193,24 @@ namespace NoAzul.Infra.Data.Context
 
                 b.HasIndex(t => new { t.UserId, t.OccurredAt });
                 b.HasIndex(t => new { t.FinancialAccountId, t.OccurredAt });
+                b.HasIndex(t => new { t.UserId, t.Description });
+            });
+
+            builder.Entity<CategoryRule>(b =>
+            {
+                b.ToTable("CategoryRules");
+                b.HasKey(r => r.Id);
+
+                b.Property(r => r.Description).HasMaxLength(200).IsRequired();
+
+                b.HasOne(r => r.User)
+                    .WithMany()
+                    .HasForeignKey(r => r.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasIndex(r => new { r.UserId, r.Description })
+                    .IsUnique()
+                    .HasFilter(softDeleteFilter);
             });
 
             builder.Entity<AuthorizationAuditLog>(b =>

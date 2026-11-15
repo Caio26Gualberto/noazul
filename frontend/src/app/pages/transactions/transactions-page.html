@@ -4,15 +4,6 @@
       <h1 class="app-title">{{ t('transactions.title') }}</h1>
       <p class="app-subtitle">{{ t('transactions.subtitle', { month: monthLabel() }) }}</p>
     </div>
-    <a
-      tuiButton
-      appearance="outline-grayscale"
-      size="l"
-      iconStart="@tui.plus"
-      [routerLink]="routes.newPix"
-    >
-      {{ t('transactions.newPix') }}
-    </a>
   </header>
 
   <div
@@ -109,7 +100,7 @@
           </thead>
           <tbody tuiTbody>
             @for (transaction of filtered(); track transaction.id) {
-              <tr>
+              <tr [class.transactions__row--ignored]="transaction.ignored">
                 <td tuiTd class="transactions__muted transactions__amount">
                   {{ transaction.date | date: 'dd/MM' : 'UTC' }}
                 </td>
@@ -134,9 +125,58 @@
                   </span>
                 </td>
                 <td tuiTd>
-                  <span tuiChip size="xs" appearance="secondary-grayscale">
-                    {{ t('finance.categories.' + transaction.category) }}
-                  </span>
+                  <button
+                    tuiChip
+                    type="button"
+                    size="xs"
+                    appearance="secondary-grayscale"
+                    iconEnd="@tui.chevron-down"
+                    class="transactions__category-button"
+                    [attr.aria-label]="
+                      t('transactions.categoryMenu.label', {
+                        description: transaction.description,
+                      })
+                    "
+                    [tuiDropdown]="categoryMenu"
+                    [tuiDropdownOpen]="menuFor() === transaction.id"
+                    (tuiDropdownOpenChange)="menuFor.set($event ? transaction.id : null)"
+                  >
+                    @if (transaction.ignored) {
+                      {{ t('transactions.categoryMenu.notSpending') }}
+                    } @else {
+                      {{ t('finance.categories.' + transaction.category) }}
+                    }
+                  </button>
+                  <ng-template #categoryMenu>
+                    <tui-data-list [attr.aria-label]="t('transactions.categoryMenu.title')">
+                      @for (category of categories; track category) {
+                        <button
+                          tuiOption
+                          type="button"
+                          [disabled]="saving()"
+                          (click)="changeCategory(transaction, category)"
+                        >
+                          {{ t('finance.categories.' + category) }}
+                          @if (!transaction.ignored && transaction.category === category) {
+                            <tui-icon icon="@tui.check" />
+                          }
+                        </button>
+                      }
+                      <tui-opt-group>
+                        <button
+                          tuiOption
+                          type="button"
+                          [disabled]="saving()"
+                          (click)="markNotSpending(transaction)"
+                        >
+                          {{ t('transactions.categoryMenu.notSpending') }}
+                          @if (transaction.ignored) {
+                            <tui-icon icon="@tui.check" />
+                          }
+                        </button>
+                      </tui-opt-group>
+                    </tui-data-list>
+                  </ng-template>
                 </td>
                 <td tuiTd>
                   <span class="transactions__origin">

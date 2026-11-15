@@ -19,11 +19,22 @@ namespace NoAzul.Infra.Data.Repositories.Transactions
                 .AsNoTracking()
                 .Where(t => t.UserId == userId
                     && !t.IsDeleted
+                    && !t.IsIgnored
                     && t.OccurredAt >= fromUtc
                     && t.OccurredAt < toUtc)
                 .GroupBy(t => t.Category)
                 .Select(g => new { Category = g.Key, Total = g.Sum(t => t.Amount) })
                 .ToDictionaryAsync(x => x.Category, x => x.Total, ct);
+        }
+
+        public async Task<int> ApplyCategoryRuleAsync(
+            int userId, string description, ETransactionCategory category, bool isIgnored, CancellationToken ct = default)
+        {
+            return await _dbSet
+                .Where(t => t.UserId == userId && !t.IsDeleted && t.Description == description)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(t => t.Category, category)
+                    .SetProperty(t => t.IsIgnored, isIgnored), ct);
         }
     }
 }

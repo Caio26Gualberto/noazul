@@ -14,6 +14,7 @@ namespace NoAzul.Api.RateLimiting
         public const string RefreshToken = "refresh-token";
         public const string ItemCreate = "item-create";
         public const string BankConnect = "bank-connect";
+        public const string TransactionCategory = "transaction-category";
     }
 
     public static class ApiRateLimiting
@@ -41,6 +42,7 @@ namespace NoAzul.Api.RateLimiting
                 AddFixedWindow(options, ApiRateLimitPolicies.RefreshToken, permitLimit: 30, windowMinutes: 5);
                 AddFixedWindow(options, ApiRateLimitPolicies.ItemCreate, permitLimit: 20, windowMinutes: 60);
                 AddFixedWindow(options, ApiRateLimitPolicies.BankConnect, permitLimit: 20, windowMinutes: 60);
+                AddFixedWindow(options, ApiRateLimitPolicies.TransactionCategory, permitLimit: 300, windowMinutes: 60);
 
                 options.OnRejected = async (context, token) =>
                 {

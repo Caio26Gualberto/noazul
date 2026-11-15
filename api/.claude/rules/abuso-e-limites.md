@@ -26,6 +26,7 @@ Só rate limit não basta porque IP roda barato. Só regra de negócio não bast
 | `refresh-token` | 30/5min por IP | grava/revoga linha a cada chamada |
 | `item-create` | 20/h por usuário | exemplo de escrita que cria linha nova sem limite natural |
 | `bank-connect` | 20/h por usuário | `connect-token` e cadastro de conexão: cada chamada vai à Pluggy |
+| `transaction-category` | 300/h por usuário | troca de categoria grava uma regra por descrição; 300 cobre corrigir um mês inteiro de uma vez |
 
 Endpoint novo que **cria**, **envia** ou **chama fora** nasce com política própria e uma linha nesta tabela. Os números são ponto de partida; o projeto ajusta e registra o porquê.
 

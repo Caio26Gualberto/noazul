@@ -8,5 +8,8 @@ namespace NoAzul.Application.Transactions.Interfaces
     {
         Task<Dictionary<ETransactionCategory, decimal>> SumByCategoryAsync(
             int userId, DateTime fromUtc, DateTime toUtc, CancellationToken ct = default);
+
+        Task<int> ApplyCategoryRuleAsync(
+            int userId, string description, ETransactionCategory category, bool isIgnored, CancellationToken ct = default);
     }
 }

@@ -2,11 +2,11 @@
 
 ## Sobre este projeto
 
-**NoAzul** é um sistema de organização financeira pessoal: mostra os gastos de cartão e de conta vindos da Pluggy, aceita lançamento manual de Pix e calcula métricas do mês. É usado por duas pessoas (o dono e o pai dele), cada uma com a própria conta. Este frontend é o site que elas usam.
+**NoAzul** é um sistema de organização financeira pessoal: mostra os gastos de cartão e de conta vindos da Pluggy e calcula métricas do mês. É usado por duas pessoas (o dono e o pai dele), cada uma com a própria conta. Este frontend é o site que elas usam.
 
 O que ele **não** é: não movimenta dinheiro, não é produto comercial, não cuida de investimentos e não é em tempo real.
 
-Fase atual: autenticação pronta (login, cadastro com trava, definir senha, trocar senha, perfil). Início, Lançamentos, Cartões e contas e Métricas usam a API de verdade (dados da Pluggy). Lançar Pix ainda guarda o Pix só na memória do navegador. Veja "Domínio finance".
+Fase atual: autenticação pronta (login, cadastro com trava, definir senha, trocar senha, perfil). Início, Lançamentos, Cartões e contas e Métricas usam a API de verdade (dados da Pluggy). Veja "Domínio finance".
 
 O dono está aprendendo Angular neste projeto: prefira o caminho padrão e documentado do framework ao atalho esperto.
 
@@ -52,7 +52,7 @@ src/
 
 Toda chamada HTTP passa por aqui. Página e componente nunca injetam `HttpClient`.
 
-- `api-client.ts` (`ApiClient`): `get`, `post` e `patch`. Abre o envelope `{ isSuccess, code, message, data }`, devolve só o `data` e transforma qualquer falha em `ApiError(code, status)`. Mostra o erro na tela uma vez, traduzido pelo `code`; `silent: true` desliga isso, `announce: true` mostra também a mensagem de sucesso.
+- `api-client.ts` (`ApiClient`): `get`, `post`, `put` e `patch`. Abre o envelope `{ isSuccess, code, message, data }`, devolve só o `data` e transforma qualquer falha em `ApiError(code, status)`. Mostra o erro na tela uma vez, traduzido pelo `code`; `silent: true` desliga isso, `announce: true` mostra também a mensagem de sucesso.
 - `auth.interceptor.ts`: põe o `Authorization: Bearer` nas chamadas para a API. Num 401 **sem corpo** (token vencido, recusado antes de chegar ao controller), renova o token e repete a chamada. Um 401 **com envelope** (`INVALID_CREDENTIALS`, por exemplo) é resposta de negócio e segue adiante.
 - `token-refresher.ts` (`TokenRefresher`): faz a renovação uma vez só, mesmo com várias chamadas falhando juntas, usando um `HttpClient` sem interceptor. Se a renovação é recusada, limpa os tokens e avisa por `sessionExpired$`.
 - `token-storage.ts`: os dois tokens ficam no `localStorage` (`access_token`, `refresh_token`).
@@ -64,18 +64,17 @@ Serviço de feature novo: uma classe em `app/<feature>/` ou `app/pages/<feature>
 
 ## Domínio finance (`app/finance/`)
 
-Gastos, cartões, contas e métricas, todos vindos da API. Só o Pix manual ainda fica na memória do navegador.
+Gastos, cartões, contas e métricas, todos vindos da API. Não existe lançamento manual (decisão do dono, 2026-11-15).
 
-- `finance.models.ts`: os tipos (`Transaction`, `NewPix`, `BankConnection`, `Card`, `Account`, `MonthSummary`) e as onze categorias (`CATEGORIES`, ids em inglês, iguais ao enum da API em camelCase; o nome na tela vem de `finance.categories.<id>`).
-- `finance.service.ts` (`FinanceService`): tudo pela API via `ApiClient`. `transactions(month)` pede **todas** as páginas do mês (`expand` até `hasNext` falso, 100 por página) e junta o Pix da memória; `history()` pede `monthly-summary?months=6` e devolve só os meses fechados; `connections()`, `createConnectToken()` e `registerConnection(itemId)` são de Cartões e contas. `createPix` ainda guarda só na memória (id negativo) e some ao recarregar.
+- `finance.models.ts`: os tipos (`Transaction`, `BankConnection`, `Card`, `Account`, `MonthSummary`) e as onze categorias (`CATEGORIES`, ids em inglês, iguais ao enum da API em camelCase; o nome na tela vem de `finance.categories.<id>`).
+- `finance.service.ts` (`FinanceService`): tudo pela API via `ApiClient`. `transactions(month)` pede **todas** as páginas do mês (`expand` até `hasNext` falso, 100 por página); `history()` pede `monthly-summary?months=6` e devolve só os meses fechados; `connections()`, `createConnectToken()` e `registerConnection(itemId)` são de Cartões e contas.
 - `bank-connection.mapper.ts`: transforma `BankConnectionDto` no `BankConnection` da tela (cartões e contas separados pelo tipo, bandeira em `CardBrand` e `paymentSystem` do Taiga, status `needsReconnect`/`failed` viram `expired`).
 - `pluggy-connect.service.ts` (`PluggyConnectService`): abre a janela da Pluggy (`pluggy-connect-sdk`, carregado só no clique, por `import()`) e devolve `connected` com o `itemId`, `closed` ou `failed`. Em desenvolvimento mostra também os bancos de teste da Pluggy (`environment.pluggyIncludeSandbox`).
 - `transaction.mapper.ts`: `TransactionDto` → `Transaction` (a data vira o dia na zona do produto) e `MonthSummaryDto` → `MonthSummary`; categoria desconhecida vira `other`.
 - `finance.dates.ts`: `today()`, `currentMonth()`, `recentMonths(n)` (o seletor de mês de Lançamentos oferece 12, o mesmo que a primeira sincronização traz) e `toProductDay()`, sempre em `America/Sao_Paulo`. É o único lugar do frontend que sabe que dia é hoje.
-- `finance.calc.ts`: somas por origem e por categoria, usadas pelo Início e pelas Métricas.
+- `finance.calc.ts`: somas por origem e por categoria, usadas pelo Início e pelas Métricas. Lançamento com `ignored` ("não é gasto") não entra em soma nenhuma; Início e Métricas também o tiram da lista antes de calcular.
+- Trocar categoria: em Lançamentos, a etiqueta de categoria é um botão com `tuiDropdown` (uma lista por linha, aberta pelo signal `menuFor`). `updateCategory`/`markNotSpending` chamam `PUT /api/transactions/{id}/category`, que muda também os lançamentos idênticos; a página recarrega o mês (signal `version`).
 - Textos compartilhados (categorias, origens, "Pendente", parcelas) em `i18n/pt-BR/finance.json`.
-
-Quando o Pix manual ganhar endpoint: `createPix` passa a chamar a API e a lista em memória sai do `FinanceService`.
 
 ## Autenticação (`app/auth/`)
 

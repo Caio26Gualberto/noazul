@@ -8,7 +8,6 @@ import common from './pt-BR/common.json';
 import finance from './pt-BR/finance.json';
 import home from './pt-BR/home.json';
 import metrics from './pt-BR/metrics.json';
-import newPix from './pt-BR/newPix.json';
 import profile from './pt-BR/profile.json';
 import transactions from './pt-BR/transactions.json';
 
@@ -23,7 +22,6 @@ const translations: Record<string, Translation> = {
     finance,
     home,
     metrics,
-    newPix,
     profile,
     transactions,
   },

@@ -5,14 +5,18 @@ export function roundMoney(value: number): number {
 }
 
 export function sumAmounts(transactions: readonly Transaction[]): number {
-  return roundMoney(transactions.reduce((total, transaction) => total + transaction.amount, 0));
+  return roundMoney(
+    transactions.reduce(
+      (total, transaction) => (transaction.ignored ? total : total + transaction.amount),
+      0,
+    ),
+  );
 }
 
 export function totalsByOrigin(transactions: readonly Transaction[]): Record<Origin, number> {
   return {
     card: sumAmounts(transactions.filter((transaction) => transaction.origin === 'card')),
     account: sumAmounts(transactions.filter((transaction) => transaction.origin === 'account')),
-    pix: sumAmounts(transactions.filter((transaction) => transaction.origin === 'pix')),
   };
 }
 
@@ -22,6 +26,7 @@ export function totalsByCategory(transactions: readonly Transaction[]): Record<C
     number
   >;
   for (const transaction of transactions) {
+    if (transaction.ignored) continue;
     totals[transaction.category] = roundMoney(totals[transaction.category] + transaction.amount);
   }
   return totals;

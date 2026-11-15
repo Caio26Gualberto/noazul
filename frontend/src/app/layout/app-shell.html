@@ -16,17 +16,6 @@
       </button>
     </div>
 
-    <a
-      tuiButton
-      size="m"
-      iconStart="@tui.plus"
-      class="shell__cta"
-      [routerLink]="routes.newPix"
-      (click)="menuOpen.set(false)"
-    >
-      {{ t('common.nav.newPix') }}
-    </a>
-
     <nav class="shell__nav" [attr.aria-label]="t('common.nav.main')">
       @for (item of navItems; track item.path) {
         <a

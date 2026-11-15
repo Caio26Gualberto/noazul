@@ -42,7 +42,6 @@ interface OpenBill {
 interface Dashboard {
   total: number;
   byOrigin: Record<Transaction['origin'], number>;
-  pixCount: number;
   categories: CategoryRow[];
   largestCategory: number;
   bills: OpenBill[];
@@ -85,18 +84,18 @@ export class HomePage {
   private readonly history = toSignal(this.finance.history());
 
   protected readonly dashboard = computed<Dashboard | null>(() => {
-    const transactions = this.transactions();
+    const all = this.transactions();
     const connections = this.connections();
     const history = this.history();
-    if (!transactions || !connections || !history) {
+    if (!all || !connections || !history) {
       return null;
     }
+    const transactions = all.filter((transaction) => !transaction.ignored);
     const total = sumAmounts(transactions);
     const categories = this.categoryRows(transactions, total);
     return {
       total,
       byOrigin: totalsByOrigin(transactions),
-      pixCount: transactions.filter((transaction) => transaction.origin === 'pix').length,
       categories,
       largestCategory: categories[0]?.amount ?? 0,
       bills: this.openBills(connections),

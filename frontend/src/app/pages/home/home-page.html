@@ -51,14 +51,6 @@
         <span class="kpi__value">{{ data.byOrigin.account | currency }}</span>
         <span class="kpi__hint">{{ t('home.kpis.accountHint') }}</span>
       </div>
-
-      <div tuiCardLarge="compact" appearance="outline-grayscale" class="kpi home__surface">
-        <span class="kpi__label">{{ t('home.kpis.pix') }}</span>
-        <span class="kpi__value">{{ data.byOrigin.pix | currency }}</span>
-        <span class="kpi__hint">{{
-          t('home.kpis.pixCount.' + plural(data.pixCount), { count: data.pixCount })
-        }}</span>
-      </div>
     </div>
 
     <div class="home__row">

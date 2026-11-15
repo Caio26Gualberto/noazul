@@ -110,10 +110,6 @@
   background: var(--app-color-positive);
 }
 
-.transactions__marker--pix {
-  background: var(--tui-text-tertiary);
-}
-
 .transactions__state {
   display: flex;
   flex-direction: column;
@@ -133,4 +129,16 @@
   font: var(--tui-typography-heading-h6);
   font-family: var(--tui-typography-family-display);
   font-weight: 600;
+}
+
+.transactions__category-button {
+  cursor: pointer;
+}
+
+.transactions__row--ignored td {
+  color: var(--tui-text-tertiary);
+}
+
+.transactions__row--ignored .transactions__strong {
+  text-decoration: line-through;
 }

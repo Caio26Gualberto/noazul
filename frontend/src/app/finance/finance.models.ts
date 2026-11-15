@@ -1,6 +1,6 @@
 import type { TuiPaymentSystem } from '@taiga-ui/addon-commerce';
 
-export type Origin = 'card' | 'account' | 'pix';
+export type Origin = 'card' | 'account';
 
 export const CATEGORIES = [
   'groceries',
@@ -32,15 +32,8 @@ export interface Transaction {
   bank: string | null;
   amount: number;
   pending: boolean;
+  ignored: boolean;
   installment: Installment | null;
-  note: string | null;
-}
-
-export interface NewPix {
-  date: string;
-  description: string;
-  category: Category;
-  amount: number;
   note: string | null;
 }
 

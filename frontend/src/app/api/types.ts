@@ -74,7 +74,7 @@ export interface ConnectTokenDto {
   accessToken: string;
 }
 
-export type TransactionOriginDto = 'card' | 'account' | 'pix';
+export type TransactionOriginDto = 'card' | 'account';
 
 export interface TransactionDto {
   id: number;
@@ -85,8 +85,16 @@ export interface TransactionDto {
   bank: string | null;
   amount: number;
   isPending: boolean;
+  isIgnored: boolean;
   installmentNumber: number | null;
   installmentTotal: number | null;
+}
+
+export interface CategoryRuleResultDto {
+  description: string;
+  category: string;
+  isIgnored: boolean;
+  updatedCount: number;
 }
 
 export interface MonthSummaryDto {

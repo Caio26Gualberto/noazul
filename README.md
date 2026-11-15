@@ -1,8 +1,8 @@
 # NoAzul
 
-Organização financeira pessoal: gastos de cartão e conta vindos da Pluggy, lançamento manual de Pix e métricas do mês.
+Organização financeira pessoal: gastos de cartão e conta vindos da Pluggy e métricas do mês.
 
-Fase atual: autenticação (cadastro com trava, login, perfil, troca de senha) e as telas de gastos com dados reais da Pluggy. O Pix lançado à mão ainda fica só no navegador.
+Fase atual: autenticação (cadastro com trava, login, perfil, troca de senha) e as telas de gastos com dados reais da Pluggy.
 
 ## O que precisa estar instalado
 

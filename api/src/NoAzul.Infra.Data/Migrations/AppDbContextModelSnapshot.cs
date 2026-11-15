@@ -419,6 +419,58 @@ namespace NoAzul.Infra.Data.Migrations
                     b.ToTable("BankConnections", (string)null);
                 });
 
+            modelBuilder.Entity("NoAzul.Domain.Entities.CategoryRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsIgnored")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Description")
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = false");
+
+                    b.ToTable("CategoryRules", (string)null);
+                });
+
             modelBuilder.Entity("NoAzul.Domain.Entities.FinancialAccount", b =>
                 {
                     b.Property<int>("Id")
@@ -621,6 +673,9 @@ namespace NoAzul.Infra.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsIgnored")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsPending")
                         .HasColumnType("boolean");
 
@@ -654,6 +709,8 @@ namespace NoAzul.Infra.Data.Migrations
                         .HasFilter("\"IsDeleted\" = false");
 
                     b.HasIndex("FinancialAccountId", "OccurredAt");
+
+                    b.HasIndex("UserId", "Description");
 
                     b.HasIndex("UserId", "OccurredAt");
 
@@ -927,6 +984,17 @@ namespace NoAzul.Infra.Data.Migrations
                 });
 
             modelBuilder.Entity("NoAzul.Domain.Entities.BankConnection", b =>
+                {
+                    b.HasOne("NoAzul.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("NoAzul.Domain.Entities.CategoryRule", b =>
                 {
                     b.HasOne("NoAzul.Domain.Entities.User", "User")
                         .WithMany()

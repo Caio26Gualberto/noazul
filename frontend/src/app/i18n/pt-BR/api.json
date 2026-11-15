@@ -65,5 +65,9 @@
   "TRANSACTION_MONTH_INVALID": "Mês inválido",
   "TRANSACTION_SEARCH_TOO_LONG": "A busca pode ter até 100 caracteres",
   "TRANSACTION_SUMMARY_LOADED": "Resumo dos meses carregado",
-  "TRANSACTION_SUMMARY_MONTHS_INVALID": "O resumo vai de 1 a 24 meses"
+  "TRANSACTION_SUMMARY_MONTHS_INVALID": "O resumo vai de 1 a 24 meses",
+  "TRANSACTION_NOT_FOUND": "Lançamento não encontrado",
+  "TRANSACTION_CATEGORY_INVALID": "Categoria inválida",
+  "TRANSACTION_CATEGORY_UPDATED": "Categoria trocada neste lançamento e nos idênticos, inclusive nos próximos",
+  "TRANSACTION_MARKED_NOT_SPENDING": "Marcado como não é gasto, junto com os idênticos, inclusive os próximos"
 }

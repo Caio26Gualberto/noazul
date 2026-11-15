@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { EMPTY, Observable, expand, map, of, reduce } from 'rxjs';
+import { EMPTY, Observable, expand, map, reduce } from 'rxjs';
 import { ApiClient } from '../api/api-client';
 import {
   BankConnectionDto,
+  CategoryRuleResultDto,
   ConnectTokenDto,
   MonthSummaryDto,
   PagedResultDto,
@@ -10,7 +11,7 @@ import {
 } from '../api/types';
 import { toBankConnection } from './bank-connection.mapper';
 import { currentMonth } from './finance.dates';
-import { BankConnection, MonthSummary, NewPix, Transaction } from './finance.models';
+import { BankConnection, Category, MonthSummary, Transaction } from './finance.models';
 import { toMonthSummary, toTransaction } from './transaction.mapper';
 
 const CONNECTIONS_PAGE_SIZE = 100;
@@ -21,30 +22,11 @@ const HISTORY_MONTHS = 6;
 export class FinanceService {
   private readonly api = inject(ApiClient);
 
-  private pixInMemory: Transaction[] = [];
-
   transactions(month: string): Observable<Transaction[]> {
-    const pix = this.pixInMemory.filter((transaction) => transaction.date.startsWith(month));
     return this.transactionsPage(month, 1).pipe(
       expand((page) => (page.hasNext ? this.transactionsPage(month, page.page + 1) : EMPTY)),
       reduce((all, page) => [...all, ...page.items.map(toTransaction)], [] as Transaction[]),
-      map((fromApi) =>
-        [...fromApi, ...pix].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id),
-      ),
     );
-  }
-
-  createPix(pix: NewPix): Observable<Transaction> {
-    const created: Transaction = {
-      ...pix,
-      id: -(this.pixInMemory.length + 1),
-      origin: 'pix',
-      bank: null,
-      pending: false,
-      installment: null,
-    };
-    this.pixInMemory = [...this.pixInMemory, created];
-    return of(created);
   }
 
   connections(): Observable<BankConnection[]> {
@@ -65,6 +47,22 @@ export class FinanceService {
     return this.api
       .post<BankConnectionDto>('/api/bank-connections', { itemId }, { announce: true })
       .pipe(map(toBankConnection));
+  }
+
+  updateCategory(id: number, category: Category): Observable<CategoryRuleResultDto> {
+    return this.api.put<CategoryRuleResultDto>(
+      `/api/transactions/${id}/category`,
+      { category, ignored: false },
+      { announce: true },
+    );
+  }
+
+  markNotSpending(id: number): Observable<CategoryRuleResultDto> {
+    return this.api.put<CategoryRuleResultDto>(
+      `/api/transactions/${id}/category`,
+      { ignored: true },
+      { announce: true },
+    );
   }
 
   history(): Observable<MonthSummary[]> {

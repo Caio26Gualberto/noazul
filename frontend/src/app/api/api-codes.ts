@@ -74,6 +74,10 @@ export const ApiCodes = {
   transactionSearchTooLong: 'TRANSACTION_SEARCH_TOO_LONG',
   transactionSummaryLoaded: 'TRANSACTION_SUMMARY_LOADED',
   transactionSummaryMonthsInvalid: 'TRANSACTION_SUMMARY_MONTHS_INVALID',
+  transactionNotFound: 'TRANSACTION_NOT_FOUND',
+  transactionCategoryInvalid: 'TRANSACTION_CATEGORY_INVALID',
+  transactionCategoryUpdated: 'TRANSACTION_CATEGORY_UPDATED',
+  transactionMarkedNotSpending: 'TRANSACTION_MARKED_NOT_SPENDING',
 } as const;
 
 export type ApiCode = (typeof ApiCodes)[keyof typeof ApiCodes];

@@ -16,6 +16,7 @@ namespace NoAzul.Domain.Entities
         public ETransactionCategory Category { get; set; } = ETransactionCategory.Other;
         public string? ProviderCategoryId { get; set; }
         public bool IsPending { get; set; }
+        public bool IsIgnored { get; set; }
         public int? InstallmentNumber { get; set; }
         public int? InstallmentTotal { get; set; }
     }

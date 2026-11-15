@@ -14,8 +14,7 @@
   },
   "origins": {
     "card": "Cartão",
-    "account": "Conta",
-    "pix": "Pix"
+    "account": "Conta"
   },
   "originWithBank": "{{origin}} {{bank}}",
   "pending": "Pendente",

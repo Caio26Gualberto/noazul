@@ -10,6 +10,7 @@ namespace NoAzul.Application.Transactions.Dtos
         public string? Bank { get; set; }
         public decimal Amount { get; set; }
         public bool IsPending { get; set; }
+        public bool IsIgnored { get; set; }
         public int? InstallmentNumber { get; set; }
         public int? InstallmentTotal { get; set; }
     }

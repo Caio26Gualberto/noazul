@@ -5,7 +5,6 @@ export const AppRoutes = {
   changePassword: '/trocar-senha',
   profile: '/perfil',
   transactions: '/lancamentos',
-  newPix: '/lancamentos/novo-pix',
   cards: '/cartoes',
   metrics: '/metricas',
 } as const;

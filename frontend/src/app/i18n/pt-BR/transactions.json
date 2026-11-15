@@ -1,15 +1,13 @@
 {
   "title": "Lançamentos",
-  "subtitle": "{{month}} · cartões, conta e Pix juntos",
-  "newPix": "Lançar Pix",
+  "subtitle": "{{month}} · cartões e conta juntos",
   "filters": {
     "label": "Filtros",
     "origin": "Origem",
     "origins": {
       "all": "Todos",
       "card": "Cartões",
-      "account": "Conta",
-      "pix": "Pix"
+      "account": "Conta"
     },
     "search": "Buscar por descrição",
     "category": "Categoria",
@@ -33,5 +31,10 @@
     "title": "Nenhum lançamento encontrado",
     "text": "Nenhum lançamento do mês combina com os filtros escolhidos.",
     "clear": "Limpar filtros"
+  },
+  "categoryMenu": {
+    "label": "Trocar a categoria de {{description}}",
+    "title": "Categorias",
+    "notSpending": "Não é gasto"
   }
 }

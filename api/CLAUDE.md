@@ -2,11 +2,11 @@
 
 ## Sobre este projeto
 
-**NoAzul** é um sistema de organização financeira pessoal: mostra os gastos de cartão e de conta vindos da Pluggy, aceita lançamento manual de Pix e calcula métricas do mês. É usado por duas pessoas (o dono e o pai dele), cada uma com a própria conta.
+**NoAzul** é um sistema de organização financeira pessoal: mostra os gastos de cartão e de conta vindos da Pluggy e calcula métricas do mês. É usado por duas pessoas (o dono e o pai dele), cada uma com a própria conta.
 
 O que ele **não** é: não movimenta dinheiro (só lê e organiza), não é produto comercial (sem cadastro aberto ao público, sem planos), não cuida de investimentos e não é em tempo real (os dados do banco chegam uma vez por dia).
 
-Fase atual: autenticação pronta, `BankConnections` (conectar banco pela Pluggy, sincronização diária de cartões e contas) e `Transactions` (lançamentos de cartão e conta vindos da Pluggy, lista e resumo mensal). O Pix manual ainda não tem endpoint; `Items` continua como feature de exemplo.
+Fase atual: autenticação pronta, `BankConnections` (conectar banco pela Pluggy, sincronização diária de cartões e contas) e `Transactions` (lançamentos de cartão e conta vindos da Pluggy, lista e resumo mensal). `Items` continua como feature de exemplo.
 
 ## Como trabalhar neste repositório
 

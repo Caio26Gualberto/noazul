@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using NoAzul.Api.RateLimiting;
 using NoAzul.Application.Transactions.Dtos;
 using NoAzul.Application.Transactions.Interfaces;
 
@@ -25,6 +27,14 @@ namespace NoAzul.Api.Controllers
         public async Task<ActionResult> MonthlySummary([FromQuery] int months = 6)
         {
             var result = await _appService.GetMonthlySummary(months);
+            return ToResponse(result);
+        }
+
+        [EnableRateLimiting(ApiRateLimitPolicies.TransactionCategory)]
+        [HttpPut("{id:int}/category")]
+        public async Task<ActionResult> UpdateCategory(int id, [FromBody] UpdateTransactionCategoryInputDto input)
+        {
+            var result = await _appService.UpdateCategory(id, input);
             return ToResponse(result);
         }
     }
