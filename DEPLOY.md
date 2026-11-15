@@ -1,5 +1,7 @@
 # Deploy do NoAzul na AWS (São Paulo), pelo console
 
+**Feito em 2026-11-15**: site em `https://noazul.space` e API em `https://api.noazul.space`, com o pipeline da API funcionando. Este roteiro serve para recriar o ambiente do zero ou conferir uma peça.
+
 Roteiro do primeiro deploy, feito pelo painel da AWS, na região **América do Sul (São Paulo), `sa-east-1`**, no mesmo molde do Noise Vault (`C:\Projetos\Pessoal\Headbanger`). As decisões por trás de cada peça estão em `api/.claude/rules/hospedagem.md`; aqui fica só o passo a passo. Siga na ordem: cada bloco usa algo criado no anterior.
 
 O que vai existir no fim:

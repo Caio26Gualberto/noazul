@@ -6,7 +6,7 @@
 
 O que ele **não** é: não movimenta dinheiro (só lê e organiza), não é produto comercial (sem cadastro aberto ao público, sem planos), não cuida de investimentos e não é em tempo real (os dados do banco chegam uma vez por dia).
 
-Fase atual: autenticação funcionando de ponta a ponta (cadastro com trava, login, renovação de sessão, perfil, troca de senha); Cartões e contas, Lançamentos, Início e Métricas com dados reais da Pluggy (sincronização diária). O deploy está decidido e descrito em `DEPLOY.md` (Lightsail + Amplify, domínio noazul.space); ainda não foi executado.
+Fase atual: autenticação funcionando de ponta a ponta (cadastro com trava, login, renovação de sessão, perfil, troca de senha); Cartões e contas, Lançamentos, Início e Métricas com dados reais da Pluggy (sincronização diária). No ar desde 2026-11-15 em `https://noazul.space` (Lightsail + Amplify em São Paulo, roteiro em `DEPLOY.md`).
 
 ## Mapa
 

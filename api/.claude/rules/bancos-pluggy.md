@@ -138,6 +138,8 @@ O desenvolvimento local e a produção usam a mesma aplicação da Pluggy (um `c
 
 ## Em aberto
 
+- Webhook da Pluggy: não usado, decisão do dono em 2026-11-15. Serviria para buscar logo depois da atualização do Meu Pluggy (`item/updated`) e para avisar o vencimento da autorização (`item/error`); a leitura diária das 8h e o aviso de conexão expirada da tela bastam.
+
 - ~~Reconectar (Pluggy Connect com `updateItem`) e desconectar ainda não existem; os botões ficam desligados na tela.~~ Feitos em 2026-11-15, ver "Reconectar e desconectar".
 - Reconectar um item que a Pluggy já apagou (`BANK_CONNECTION_ITEM_GONE`) falha na criação do token (`PLUGGY_UNAVAILABLE`). O caminho é desconectar e conectar de novo.
 - ~~Lançamentos ainda não são sincronizados.~~ Sincronizados desde 2026-11-15, ver `lancamentos.md`.
