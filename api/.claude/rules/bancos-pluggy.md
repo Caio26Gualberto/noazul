@@ -128,6 +128,14 @@ Pelo conector MeuPluggy, `item.connector.name` é sempre "MeuPluggy" e o `imageU
 - Descartado: usar o `name` da conta. Ele vem inconsistente no mesmo banco ("itau", "ITAU VISA PLATINUM").
 - O logo do MeuPluggy não é guardado (`InstitutionImageUrl` fica nulo), para não aparecer como se fosse o do banco.
 
+## Um item por credencial: desenvolvimento só com o sandbox
+
+O desenvolvimento local e a produção usam a mesma aplicação da Pluggy (um `client_id`). A Pluggy não deixa criar dois items com as mesmas credenciais: conectar na produção um Meu Pluggy que já foi conectado no local dá `ITEM_USER_ALREADY_EXISTS` ("There are other items with the same credentials") dentro da janela da Pluggy, que mostra só "Um erro inesperado ocorreu". Visto no primeiro deploy, em 2026-11-15, com o Itaú do dono. A saída foi desconectar no local (o que apaga o item na Pluggy) e conectar de novo na produção.
+
+- Desenvolvimento usa só o banco de teste da Pluggy (Pluggy Bank, `user-ok` / `password-ok`). O Meu Pluggy de verdade fica para a produção.
+- Descartado: cadastrar o mesmo item nos dois ambientes. Os dois leriam a mesma conexão todo dia, gastando em dobro o limite de leituras da Pluggy (contas cerca de 4/mês).
+- O uso pessoal do Meu Pluggy permite até 5 conexões por aplicação, e a autorização vale 1 ano (`consentExpiresAt`). Ao autorizar de novo, o `itemId` pode mudar: o Reconectar supõe o mesmo item e precisa tratar isso (em aberto).
+
 ## Em aberto
 
 - ~~Reconectar (Pluggy Connect com `updateItem`) e desconectar ainda não existem; os botões ficam desligados na tela.~~ Feitos em 2026-11-15, ver "Reconectar e desconectar".
