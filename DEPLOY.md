@@ -35,7 +35,7 @@ Se um dia o domínio mudar, troque em `deploy/.env` (no servidor) e em `frontend
 ## 2. Servidor no Lightsail
 
 1. No console da AWS, abra o **Lightsail → Create instance**.
-   - **Região:** `Virginia (us-east-1)`. O Lightsail não tem São Paulo, e para duas pessoas a distância não faz diferença.
+   - **Região:** `São Paulo (sa-east-1)`. Tudo deste projeto fica em São Paulo, decisão do dono.
    - **Plataforma:** Linux/Unix → **OS Only → Ubuntu 24.04 LTS**.
    - **Plano:** **2 GB de RAM** (dual-stack, com IPv4). Com 1 GB o build da API e o Postgres juntos não cabem.
    - **Nome:** `noazul`.
@@ -154,7 +154,7 @@ Se o HTTPS não sair, veja `docker compose logs caddy` e a seção "Problemas co
 
 ## 8. Site no Amplify
 
-1. No console da AWS, abra o **Amplify → Create new app → GitHub**, autorize e escolha o repositório `noazul`, branch `main`.
+1. No console da AWS, **na região São Paulo (sa-east-1)**, abra o **Amplify → Create new app → GitHub**, autorize e escolha o repositório `noazul`, branch `main`.
 2. Marque **"My app is a monorepo"** e informe a pasta `frontend`. O Amplify lê o `amplify.yml` da raiz; confira se o diretório de saída aparece como `dist/frontend/browser`.
 3. **Save and deploy.** O primeiro build leva alguns minutos.
 4. Para as rotas do Angular (`/lancamentos`, `/cartoes`…) funcionarem ao recarregar a página: **Hosting → Rewrites and redirects → Manage → Add rewrite**:

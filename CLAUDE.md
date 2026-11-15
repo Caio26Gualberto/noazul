@@ -64,7 +64,7 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
 - Histórico: a primeira sincronização de cada conta traz 12 meses; depois, a diária relê os últimos 30 dias (2026-11-15).
 - Reconectar e desconectar ficam no menu "Gerenciar" de cada banco, em Cartões e contas. Desconectar apaga do NoAzul a conexão, os cartões, as contas e todos os lançamentos do banco, e apaga também o item na Pluggy; a confirmação avisa isso antes (2026-11-15).
 - Cada pessoa usa o próprio Meu Pluggy e conecta só os próprios bancos; o NoAzul usa um único `client_id`/`client_secret`, da aplicação do dono no dashboard da Pluggy (2026-11-15).
-- Deploy: AWS Lightsail (Ubuntu, 2 GB, Docker Compose com API + Postgres + Caddy) para `api.noazul.space` e AWS Amplify para o site em `noazul.space`. Domínio e DNS na Cloudflare (o Registro.br foi descartado pelo DNS ruim de configurar). Banco no mesmo Lightsail, com snapshot diário; descartado o banco gerenciado (~US$ 22/mês). Migrations em produção por script idempotente, não no boot. Passo a passo em `DEPLOY.md` (2026-11-15).
+- Deploy, tudo na região São Paulo (sa-east-1): AWS Lightsail (Ubuntu, 2 GB, Docker Compose com API + Postgres + Caddy) para `api.noazul.space` e AWS Amplify para o site em `noazul.space`. Domínio e DNS na Cloudflare (o Registro.br foi descartado pelo DNS ruim de configurar). Banco no mesmo Lightsail, com snapshot diário; descartado o banco gerenciado (~US$ 22/mês). Migrations em produção por script idempotente, não no boot. Passo a passo em `DEPLOY.md` (2026-11-15).
 
 ## Como o agente trabalha aqui
 
