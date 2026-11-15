@@ -3,13 +3,25 @@
   "subtitle": "Os bancos mandam os dados uma vez por dia, de manhã, pela Pluggy.",
   "connectBank": "Conectar banco",
   "manage": "Gerenciar",
-  "comingSoon": "Disponível em breve.",
+  "manageMenu": {
+    "label": "Opções de {{bank}}",
+    "reconnect": "Reconectar",
+    "disconnect": "Desconectar"
+  },
+  "disconnect": {
+    "title": "Desconectar {{bank}}?",
+    "text": "Os cartões, as contas e todos os lançamentos deste banco serão apagados do NoAzul, e os totais do Início e das Métricas deixam de contar com eles. A conexão também é apagada na Pluggy. Se você conectar de novo, os últimos 12 meses voltam.",
+    "confirm": "Desconectar e apagar",
+    "cancel": "Cancelar"
+  },
   "loading": "Carregando cartões e contas",
   "empty": "Nenhum banco conectado ainda. Clique em \"Conectar banco\" para trazer seus cartões e contas.",
   "waitingData": "Buscando os cartões e contas deste banco. Isso leva alguns segundos.",
   "noAccounts": "A Pluggy não trouxe nenhum cartão ou conta deste banco.",
   "sync": {
     "updating": "Buscando os dados no banco",
+    "helpLabel": "Como funciona a atualização",
+    "help": "Esse horário é quando o NoAzul buscou os dados na Pluggy. A Pluggy vai ao banco uma vez por dia, de madrugada, e o NoAzul busca o que ela tem todo dia às 8h e logo depois de você conectar ou reconectar um banco. Se o NoAzul buscar de novo no mesmo dia, os dados continuam sendo os da última ida da Pluggy ao banco.",
     "today": "Atualizado hoje às {{time}} · próxima amanhã de manhã",
     "past": "Atualizado em {{date}} às {{time}} · próxima amanhã de manhã"
   },

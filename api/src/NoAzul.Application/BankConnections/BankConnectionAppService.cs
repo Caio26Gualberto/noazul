@@ -2,6 +2,7 @@ using NoAzul.Application.Abstractions.Authentication;
 using NoAzul.Application.Abstractions.Jobs;
 using NoAzul.Application.Abstractions.Logging;
 using NoAzul.Application.Abstractions.Repository;
+using NoAzul.Application.Abstractions.Repository.UnitOfWork;
 using NoAzul.Application.BankConnections.Dtos;
 using NoAzul.Application.BankConnections.Interfaces;
 using NoAzul.Application.Common.Time;
@@ -25,6 +26,7 @@ namespace NoAzul.Application.BankConnections
         private readonly IPluggyClient _pluggy;
         private readonly ITransactionAppService _transactions;
         private readonly IEnqueuedJobDispatcher _dispatcher;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUser _currentUser;
         private readonly IApplicationLogger _logger;
 
@@ -34,6 +36,7 @@ namespace NoAzul.Application.BankConnections
             IPluggyClient pluggy,
             ITransactionAppService transactions,
             IEnqueuedJobDispatcher dispatcher,
+            IUnitOfWork unitOfWork,
             ICurrentUser currentUser,
             IApplicationLoggerFactory loggerFactory)
         {
@@ -42,6 +45,7 @@ namespace NoAzul.Application.BankConnections
             _pluggy = pluggy;
             _transactions = transactions;
             _dispatcher = dispatcher;
+            _unitOfWork = unitOfWork;
             _currentUser = currentUser;
             _logger = loggerFactory.Create(LogContext.BankConnections);
         }
@@ -112,6 +116,117 @@ namespace NoAzul.Application.BankConnections
             }
         }
 
+        public async Task<Result<ConnectTokenDto>> CreateReconnectToken(int id)
+        {
+            _logger.SetOperation("CreateReconnectToken");
+            _logger.Set("BankConnectionId", id);
+
+            var connection = await FindMineAsync(id);
+
+            if (connection == null)
+                return Result<ConnectTokenDto>.Fail(ConnectionNotFound());
+
+            if (!_pluggy.IsConfigured)
+                return Result<ConnectTokenDto>.Fail(NotConfigured());
+
+            try
+            {
+                var token = await _pluggy.CreateConnectTokenAsync(
+                    _currentUser.UserId.ToString(), connection.PluggyItemId);
+
+                return Result<ConnectTokenDto>.Ok(
+                    new ConnectTokenDto { AccessToken = token, ItemId = connection.PluggyItemId },
+                    "BANK_CONNECT_TOKEN_CREATED",
+                    "Connect token created successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(
+                    eventName: "PLUGGY_CONNECT_TOKEN_FAILED",
+                    message: "Could not create a Pluggy connect token to reconnect a bank",
+                    exception: ex,
+                    userId: _currentUser.UserIdOrNull,
+                    extra: new { BankConnectionId = id });
+
+                return Result<ConnectTokenDto>.Fail(ProviderUnavailable());
+            }
+        }
+
+        public async Task<Result> Disconnect(int id)
+        {
+            _logger.SetOperation("DisconnectBankConnection");
+            _logger.Set("BankConnectionId", id);
+
+            var connection = await FindMineAsync(id);
+
+            if (connection == null)
+                return Result.Fail(ConnectionNotFound());
+
+            if (!_pluggy.IsConfigured)
+                return Result.Fail(NotConfigured());
+
+            var userId = _currentUser.UserId;
+            bool deletedAtPluggy;
+
+            try
+            {
+                deletedAtPluggy = await _pluggy.DeleteItemAsync(connection.PluggyItemId);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(
+                    eventName: "PLUGGY_ITEM_DELETE_FAILED",
+                    message: "Could not delete the Pluggy item; the connection was kept",
+                    exception: ex,
+                    userId: userId,
+                    extra: new { BankConnectionId = id });
+
+                return Result.Fail(ProviderUnavailable());
+            }
+
+            var accounts = await _accounts.ListAsync(new QueryOptions<FinancialAccount>
+            {
+                IncludeDeleted = true,
+                Predicate = a => a.BankConnectionId == connection.Id
+            });
+
+            var activeAccounts = accounts.Where(a => !a.IsDeleted).ToList();
+            int removedTransactions;
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                removedTransactions = await _transactions.RemoveForAccounts(accounts.Select(a => a.Id).ToList());
+
+                foreach (var account in activeAccounts)
+                    await _accounts.SoftDelete(account);
+
+                await _connections.SoftDelete(connection);
+
+                await _unitOfWork.CommitAsync();
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+
+            _logger.Info(
+                eventName: "BANK_CONNECTION_DISCONNECTED",
+                message: "Bank connection disconnected and its data removed",
+                userId: userId,
+                extra: new
+                {
+                    BankConnectionId = id,
+                    Accounts = activeAccounts.Count,
+                    Transactions = removedTransactions,
+                    DeletedAtPluggy = deletedAtPluggy
+                });
+
+            return Result.Ok("BANK_CONNECTION_DISCONNECTED", "Bank connection disconnected successfully");
+        }
+
         public async Task<Result<BankConnectionDto>> Register(RegisterBankConnectionInputDto input)
         {
             _logger.SetOperation("RegisterBankConnection");
@@ -144,6 +259,9 @@ namespace NoAzul.Application.BankConnections
 
             if (existing != null)
             {
+                existing.Status = EBankConnectionStatus.Updating;
+                await _connections.UpdateAsync(existing);
+
                 EnqueueSync(existing.Id, userId);
                 return Result<BankConnectionDto>.Ok(
                     Map(existing, []), "BANK_CONNECTION_REFRESHED", "Bank connection already exists and will be refreshed");
@@ -423,6 +541,19 @@ namespace NoAzul.Application.BankConnections
             var trimmed = value.Trim();
             return trimmed.Length <= max ? trimmed : trimmed[..max];
         }
+
+        private Task<BankConnection?> FindMineAsync(int id)
+        {
+            var userId = _currentUser.UserId;
+
+            return _connections.FirstOrDefaultAsync(new QueryOptions<BankConnection>
+            {
+                Predicate = c => c.Id == id && c.UserId == userId
+            });
+        }
+
+        private static Error ConnectionNotFound() =>
+            new("BANK_CONNECTION_NOT_FOUND", "Bank connection not found", ErrorType.NotFound);
 
         private static Error NotConfigured() =>
             new("PLUGGY_NOT_CONFIGURED", "Bank integration is not configured on the server", ErrorType.Unexpected);

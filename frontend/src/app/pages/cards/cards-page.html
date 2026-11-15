@@ -28,12 +28,27 @@
             <span tuiSubtitle>
               {{ t('cards.expired.text', { date: connection.expiredAt | date: 'dd/MM' }) }}
             </span>
-            <div>
-              <span [tuiHint]="t('cards.comingSoon')">
-                <button tuiButton type="button" size="s" disabled>
-                  {{ t('cards.expired.reconnect') }}
-                </button>
-              </span>
+            <div class="cards__expired-actions">
+              <button
+                tuiButton
+                type="button"
+                size="s"
+                [loading]="busyId() === connection.id"
+                [disabled]="busyId() !== null && busyId() !== connection.id"
+                (click)="reconnect(connection)"
+              >
+                {{ t('cards.expired.reconnect') }}
+              </button>
+              <button
+                tuiButton
+                type="button"
+                size="s"
+                appearance="flat-destructive"
+                [disabled]="busyId() !== null"
+                (click)="disconnect(connection)"
+              >
+                {{ t('cards.manageMenu.disconnect') }}
+              </button>
             </div>
           </div>
         </section>
@@ -55,14 +70,46 @@
                   } @else {
                     {{ t('cards.sync.past', { date: view.syncDate, time: view.syncTime }) }}
                   }
+                  <tui-icon
+                    icon="@tui.circle-help"
+                    class="bank__sync-help"
+                    [tuiTooltip]="t('cards.sync.help')"
+                    [attr.aria-label]="t('cards.sync.helpLabel')"
+                  />
                 </span>
               </div>
             </div>
-            <span [tuiHint]="t('cards.comingSoon')">
-              <button tuiButton type="button" size="s" appearance="secondary" disabled>
-                {{ t('cards.manage') }}
-              </button>
-            </span>
+            <button
+              tuiButton
+              type="button"
+              size="s"
+              appearance="secondary"
+              iconEnd="@tui.chevron-down"
+              [loading]="busyId() === connection.id"
+              [disabled]="busyId() !== null && busyId() !== connection.id"
+              [tuiDropdown]="manageMenu"
+              [tuiDropdownOpen]="menuFor() === connection.id"
+              (tuiDropdownOpenChange)="menuFor.set($event ? connection.id : null)"
+            >
+              {{ t('cards.manage') }}
+            </button>
+            <ng-template #manageMenu>
+              <tui-data-list [attr.aria-label]="t('cards.manageMenu.label', { bank: connection.bank })">
+                <button tuiOption type="button" (click)="reconnect(connection)">
+                  <tui-icon icon="@tui.refresh-cw" />
+                  {{ t('cards.manageMenu.reconnect') }}
+                </button>
+                <button
+                  tuiOption
+                  type="button"
+                  class="cards__danger-option"
+                  (click)="disconnect(connection)"
+                >
+                  <tui-icon icon="@tui.unplug" />
+                  {{ t('cards.manageMenu.disconnect') }}
+                </button>
+              </tui-data-list>
+            </ng-template>
           </header>
 
           <div class="bank__items">

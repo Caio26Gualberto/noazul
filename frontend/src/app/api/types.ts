@@ -72,6 +72,7 @@ export interface BankConnectionDto {
 
 export interface ConnectTokenDto {
   accessToken: string;
+  itemId: string | null;
 }
 
 export type TransactionOriginDto = 'card' | 'account';

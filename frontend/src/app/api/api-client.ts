@@ -33,6 +33,10 @@ export class ApiClient {
     return this.send<T>('PUT', path, body, options);
   }
 
+  delete<T>(path: string, options: RequestOptions = {}): Observable<T> {
+    return this.send<T>('DELETE', path, undefined, options);
+  }
+
   private send<T>(
     method: string,
     path: string,

@@ -42,6 +42,9 @@ namespace NoAzul.Application.Transactions
             _logger = loggerFactory.Create(LogContext.Transactions);
         }
 
+        public Task<int> RemoveForAccounts(IReadOnlyCollection<int> financialAccountIds) =>
+            _repository.SoftDeleteByAccountsAsync(financialAccountIds, _currentUser.UserIdOrNull);
+
         public async Task<Result<PagedResultDto<TransactionDto>>> GetMine(TransactionListQueryDto query)
         {
             query.Normalize();

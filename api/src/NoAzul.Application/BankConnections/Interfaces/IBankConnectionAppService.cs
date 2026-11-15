@@ -9,6 +9,8 @@ namespace NoAzul.Application.BankConnections.Interfaces
         Task<Result<PagedResultDto<BankConnectionDto>>> GetMine(BankConnectionListQueryDto query);
         Task<Result<ConnectTokenDto>> CreateConnectToken();
         Task<Result<BankConnectionDto>> Register(RegisterBankConnectionInputDto input);
+        Task<Result<ConnectTokenDto>> CreateReconnectToken(int id);
+        Task<Result> Disconnect(int id);
 
         Task<int> SyncAll();
         Task<bool> Sync(int bankConnectionId);

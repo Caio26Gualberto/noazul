@@ -1,10 +1,26 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { TuiThumbnailCard } from '@taiga-ui/addon-commerce';
-import { TuiButton, TuiHint, TuiLoader, TuiNotification, TuiTitle } from '@taiga-ui/core';
-import { TuiAvatar, TuiButtonLoading, TuiProgress } from '@taiga-ui/kit';
+import {
+  TuiButton,
+  TuiDataList,
+  TuiDialogService,
+  TuiDropdown,
+  TuiIcon,
+  TuiLoader,
+  TuiNotification,
+  TuiTitle,
+} from '@taiga-ui/core';
+import {
+  TUI_CONFIRM,
+  TuiAvatar,
+  TuiButtonLoading,
+  TuiConfirmData,
+  TuiProgress,
+  TuiTooltip,
+} from '@taiga-ui/kit';
 import { firstValueFrom } from 'rxjs';
 import { ApiCodes } from '../../api/api-codes';
 import { ignoreApiError } from '../../api/api-error';
@@ -50,12 +66,15 @@ interface ConnectionView {
     TuiAvatar,
     TuiButton,
     TuiButtonLoading,
-    TuiHint,
+    TuiDataList,
+    TuiDropdown,
+    TuiIcon,
     TuiLoader,
     TuiNotification,
     TuiProgress,
     TuiThumbnailCard,
     TuiTitle,
+    TuiTooltip,
   ],
   templateUrl: './cards-page.html',
   styleUrl: './cards-page.scss',
@@ -64,6 +83,8 @@ export class CardsPage {
   private readonly finance = inject(FinanceService);
   private readonly pluggyConnect = inject(PluggyConnectService);
   private readonly feedback = inject(FeedbackService);
+  private readonly dialogs = inject(TuiDialogService);
+  private readonly transloco = inject(TranslocoService);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly rawConnections = signal<BankConnection[] | undefined>(undefined);
@@ -71,6 +92,8 @@ export class CardsPage {
   private rechecksLeft = FIRST_SYNC_MAX_RECHECKS;
 
   protected readonly connecting = signal(false);
+  protected readonly busyId = signal<number | null>(null);
+  protected readonly menuFor = signal<number | null>(null);
 
   protected readonly loading = computed(() => this.rawConnections() === undefined);
 
@@ -105,6 +128,64 @@ export class CardsPage {
       ignoreApiError(error);
     } finally {
       this.connecting.set(false);
+    }
+  }
+
+  protected async reconnect(connection: BankConnection): Promise<void> {
+    if (this.busyId() !== null) return;
+    this.menuFor.set(null);
+    this.busyId.set(connection.id);
+
+    try {
+      const token = await firstValueFrom(this.finance.createReconnectToken(connection.id));
+      const outcome = await this.pluggyConnect.open(token.accessToken, token.itemId ?? undefined);
+
+      if (outcome.kind === 'failed') {
+        this.feedback.show(ApiCodes.pluggyUnavailable);
+        return;
+      }
+
+      if (outcome.kind === 'connected') {
+        await firstValueFrom(this.finance.registerConnection(outcome.itemId));
+        this.rechecksLeft = FIRST_SYNC_MAX_RECHECKS;
+        this.load();
+      }
+    } catch (error) {
+      ignoreApiError(error);
+    } finally {
+      this.busyId.set(null);
+    }
+  }
+
+  protected async disconnect(connection: BankConnection): Promise<void> {
+    if (this.busyId() !== null) return;
+    this.menuFor.set(null);
+
+    const confirmed = await firstValueFrom(
+      this.dialogs.open<boolean>(TUI_CONFIRM, {
+        label: this.transloco.translate('cards.disconnect.title', { bank: connection.bank }),
+        size: 's',
+        data: {
+          content: this.transloco.translate('cards.disconnect.text'),
+          yes: this.transloco.translate('cards.disconnect.confirm'),
+          no: this.transloco.translate('cards.disconnect.cancel'),
+          appearance: ['primary-destructive', 'secondary'],
+        } satisfies TuiConfirmData,
+      }),
+      { defaultValue: false },
+    );
+
+    if (!confirmed) return;
+
+    this.busyId.set(connection.id);
+
+    try {
+      await firstValueFrom(this.finance.disconnect(connection.id), { defaultValue: undefined });
+      this.rawConnections.update((list) => list?.filter((item) => item.id !== connection.id));
+    } catch (error) {
+      ignoreApiError(error);
+    } finally {
+      this.busyId.set(null);
     }
   }
 

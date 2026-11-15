@@ -12,5 +12,6 @@ namespace NoAzul.Application.Transactions.Interfaces
         Task<Result<CategoryRuleResultDto>> UpdateCategory(int id, UpdateTransactionCategoryInputDto input);
 
         Task<int> SyncFromProvider(FinancialAccount account, int userId);
+        Task<int> RemoveForAccounts(IReadOnlyCollection<int> financialAccountIds);
     }
 }

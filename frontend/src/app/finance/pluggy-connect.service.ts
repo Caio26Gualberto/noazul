@@ -6,7 +6,7 @@ export type PluggyConnectOutcome =
 
 @Injectable({ providedIn: 'root' })
 export class PluggyConnectService {
-  async open(connectToken: string): Promise<PluggyConnectOutcome> {
+  async open(connectToken: string, updateItem?: string): Promise<PluggyConnectOutcome> {
     const { PluggyConnect } = await import('pluggy-connect-sdk');
 
     return new Promise<PluggyConnectOutcome>((resolve) => {
@@ -14,6 +14,7 @@ export class PluggyConnectService {
 
       const widget = new PluggyConnect({
         connectToken,
+        updateItem,
         includeSandbox: environment.pluggyIncludeSandbox,
         language: 'pt',
         theme: 'light',

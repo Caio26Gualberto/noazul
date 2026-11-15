@@ -57,6 +57,7 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
 - Sem lançamento manual: o "Lançar Pix" saiu do menu, de Lançamentos e da API (a origem "Pix" e o card "Pix lançados" do Início também). Os Pix que saem das contas conectadas já vêm da Pluggy, e lançar à mão contaria duas vezes. Gasto em dinheiro vivo e de banco não conectado fica fora do NoAzul. Início e Lançamentos passam a dividir entre cartões e conta (2026-11-15).
 - Trocar categoria e "não é gasto": em Lançamentos, clicar na categoria abre a lista das onze mais "Não é gasto". A escolha vale para todos os lançamentos da pessoa com a descrição idêntica, os que já existem e os que chegarem depois. "Não é gasto" tira dos totais do Início, das Métricas e de Lançamentos, mas o lançamento continua na lista, apagado (2026-11-15).
 - Histórico: a primeira sincronização de cada conta traz 12 meses; depois, a diária relê os últimos 30 dias (2026-11-15).
+- Reconectar e desconectar ficam no menu "Gerenciar" de cada banco, em Cartões e contas. Desconectar apaga do NoAzul a conexão, os cartões, as contas e todos os lançamentos do banco, e apaga também o item na Pluggy; a confirmação avisa isso antes (2026-11-15).
 - Cada pessoa usa o próprio Meu Pluggy e conecta só os próprios bancos; o NoAzul usa um único `client_id`/`client_secret`, da aplicação do dono no dashboard da Pluggy (2026-11-15).
 
 ## Como o agente trabalha aqui

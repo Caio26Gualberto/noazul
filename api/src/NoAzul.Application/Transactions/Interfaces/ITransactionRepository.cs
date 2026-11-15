@@ -11,5 +11,8 @@ namespace NoAzul.Application.Transactions.Interfaces
 
         Task<int> ApplyCategoryRuleAsync(
             int userId, string description, ETransactionCategory category, bool isIgnored, CancellationToken ct = default);
+
+        Task<int> SoftDeleteByAccountsAsync(
+            IReadOnlyCollection<int> financialAccountIds, int? deletedBy, CancellationToken ct = default);
     }
 }

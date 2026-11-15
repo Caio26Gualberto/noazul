@@ -43,6 +43,16 @@ export class FinanceService {
       .pipe(map((dto) => dto.accessToken));
   }
 
+  createReconnectToken(connectionId: number): Observable<ConnectTokenDto> {
+    return this.api.post<ConnectTokenDto>(
+      `/api/bank-connections/${connectionId}/reconnect-token`,
+    );
+  }
+
+  disconnect(connectionId: number): Observable<void> {
+    return this.api.delete<void>(`/api/bank-connections/${connectionId}`, { announce: true });
+  }
+
   registerConnection(itemId: string): Observable<BankConnection> {
     return this.api
       .post<BankConnectionDto>('/api/bank-connections', { itemId }, { announce: true })

@@ -62,6 +62,18 @@ namespace NoAzul.Infra.Data.Pluggy
                 item.LastUpdatedAt);
         }
 
+        public async Task<bool> DeleteItemAsync(string itemId)
+        {
+            using var request = await AuthorizedAsync(HttpMethod.Delete, $"items/{Uri.EscapeDataString(itemId)}");
+            using var response = await _http.SendAsync(request);
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return false;
+
+            await EnsureSuccessAsync(response);
+            return true;
+        }
+
         public async Task<IReadOnlyList<PluggyAccount>> ListAccountsAsync(string itemId)
         {
             var accounts = await ListAllAsync<AccountResponse>($"accounts?itemId={Uri.EscapeDataString(itemId)}");

@@ -66,6 +66,8 @@ export const ApiCodes = {
   bankConnectionItemIdInvalid: 'BANK_CONNECTION_ITEM_ID_INVALID',
   bankConnectionItemNotFound: 'BANK_CONNECTION_ITEM_NOT_FOUND',
   bankConnectionTaken: 'BANK_CONNECTION_TAKEN',
+  bankConnectionNotFound: 'BANK_CONNECTION_NOT_FOUND',
+  bankConnectionDisconnected: 'BANK_CONNECTION_DISCONNECTED',
   pluggyNotConfigured: 'PLUGGY_NOT_CONFIGURED',
   pluggyUnavailable: 'PLUGGY_UNAVAILABLE',
 

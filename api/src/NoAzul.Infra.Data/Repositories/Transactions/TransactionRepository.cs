@@ -36,5 +36,22 @@ namespace NoAzul.Infra.Data.Repositories.Transactions
                     .SetProperty(t => t.Category, category)
                     .SetProperty(t => t.IsIgnored, isIgnored), ct);
         }
+
+        public async Task<int> SoftDeleteByAccountsAsync(
+            IReadOnlyCollection<int> financialAccountIds, int? deletedBy, CancellationToken ct = default)
+        {
+            if (financialAccountIds.Count == 0)
+                return 0;
+
+            var now = DateTime.UtcNow;
+            var ids = financialAccountIds.ToList();
+
+            return await _dbSet
+                .Where(t => t.FinancialAccountId.HasValue && ids.Contains(t.FinancialAccountId.Value) && !t.IsDeleted)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(t => t.IsDeleted, true)
+                    .SetProperty(t => t.DeletedAt, now)
+                    .SetProperty(t => t.DeletedBy, deletedBy), ct);
+        }
     }
 }

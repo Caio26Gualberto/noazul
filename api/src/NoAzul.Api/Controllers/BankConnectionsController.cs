@@ -38,5 +38,21 @@ namespace NoAzul.Api.Controllers
             var result = await _appService.Register(input);
             return ToResponse(result);
         }
+
+        [EnableRateLimiting(ApiRateLimitPolicies.BankConnect)]
+        [HttpPost("{id:int}/reconnect-token")]
+        public async Task<ActionResult> CreateReconnectToken(int id)
+        {
+            var result = await _appService.CreateReconnectToken(id);
+            return ToResponse(result);
+        }
+
+        [EnableRateLimiting(ApiRateLimitPolicies.BankConnect)]
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> Disconnect(int id)
+        {
+            var result = await _appService.Disconnect(id);
+            return ToResponse(result);
+        }
     }
 }
