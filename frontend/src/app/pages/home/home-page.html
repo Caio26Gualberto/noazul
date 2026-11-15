@@ -110,9 +110,13 @@
           <a tuiLink [routerLink]="routes.cards">{{ t('home.bills.link') }}</a>
         </header>
         @for (bill of data.bills; track bill.card.id) {
-          <div class="bill">
+          <div class="bill" [class]="bill.bankClass">
             <div class="bill__head">
-              <tui-thumbnail-card size="m" [paymentSystem]="bill.card.brand" class="bill__face">
+              <tui-thumbnail-card
+                size="m"
+                [paymentSystem]="bill.card.paymentSystem"
+                class="bill__face"
+              >
                 {{ bill.card.last4 }}
               </tui-thumbnail-card>
               <span class="bill__name">{{

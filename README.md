@@ -2,7 +2,7 @@
 
 Organização financeira pessoal: gastos de cartão e conta vindos da Pluggy, lançamento manual de Pix e métricas do mês.
 
-Fase atual: base do projeto com autenticação (cadastro com trava, login, perfil, troca de senha). As telas de gastos ainda não existem.
+Fase atual: autenticação (cadastro com trava, login, perfil, troca de senha) e a tela Cartões e contas ligada à Pluggy. Lançamentos e métricas ainda usam dados de exemplo.
 
 ## O que precisa estar instalado
 
@@ -53,6 +53,21 @@ Para parar o banco: `docker compose stop`.
 | `Cors:AllowedOrigins` | `["http://localhost:4200"]` |
 | `Auth:AllowRegistration` | `true` para a tela "Criar conta" funcionar |
 | `Seed:AdminPassword` | senha da conta `admin@noazul.local`, criada sozinha fora de produção |
+| `Pluggy:ClientId` e `Pluggy:ClientSecret` | credenciais da aplicação no dashboard da Pluggy; sem elas o botão "Conectar banco" responde que a integração não está configurada |
+
+## Conectar os bancos (Pluggy)
+
+Uma vez, pelo dono:
+
+1. Criar a conta em https://dashboard.pluggy.ai, criar uma aplicação e ativar nela o conector **MeuPluggy**.
+2. Copiar o `Client ID` e o `Client Secret` da aplicação para `Pluggy:ClientId` e `Pluggy:ClientSecret` no `appsettings.Development.json` e reiniciar a API.
+
+Por pessoa:
+
+1. Criar a conta grátis em https://meu.pluggy.ai e conectar lá os próprios bancos (uma vez por banco).
+2. No NoAzul, em Cartões e contas, clicar em "Conectar banco", escolher **MeuPluggy** e autorizar. Repetir para cada banco.
+
+Os dados chegam logo depois de conectar e, depois, uma vez por dia às 08:00. Em desenvolvimento, a janela também mostra os bancos de teste da Pluggy.
 
 ## Cadastro de contas
 

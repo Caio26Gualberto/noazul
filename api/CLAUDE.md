@@ -6,7 +6,7 @@
 
 O que ele **não** é: não movimenta dinheiro (só lê e organiza), não é produto comercial (sem cadastro aberto ao público, sem planos), não cuida de investimentos e não é em tempo real (os dados do banco chegam uma vez por dia).
 
-Fase atual: base do projeto, com autenticação pronta. A integração com a Pluggy, os lançamentos e as métricas ainda não existem; `Items` continua como feature de exemplo até a primeira feature real nascer.
+Fase atual: autenticação pronta e a primeira feature real, `BankConnections` (conectar banco pela Pluggy, sincronização diária de cartões e contas). Lançamentos e métricas ainda não existem; `Items` continua como feature de exemplo.
 
 ## Como trabalhar neste repositório
 
@@ -22,6 +22,7 @@ As **decisões** — o porquê de cada regra — vivem em `.claude/rules/`, um a
 | `.claude/rules/jobs-hangfire.md` | filas, Wrapper + Trigger, jobs enfileirados com linha de status |
 | `.claude/rules/observabilidade.md` | as quatro categorias de falha, `UNHANDLED_EXCEPTION`/`REQUEST_FAILED`/`RATE_LIMIT_REJECTED`, cadeia de exceções |
 | `.claude/rules/abuso-e-limites.md` | rate limit por IP/conta e limites de volume por regra de negócio |
+| `.claude/rules/bancos-pluggy.md` | conexão com a Pluggy, sincronização diária, cartões e contas guardados |
 
 **Rule nova entra nesta tabela no mesmo commit.** Rule fora do índice é rule que ninguém lê ao planejar.
 

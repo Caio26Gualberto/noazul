@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using NoAzul.Workers.Wrappers.Recurring.BankConnections;
 using NoAzul.Workers.Wrappers.Recurring.Items;
 
 namespace NoAzul.Infra.IoC
@@ -11,6 +12,7 @@ namespace NoAzul.Infra.IoC
             using var scope = app.Services.CreateScope();
 
             scope.ServiceProvider.GetRequiredService<ItemRecurringJobsWrapper>().Register();
+            scope.ServiceProvider.GetRequiredService<BankConnectionRecurringJobsWrapper>().Register();
 
             return app;
         }

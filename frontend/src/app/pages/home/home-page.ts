@@ -20,6 +20,7 @@ import {
   MonthSummary,
   Transaction,
 } from '../../finance/finance.models';
+import { bankClass } from '../../finance/bank-connection.mapper';
 import { FinanceService } from '../../finance/finance.service';
 
 const RECENT_TRANSACTIONS_COUNT = 6;
@@ -33,6 +34,7 @@ interface CategoryRow {
 
 interface OpenBill {
   bank: string;
+  bankClass: string;
   card: Card;
   usedPercent: number;
 }
@@ -126,8 +128,9 @@ export class HomePage {
     return connections.flatMap((connection) =>
       connection.cards.map((card) => ({
         bank: connection.bank,
+        bankClass: bankClass(connection),
         card,
-        usedPercent: Math.round((card.openBill / card.limit) * 100),
+        usedPercent: card.limit > 0 ? Math.round((card.openBill / card.limit) * 100) : 0,
       })),
     );
   }
@@ -141,6 +144,7 @@ export class HomePage {
     const syncs = connections
       .filter((connection) => connection.status === 'ok')
       .map((connection) => connection.lastSyncAt)
+      .filter((lastSyncAt): lastSyncAt is string => lastSyncAt !== null)
       .sort();
     return syncs.at(-1) ?? null;
   }

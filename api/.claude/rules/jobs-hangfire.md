@@ -17,6 +17,7 @@ Todo o código de jobs vive em `src/NoAzul.Workers`, com **duas categorias separ
 
 | Fila | Servidor | Quem roda ali |
 |---|---|---|
+| `bank-connections` | `noazul-main` | sincronização diária e a primeira sincronização depois de conectar |
 | `items` | `noazul-main` | varredura de vencidos, pós-criação, snapshot manual |
 | `default` | `noazul-main` | ninguém de propósito — está na lista só para um job sem `[Queue]` não ficar invisível |
 
@@ -50,6 +51,8 @@ Copiar `AutomaticRetry(3)` + `DisableConcurrentExecution(300)` em todo job produ
 | `items:archive-expired` | `items` | 2 · `60, 600` | 30s | Um `UPDATE` de conjunto, sem I/O externo: falha é banco indisponível. Roda de novo em 1h de qualquer jeito. |
 | pós-criação (`OnItemCreatedAsync`) | `items` | 3 · `30, 120, 600` | — | Efeito colateral sem linha de status própria; o retry do Hangfire é a única rede. |
 | `ItemsSnapshot` (manual) | `items` | 0 | — | Tem `BackgroundJobRun`; ver §2. |
+| `bank-connections:sync` | `bank-connections` | 2 · `900, 3600` | 30s | Chama a Pluggy, que limita leituras por mês: poucas tentativas e espaçadas. Falha de uma conexão é logada e não derruba as outras, então o retry só pega falha geral (Pluggy fora, banco do NoAzul fora). |
+| primeira sincronização (`SyncAsync`) | `bank-connections` | 3 · `60, 300, 1800` | — | Sem ela a tela fica "Buscando os dados" até o dia seguinte; vale insistir algumas vezes. |
 
 ⚠️ **`DisableConcurrentExecution(timeoutInSeconds)` é o tempo de espera pelo lock distribuído, não um teto de duração.** Para job periódico o certo é estourar rápido (15–30s) e deixar o `[AutomaticRetry]` reagendar.
 

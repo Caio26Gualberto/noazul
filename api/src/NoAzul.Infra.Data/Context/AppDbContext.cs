@@ -24,6 +24,8 @@ namespace NoAzul.Infra.Data.Context
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
         public DbSet<BackgroundJobRun> BackgroundJobRuns => Set<BackgroundJobRun>();
         public DbSet<Item> Items => Set<Item>();
+        public DbSet<BankConnection> BankConnections => Set<BankConnection>();
+        public DbSet<FinancialAccount> FinancialAccounts => Set<FinancialAccount>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -112,6 +114,55 @@ namespace NoAzul.Infra.Data.Context
 
                 b.HasIndex(i => new { i.Status, i.ExpiresAt });
                 b.HasIndex(i => new { i.UserId, i.CreatedAt });
+            });
+
+            builder.Entity<BankConnection>(b =>
+            {
+                b.ToTable("BankConnections");
+                b.HasKey(c => c.Id);
+
+                b.Property(c => c.PluggyItemId).HasMaxLength(64).IsRequired();
+                b.Property(c => c.InstitutionName).HasMaxLength(120).IsRequired();
+                b.Property(c => c.BankCode).HasMaxLength(3);
+                b.Property(c => c.InstitutionImageUrl).HasMaxLength(500);
+
+                b.HasOne(c => c.User)
+                    .WithMany()
+                    .HasForeignKey(c => c.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasIndex(c => c.PluggyItemId)
+                    .IsUnique()
+                    .HasFilter(softDeleteFilter);
+
+                b.HasIndex(c => c.UserId);
+            });
+
+            builder.Entity<FinancialAccount>(b =>
+            {
+                b.ToTable("FinancialAccounts");
+                b.HasKey(a => a.Id);
+
+                b.Property(a => a.PluggyAccountId).HasMaxLength(64).IsRequired();
+                b.Property(a => a.Name).HasMaxLength(120).IsRequired();
+                b.Property(a => a.Number).HasMaxLength(64).IsRequired();
+                b.Property(a => a.CurrencyCode).HasMaxLength(3).IsRequired();
+                b.Property(a => a.CardBrand).HasMaxLength(32);
+                b.Property(a => a.Balance).HasPrecision(18, 2);
+                b.Property(a => a.CreditLimit).HasPrecision(18, 2);
+                b.Property(a => a.AvailableCreditLimit).HasPrecision(18, 2);
+                b.Property(a => a.PreviousBillAmount).HasPrecision(18, 2);
+
+                b.HasOne(a => a.BankConnection)
+                    .WithMany(c => c.Accounts)
+                    .HasForeignKey(a => a.BankConnectionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasIndex(a => a.PluggyAccountId)
+                    .IsUnique()
+                    .HasFilter(softDeleteFilter);
+
+                b.HasIndex(a => a.BankConnectionId);
             });
 
             builder.Entity<AuthorizationAuditLog>(b =>

@@ -51,5 +51,14 @@
   "UNKNOWN_ERROR": "Algo deu errado. Tente novamente.",
   "REGISTRATION_FAILED": "Não foi possível criar a conta",
   "REGISTRATION_DISABLED": "O cadastro de novas contas está desligado",
-  "UNEXPECTED_ERROR": "Algo deu errado no servidor. Tente novamente."
+  "UNEXPECTED_ERROR": "Algo deu errado no servidor. Tente novamente.",
+  "BANK_CONNECTIONS_LOADED": "Cartões e contas carregados",
+  "BANK_CONNECT_TOKEN_CREATED": "Conexão com a Pluggy pronta",
+  "BANK_CONNECTION_CREATED": "Banco conectado. Os dados chegam em alguns segundos.",
+  "BANK_CONNECTION_REFRESHED": "Este banco já estava conectado. Vamos atualizar os dados.",
+  "BANK_CONNECTION_ITEM_ID_INVALID": "Identificador da conexão inválido",
+  "BANK_CONNECTION_ITEM_NOT_FOUND": "A Pluggy não encontrou esta conexão. Tente conectar de novo.",
+  "BANK_CONNECTION_TAKEN": "Esta conexão já pertence a outra conta do NoAzul",
+  "PLUGGY_NOT_CONFIGURED": "A integração com os bancos ainda não foi configurada no servidor",
+  "PLUGGY_UNAVAILABLE": "Não foi possível falar com a Pluggy. Tente de novo em alguns minutos."
 }

@@ -1,12 +1,18 @@
-import { Injectable } from '@angular/core';
-import { Observable, delay, of } from 'rxjs';
-import { BANK_CONNECTIONS, INITIAL_TRANSACTIONS, MONTHLY_HISTORY } from './finance.mock';
+import { Injectable, inject } from '@angular/core';
+import { Observable, delay, map, of } from 'rxjs';
+import { ApiClient } from '../api/api-client';
+import { BankConnectionDto, ConnectTokenDto, PagedResultDto } from '../api/types';
+import { toBankConnection } from './bank-connection.mapper';
+import { INITIAL_TRANSACTIONS, MONTHLY_HISTORY } from './finance.mock';
 import { BankConnection, MonthSummary, NewPix, Transaction } from './finance.models';
 
 const FAKE_LATENCY_MS = 300;
+const CONNECTIONS_PAGE_SIZE = 100;
 
 @Injectable({ providedIn: 'root' })
 export class FinanceService {
+  private readonly api = inject(ApiClient);
+
   private transactionsInMemory = [...INITIAL_TRANSACTIONS];
 
   transactions(month: string): Observable<Transaction[]> {
@@ -30,7 +36,23 @@ export class FinanceService {
   }
 
   connections(): Observable<BankConnection[]> {
-    return of(BANK_CONNECTIONS).pipe(delay(FAKE_LATENCY_MS));
+    return this.api
+      .get<PagedResultDto<BankConnectionDto>>(
+        `/api/bank-connections?pageSize=${CONNECTIONS_PAGE_SIZE}`,
+      )
+      .pipe(map((page) => page.items.map(toBankConnection)));
+  }
+
+  createConnectToken(): Observable<string> {
+    return this.api
+      .post<ConnectTokenDto>('/api/bank-connections/connect-token')
+      .pipe(map((dto) => dto.accessToken));
+  }
+
+  registerConnection(itemId: string): Observable<BankConnection> {
+    return this.api
+      .post<BankConnectionDto>('/api/bank-connections', { itemId }, { announce: true })
+      .pipe(map(toBankConnection));
   }
 
   history(): Observable<MonthSummary[]> {

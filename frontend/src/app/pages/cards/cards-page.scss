@@ -10,18 +10,6 @@
   gap: 16px;
 }
 
-.cards__mock-notice {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font: var(--tui-typography-body-s);
-  color: var(--tui-text-tertiary);
-}
-
-.cards__mock-notice tui-icon {
-  font-size: 1rem;
-}
-
 .cards__loader {
   padding: 48px 0;
 }
@@ -56,7 +44,9 @@
   gap: 14px;
 }
 
-.bank__identity [tuiAvatar] {
+.bank__identity [tuiAvatar][tuiAvatar] {
+  background: var(--app-bank, var(--tui-background-neutral-1));
+  color: var(--app-on-bank, var(--tui-text-primary));
   font-family: var(--tui-typography-family-display);
   font-weight: 700;
 }
@@ -116,8 +106,8 @@
 }
 
 .item__thumbnail {
-  background: var(--tui-background-accent-1);
-  color: var(--tui-text-primary-on-accent-1);
+  background: var(--app-bank, var(--tui-background-accent-1));
+  color: var(--app-on-bank, var(--tui-text-primary-on-accent-1));
 }
 
 .item__title {

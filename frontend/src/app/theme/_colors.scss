@@ -45,3 +45,89 @@ $dark: (
   on-aside: #e6ecf7,
   on-aside-muted: #a3b1c9,
 );
+
+$bank-on-light: #ffffff;
+$bank-on-dark: #0b1f3a;
+
+$banks: (
+  banco-do-brasil: (
+    #fcfc30,
+    $bank-on-dark,
+  ),
+  santander: (
+    #ec0000,
+    $bank-on-light,
+  ),
+  banrisul: (
+    #004a93,
+    $bank-on-light,
+  ),
+  brb: (
+    #0055a5,
+    $bank-on-light,
+  ),
+  inter: (
+    #ff7a00,
+    $bank-on-dark,
+  ),
+  caixa: (
+    #005ca9,
+    $bank-on-light,
+  ),
+  btg-pactual: (
+    #0b2341,
+    $bank-on-light,
+  ),
+  banco-original: (
+    #00a857,
+    $bank-on-dark,
+  ),
+  bradesco: (
+    #cc092f,
+    $bank-on-light,
+  ),
+  nubank: (
+    #820ad1,
+    $bank-on-light,
+  ),
+  pagbank: (
+    #1bb99a,
+    $bank-on-dark,
+  ),
+  mercado-pago: (
+    #00b1ea,
+    $bank-on-dark,
+  ),
+  c6-bank: (
+    #242424,
+    $bank-on-light,
+  ),
+  itau: (
+    #ec7000,
+    $bank-on-dark,
+  ),
+  picpay: (
+    #21c25e,
+    $bank-on-dark,
+  ),
+  safra: (
+    #0b2341,
+    $bank-on-light,
+  ),
+  votorantim: (
+    #0033a0,
+    $bank-on-light,
+  ),
+  neon: (
+    #0a68cc,
+    $bank-on-light,
+  ),
+  sicredi: (
+    #3fa110,
+    $bank-on-dark,
+  ),
+  sicoob: (
+    #003641,
+    $bank-on-light,
+  ),
+);

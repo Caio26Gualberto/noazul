@@ -210,8 +210,8 @@ progress[tuiProgressBar] {
 }
 
 .bill__face {
-  background: var(--tui-background-accent-1);
-  color: var(--tui-text-primary-on-accent-1);
+  background: var(--app-bank, var(--tui-background-accent-1));
+  color: var(--app-on-bank, var(--tui-text-primary-on-accent-1));
 }
 
 .bill__name {

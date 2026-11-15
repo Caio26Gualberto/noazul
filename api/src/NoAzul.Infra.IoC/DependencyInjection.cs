@@ -14,6 +14,8 @@ using NoAzul.Application.Abstractions.Repository.UnitOfWork;
 using NoAzul.Application.AuditLogs;
 using NoAzul.Application.AuditLogs.Interfaces;
 using NoAzul.Application.Auth;
+using NoAzul.Application.BankConnections;
+using NoAzul.Application.BankConnections.Interfaces;
 using NoAzul.Application.Auth.Interfaces;
 using NoAzul.Application.Authorizations;
 using NoAzul.Application.Authorizations.Interfaces;
@@ -22,6 +24,7 @@ using NoAzul.Application.BackgroundJobs.Handlers;
 using NoAzul.Application.BackgroundJobs.Interfaces;
 using NoAzul.Application.Common.Time;
 using NoAzul.Application.Interfaces;
+using NoAzul.Application.Interfaces.Pluggy;
 using NoAzul.Application.Items;
 using NoAzul.Application.Items.Interfaces;
 using NoAzul.Application.Profiles;
@@ -39,6 +42,7 @@ using NoAzul.Infra.Data.Identity;
 using NoAzul.Infra.Data.Identity.AuthenticateService;
 using NoAzul.Infra.Data.Identity.Authorization;
 using NoAzul.Infra.Data.Logging;
+using NoAzul.Infra.Data.Pluggy;
 using NoAzul.Infra.Data.Repositories;
 using NoAzul.Infra.Data.Repositories.AuditLogs;
 using NoAzul.Infra.Data.Repositories.BackgroundJobRuns;
@@ -47,8 +51,11 @@ using NoAzul.Infra.Data.Repositories.UnitOfWork;
 using NoAzul.Workers.Dispatch;
 using NoAzul.Workers.Monitoring;
 using NoAzul.Workers.Triggers.Enqueued.BackgroundJobs;
+using NoAzul.Workers.Triggers.Enqueued.BankConnections;
 using NoAzul.Workers.Triggers.Enqueued.Items;
+using NoAzul.Workers.Triggers.Recurring.BankConnections;
 using NoAzul.Workers.Triggers.Recurring.Items;
+using NoAzul.Workers.Wrappers.Recurring.BankConnections;
 using NoAzul.Workers.Wrappers.Recurring.Items;
 
 namespace NoAzul.Infra.IoC
@@ -139,9 +146,17 @@ namespace NoAzul.Infra.IoC
 
             // Services
             services.AddScoped<IItemAppService, ItemAppService>();
+            services.AddScoped<IBankConnectionAppService, BankConnectionAppService>();
 
             // External services
             services.AddScoped<IEmailService, ConsoleEmailService>();
+            services.Configure<PluggyOptions>(config.GetSection(PluggyOptions.SectionName));
+            services.AddHttpClient<IPluggyClient, PluggyClient>(client =>
+            {
+                var baseUrl = config[$"{PluggyOptions.SectionName}:BaseUrl"];
+                client.BaseAddress = new Uri((string.IsNullOrWhiteSpace(baseUrl) ? PluggyOptions.DefaultBaseUrl : baseUrl).TrimEnd('/') + "/");
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
 
             // Jobs
             services.AddScoped<IRecurringJobReader, RecurringJobReader>();
@@ -152,6 +167,9 @@ namespace NoAzul.Infra.IoC
             services.AddScoped<ItemsEnqueuedJobsTrigger>();
             services.AddScoped<ItemRecurringJobsTrigger>();
             services.AddScoped<ItemRecurringJobsWrapper>();
+            services.AddScoped<BankConnectionsEnqueuedJobsTrigger>();
+            services.AddScoped<BankConnectionRecurringJobsTrigger>();
+            services.AddScoped<BankConnectionRecurringJobsWrapper>();
 
             // Repositories
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

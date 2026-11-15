@@ -3,15 +3,19 @@
   "subtitle": "Os bancos mandam os dados uma vez por dia, de manhã, pela Pluggy.",
   "connectBank": "Conectar banco",
   "manage": "Gerenciar",
-  "comingWithPluggy": "Disponível quando a integração com a Pluggy estiver pronta.",
+  "comingSoon": "Disponível em breve.",
   "loading": "Carregando cartões e contas",
-  "empty": "Nenhum banco conectado ainda.",
+  "empty": "Nenhum banco conectado ainda. Clique em \"Conectar banco\" para trazer seus cartões e contas.",
+  "waitingData": "Buscando os cartões e contas deste banco. Isso leva alguns segundos.",
+  "noAccounts": "A Pluggy não trouxe nenhum cartão ou conta deste banco.",
   "sync": {
+    "updating": "Buscando os dados no banco",
     "today": "Atualizado hoje às {{time}} · próxima amanhã de manhã",
     "past": "Atualizado em {{date}} às {{time}} · próxima amanhã de manhã"
   },
   "card": {
     "title": "Cartão {{brand}}",
+    "titleGeneric": "Cartão de crédito",
     "last4": "final {{last4}}",
     "openBill": "Fatura aberta",
     "limitUsage": "Limite usado",
@@ -22,11 +26,10 @@
     "futureInstallments": "Parcelas futuras"
   },
   "account": {
-    "title": "Conta corrente",
-    "branch": "ag. {{branch}}",
-    "balanceAt": "Saldo em {{date}}",
-    "monthOutflow": "Saídas no mês",
-    "monthCount": "Lançamentos no mês"
+    "checking": "Conta corrente",
+    "savings": "Poupança",
+    "number": "nº {{number}}",
+    "balanceAt": "Saldo em {{date}}"
   },
   "expired": {
     "title": "{{bank}} · precisa de atenção",

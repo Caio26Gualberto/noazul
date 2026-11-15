@@ -6,7 +6,7 @@
 
 O que ele **não** é: não movimenta dinheiro, não é produto comercial, não cuida de investimentos e não é em tempo real.
 
-Fase atual: autenticação pronta (login, cadastro com trava, definir senha, trocar senha, perfil) e as telas de gastos (Início, Lançamentos, Lançar Pix, Cartões e contas, Métricas) montadas com **dados de exemplo**, porque a API de gastos e a Pluggy ainda não existem. Veja "Domínio finance".
+Fase atual: autenticação pronta (login, cadastro com trava, definir senha, trocar senha, perfil). Cartões e contas usa a API de verdade (conexão com a Pluggy); Início, Lançamentos, Lançar Pix e Métricas ainda usam **dados de exemplo** para os lançamentos. Veja "Domínio finance".
 
 O dono está aprendendo Angular neste projeto: prefira o caminho padrão e documentado do framework ao atalho esperto.
 
@@ -64,15 +64,17 @@ Serviço de feature novo: uma classe em `app/<feature>/` ou `app/pages/<feature>
 
 ## Domínio finance (`app/finance/`)
 
-Gastos, cartões, contas e métricas. Hoje roda sobre dados de exemplo em memória; a forma já é a de quando a API existir.
+Gastos, cartões, contas e métricas. Os cartões e contas vêm da API; os lançamentos e o histórico ainda são dados de exemplo em memória, já na forma de quando a API existir.
 
 - `finance.models.ts`: os tipos (`Transaction`, `NewPix`, `BankConnection`, `Card`, `Account`, `MonthSummary`) e as categorias fixas (`CATEGORIES`, ids em inglês; o nome na tela vem de `finance.categories.<id>`).
-- `finance.service.ts` (`FinanceService`): `transactions(month)`, `createPix(pix)`, `connections()` e `history()`, todos devolvendo `Observable` com uma latência falsa, como se fossem HTTP. O Pix criado fica só na memória e some ao recarregar a página.
-- `finance.mock.ts`: os dados de exemplo de novembro de 2026 (`CURRENT_MONTH`, `TODAY`). Os totais batem com o mock aprovado: R$ 4.812,40 no mês.
+- `finance.service.ts` (`FinanceService`): `connections()`, `createConnectToken()` e `registerConnection(itemId)` chamam a API (`/api/bank-connections`) pelo `ApiClient`. `transactions(month)`, `createPix(pix)` e `history()` ainda devolvem dados de exemplo com uma latência falsa; o Pix criado fica só na memória e some ao recarregar a página.
+- `bank-connection.mapper.ts`: transforma `BankConnectionDto` no `BankConnection` da tela (cartões e contas separados pelo tipo, bandeira em `CardBrand` e `paymentSystem` do Taiga, status `needsReconnect`/`failed` viram `expired`).
+- `pluggy-connect.service.ts` (`PluggyConnectService`): abre a janela da Pluggy (`pluggy-connect-sdk`, carregado só no clique, por `import()`) e devolve `connected` com o `itemId`, `closed` ou `failed`. Em desenvolvimento mostra também os bancos de teste da Pluggy (`environment.pluggyIncludeSandbox`).
+- `finance.mock.ts`: os lançamentos e o histórico de exemplo de novembro de 2026 (`CURRENT_MONTH`, `TODAY`). Os totais batem com o mock aprovado: R$ 4.812,40 no mês.
 - `finance.calc.ts`: somas por origem e por categoria, usadas pelo Início e pelas Métricas.
 - Textos compartilhados (categorias, origens, "Pendente", parcelas) em `i18n/pt-BR/finance.json`.
 
-Quando a API de gastos existir: o `FinanceService` passa a injetar `ApiClient` (como o `AuthService`), os tipos vão para `api/types.ts` espelhando os DTOs, e `finance.mock.ts` é apagado. As páginas não mudam, porque já consomem `Observable`.
+Quando a API de lançamentos existir: `transactions`, `createPix` e `history` passam a chamar a API como `connections()`, os tipos vão para `api/types.ts`, e `finance.mock.ts` é apagado. As páginas não mudam, porque já consomem `Observable`. Enquanto isso, o Início mistura as faturas reais com os lançamentos de exemplo.
 
 ## Autenticação (`app/auth/`)
 
@@ -108,6 +110,7 @@ Recuperação de senha e verificação de e-mail não existem na API e não têm
 - Ícones: os do Taiga (Lucide), pelo nome: `<tui-icon icon="@tui.house" />` ou `iconStart="@tui.menu"` no botão. O `angular.json` copia os SVG para `assets/taiga-ui/icons`.
 - O `App` envolve tudo em `<tui-root>`: sem ele, dropdown, notificação e dica não aparecem.
 - Identidade "Azul calmo", decidida pelo dono. Mudar cor, fonte ou layout é decisão dele.
+- Cor por banco (decisão do dono, 2026-11-15): `$banks` em `_colors.scss` guarda fundo e cor do texto de cada banco (texto escolhido pelo contraste, mínimo 4,5:1); o `_theme.scss` gera `.app-bank--<banco>` com `--app-bank` e `--app-on-bank`. O `bank-connection.mapper.ts` traduz o `bankCode` da API (código COMPE, ex.: `341`) na chave (`itau`) e `bankClass()` devolve a classe. Componente usa `var(--app-bank, <cor padrão>)`. Banco novo: uma linha em `$banks` e uma em `BANK_KEYS`.
 
 ## Formulários com Taiga
 
@@ -145,6 +148,7 @@ Recuperação de senha e verificação de e-mail não existem na API e não têm
 - O aviso de orçamento do build está em 700 kB para o pacote inicial.
 - O Taiga 5 espera o idioma como **signal**: `{ provide: TUI_LANGUAGE, useValue: signal(TUI_PORTUGUESE_LANGUAGE) }`. Com `of(...)` (o jeito do Taiga 4, que ainda aparece em exemplos) os campos quebram com "language is not a function" e derrubam a tela inteira.
 - O tema do Taiga é `.less`: o pacote `less` precisa estar nas devDependencies para o build.
+- O `pluggy-connect-sdk` depende do `zoid`, que não é ESM: ele está em `allowedCommonJsDependencies` no `angular.json` para o build não avisar. Versão fixada (sem `^`) porque é a janela que mexe com login de banco.
 
 ## Como este arquivo evolui
 

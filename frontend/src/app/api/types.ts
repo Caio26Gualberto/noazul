@@ -27,3 +27,46 @@ export interface ProfileDto {
 export interface RegistrationStatusDto {
   enabled: boolean;
 }
+
+export interface PagedResultDto<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+}
+
+export type BankConnectionStatusDto = 'ok' | 'updating' | 'needsReconnect' | 'failed';
+
+export type FinancialAccountTypeDto = 'checking' | 'savings' | 'creditCard';
+
+export interface FinancialAccountDto {
+  id: number;
+  type: FinancialAccountTypeDto;
+  name: string;
+  number: string;
+  balance: number;
+  currencyCode: string;
+  balanceUpdatedAt: string;
+  cardBrand: string | null;
+  creditLimit: number | null;
+  availableCreditLimit: number | null;
+  billClosesOn: string | null;
+  billDueOn: string | null;
+  previousBillAmount: number | null;
+}
+
+export interface BankConnectionDto {
+  id: number;
+  institutionName: string;
+  bankCode: string | null;
+  institutionImageUrl: string | null;
+  status: BankConnectionStatusDto;
+  providerUpdatedAt: string | null;
+  lastSyncedAt: string | null;
+  createdAt: string;
+  accounts: FinancialAccountDto[];
+}
+
+export interface ConnectTokenDto {
+  accessToken: string;
+}

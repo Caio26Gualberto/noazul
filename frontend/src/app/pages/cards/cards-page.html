@@ -3,16 +3,17 @@
     <div class="app-page__header">
       <h1 class="app-title">{{ t('cards.title') }}</h1>
       <p class="app-subtitle">{{ t('cards.subtitle') }}</p>
-      <p class="cards__mock-notice">
-        <tui-icon icon="@tui.info" />
-        {{ t('finance.mockNotice') }}
-      </p>
     </div>
-    <span [tuiHint]="t('cards.comingWithPluggy')">
-      <button tuiButton type="button" size="m" iconStart="@tui.plus" disabled>
-        {{ t('cards.connectBank') }}
-      </button>
-    </span>
+    <button
+      tuiButton
+      type="button"
+      size="m"
+      iconStart="@tui.plus"
+      [loading]="connecting()"
+      (click)="connectBank()"
+    >
+      {{ t('cards.connectBank') }}
+    </button>
   </header>
 
   @if (loading()) {
@@ -28,7 +29,7 @@
               {{ t('cards.expired.text', { date: connection.expiredAt | date: 'dd/MM' }) }}
             </span>
             <div>
-              <span [tuiHint]="t('cards.comingWithPluggy')">
+              <span [tuiHint]="t('cards.comingSoon')">
                 <button tuiButton type="button" size="s" disabled>
                   {{ t('cards.expired.reconnect') }}
                 </button>
@@ -37,7 +38,7 @@
           </div>
         </section>
       } @else {
-        <section class="app-card bank">
+        <section class="app-card bank" [class]="view.bankClass">
           <header class="bank__header">
             <div class="bank__identity">
               <span tuiAvatar size="m" appearance="secondary" [round]="false" aria-hidden="true">
@@ -47,7 +48,9 @@
                 <h2 class="bank__name">{{ connection.bank }}</h2>
                 <span class="bank__sync">
                   <span class="bank__sync-dot" aria-hidden="true"></span>
-                  @if (view.syncedToday) {
+                  @if (connection.status === 'updating') {
+                    {{ t('cards.sync.updating') }}
+                  } @else if (view.syncedToday) {
                     {{ t('cards.sync.today', { time: view.syncTime }) }}
                   } @else {
                     {{ t('cards.sync.past', { date: view.syncDate, time: view.syncTime }) }}
@@ -55,7 +58,7 @@
                 </span>
               </div>
             </div>
-            <span [tuiHint]="t('cards.comingWithPluggy')">
+            <span [tuiHint]="t('cards.comingSoon')">
               <button tuiButton type="button" size="s" appearance="secondary" disabled>
                 {{ t('cards.manage') }}
               </button>
@@ -66,11 +69,19 @@
             @for (card of connection.cards; track card.id) {
               <article class="item">
                 <div class="item__heading">
-                  <tui-thumbnail-card size="m" class="item__thumbnail" [paymentSystem]="card.brand">
+                  <tui-thumbnail-card
+                    size="m"
+                    class="item__thumbnail"
+                    [paymentSystem]="card.paymentSystem"
+                  >
                     {{ card.last4 }}
                   </tui-thumbnail-card>
                   <h3 class="item__title">
-                    {{ t('cards.card.title', { brand: t('finance.brands.' + card.brand) }) }}
+                    @if (card.brand === 'other') {
+                      {{ t('cards.card.titleGeneric') }}
+                    } @else {
+                      {{ t('cards.card.title', { brand: t('finance.brands.' + card.brand) }) }}
+                    }
                   </h3>
                   <span class="item__aside">{{
                     t('cards.card.last4', { last4: card.last4 })
@@ -82,31 +93,37 @@
                   <span class="item__amount">{{ card.openBill | currency }}</span>
                 </div>
 
-                <progress
-                  tuiProgressBar
-                  size="s"
-                  [value]="card.openBill"
-                  [max]="card.limit"
-                  [attr.aria-label]="t('cards.card.limitUsage')"
-                ></progress>
-                <span class="item__label">
-                  {{
-                    t('cards.card.limitUsed', {
-                      used: card.openBill | currency,
-                      limit: card.limit | currency,
-                    })
-                  }}
-                </span>
+                @if (card.limit > 0) {
+                  <progress
+                    tuiProgressBar
+                    size="s"
+                    [value]="card.openBill"
+                    [max]="card.limit"
+                    [attr.aria-label]="t('cards.card.limitUsage')"
+                  ></progress>
+                  <span class="item__label">
+                    {{
+                      t('cards.card.limitUsed', {
+                        used: card.openBill | currency,
+                        limit: card.limit | currency,
+                      })
+                    }}
+                  </span>
+                }
 
                 <dl class="item__facts">
-                  <div>
-                    <dt>{{ t('cards.card.closesOn') }}</dt>
-                    <dd>{{ card.closesOn | date: 'dd/MM' }}</dd>
-                  </div>
-                  <div>
-                    <dt>{{ t('cards.card.dueOn') }}</dt>
-                    <dd>{{ card.dueOn | date: 'dd/MM' }}</dd>
-                  </div>
+                  @if (card.closesOn) {
+                    <div>
+                      <dt>{{ t('cards.card.closesOn') }}</dt>
+                      <dd>{{ card.closesOn | date: 'dd/MM' }}</dd>
+                    </div>
+                  }
+                  @if (card.dueOn) {
+                    <div>
+                      <dt>{{ t('cards.card.dueOn') }}</dt>
+                      <dd>{{ card.dueOn | date: 'dd/MM' }}</dd>
+                    </div>
+                  }
                   @if (card.futureInstallments > 0) {
                     <div>
                       <dt>{{ t('cards.card.futureInstallments') }}</dt>
@@ -122,13 +139,12 @@
               </article>
             }
 
-            @for (accountView of view.accounts; track accountView.account.id) {
-              @let account = accountView.account;
+            @for (account of connection.accounts; track account.id) {
               <article class="item">
                 <div class="item__heading">
-                  <h3 class="item__title">{{ t('cards.account.title') }}</h3>
+                  <h3 class="item__title">{{ t('cards.account.' + account.kind) }}</h3>
                   <span class="item__aside">
-                    {{ t('cards.account.branch', { branch: account.branch }) }}
+                    {{ t('cards.account.number', { number: account.number }) }}
                   </span>
                 </div>
 
@@ -138,18 +154,17 @@
                   </span>
                   <span class="item__amount">{{ account.balance | currency }}</span>
                 </div>
-
-                <dl class="item__facts">
-                  <div>
-                    <dt>{{ t('cards.account.monthOutflow') }}</dt>
-                    <dd>{{ accountView.monthOutflow | currency }}</dd>
-                  </div>
-                  <div>
-                    <dt>{{ t('cards.account.monthCount') }}</dt>
-                    <dd>{{ accountView.monthCount }}</dd>
-                  </div>
-                </dl>
               </article>
+            }
+
+            @if (connection.cards.length === 0 && connection.accounts.length === 0) {
+              <p class="cards__empty">
+                @if (connection.status === 'updating') {
+                  {{ t('cards.waitingData') }}
+                } @else {
+                  {{ t('cards.noAccounts') }}
+                }
+              </p>
             }
           </div>
         </section>

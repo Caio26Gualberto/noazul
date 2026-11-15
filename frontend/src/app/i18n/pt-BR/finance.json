@@ -18,7 +18,11 @@
   "installment": "Parcela {{current}} de {{total}}",
   "brands": {
     "mastercard": "Mastercard",
-    "visa": "Visa"
+    "visa": "Visa",
+    "elo": "Elo",
+    "amex": "American Express",
+    "hipercard": "Hipercard",
+    "other": "Cartão"
   },
   "mockNotice": "Dados de exemplo: a integração com os bancos ainda não existe."
 }

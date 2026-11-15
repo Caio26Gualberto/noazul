@@ -6,7 +6,7 @@
 
 O que ele **não** é: não movimenta dinheiro (só lê e organiza), não é produto comercial (sem cadastro aberto ao público, sem planos), não cuida de investimentos e não é em tempo real (os dados do banco chegam uma vez por dia).
 
-Fase atual: base do projeto, com autenticação funcionando de ponta a ponta (cadastro com trava, login, renovação de sessão, perfil, troca de senha). A integração com a Pluggy, os lançamentos, as métricas e o deploy ainda não existem.
+Fase atual: autenticação funcionando de ponta a ponta (cadastro com trava, login, renovação de sessão, perfil, troca de senha) e a tela Cartões e contas ligada à Pluggy (conectar banco, sincronização diária de cartões e contas). Os lançamentos, as métricas e o deploy ainda não existem.
 
 ## Mapa
 
@@ -50,6 +50,9 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
   - Métricas: gasto por mês, divisão por origem, maiores gastos e categorias do mês contra o anterior.
   - Cada pessoa vê só a própria conta; não há visão da família junta.
 - Biblioteca de UI: Taiga UI no lugar do Angular Material. O dono achou o visual fraco e escolheu depois de comparar a tela de Início montada em Material, PrimeNG, Spartan UI e Taiga UI. Substitui a escolha do Angular Material; a identidade "Azul calmo" continua valendo, então as cores próprias do Taiga (como os gradientes dos cartões) seguem a paleta da marca. A migração do `frontend/` foi feita no mesmo dia (2026-11-14).
+- Conexão com o banco: botão "Conectar banco" na tela Cartões e contas, que abre a janela oficial da Pluggy (Pluggy Connect); o NoAzul guarda a conexão sozinho. Descartado: colar o Item ID copiado do meu.pluggy.ai (2026-11-15).
+- Cor por banco: o quadrado da marca e a miniatura de cada cartão usam a cor do banco (Itaú laranja, Nubank roxo…), em Cartões e contas e nas faturas do Início. Substitui, só nesses dois lugares, a regra de que as cores dos cartões seguem a paleta da marca; o resto continua "Azul calmo". Banco sem cor conhecida fica neutro na marca e azul no cartão (2026-11-15).
+- Cada pessoa usa o próprio Meu Pluggy e conecta só os próprios bancos; o NoAzul usa um único `client_id`/`client_secret`, da aplicação do dono no dashboard da Pluggy (2026-11-15).
 
 ## Como o agente trabalha aqui
 

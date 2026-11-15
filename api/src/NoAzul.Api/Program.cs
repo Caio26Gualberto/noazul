@@ -10,6 +10,7 @@ using NoAzul.Api.Authorization;
 using NoAzul.Api.Middlewares;
 using NoAzul.Api.RateLimiting;
 using NoAzul.Application.Abstractions.Authentication;
+using NoAzul.Application.Abstractions.Logging;
 using NoAzul.Infra.Data.Context;
 using NoAzul.Infra.Data.Context.Seeding;
 using NoAzul.Infra.IoC;
@@ -31,7 +32,7 @@ builder.Services.AddHangfire(config =>
 builder.Services.AddHangfireServer(options =>
 {
     options.ServerName = "noazul-main";
-    options.Queues = new[] { "default", "items" };
+    options.Queues = new[] { "default", "bank-connections", "items" };
 });
 
 builder.Services.AddControllers(options =>
@@ -109,6 +110,17 @@ if (!app.Environment.IsProduction())
 }
 
 app.RegisterJobs();
+
+if (string.IsNullOrWhiteSpace(app.Configuration["Pluggy:ClientId"])
+    || string.IsNullOrWhiteSpace(app.Configuration["Pluggy:ClientSecret"]))
+{
+    using var scope = app.Services.CreateScope();
+    scope.ServiceProvider.GetRequiredService<IApplicationLoggerFactory>()
+        .Create(LogContext.BankConnections)
+        .Warning(
+            eventName: "PLUGGY_NOT_CONFIGURED",
+            message: "Pluggy:ClientId and Pluggy:ClientSecret are missing; bank connections are disabled");
+}
 
 if (app.Environment.IsDevelopment())
 {

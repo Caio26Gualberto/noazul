@@ -1,3 +1,5 @@
+import type { TuiPaymentSystem } from '@taiga-ui/addon-commerce';
+
 export type Origin = 'card' | 'account' | 'pix';
 
 export const CATEGORIES = [
@@ -38,34 +40,42 @@ export interface NewPix {
   note: string | null;
 }
 
-export type CardBrand = 'mastercard' | 'visa';
+export const CARD_BRANDS = ['mastercard', 'visa', 'elo', 'amex', 'hipercard', 'other'] as const;
+
+export type CardBrand = (typeof CARD_BRANDS)[number];
 
 export interface Card {
   id: number;
   brand: CardBrand;
+  paymentSystem: TuiPaymentSystem | null;
   last4: string;
   limit: number;
   openBill: number;
   previousBill: number;
   futureInstallments: number;
-  closesOn: string;
-  dueOn: string;
+  closesOn: string | null;
+  dueOn: string | null;
 }
+
+export type AccountKind = 'checking' | 'savings';
 
 export interface Account {
   id: number;
-  branch: string;
+  kind: AccountKind;
+  number: string;
   balance: number;
   balanceAt: string;
 }
 
-export type ConnectionStatus = 'ok' | 'expired';
+export type ConnectionStatus = 'ok' | 'updating' | 'expired';
 
 export interface BankConnection {
   id: number;
   bank: string;
+  bankKey: string | null;
+  imageUrl: string | null;
   status: ConnectionStatus;
-  lastSyncAt: string;
+  lastSyncAt: string | null;
   expiredAt: string | null;
   cards: Card[];
   accounts: Account[];

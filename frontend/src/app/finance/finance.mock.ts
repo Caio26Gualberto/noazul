@@ -1,4 +1,4 @@
-import { BankConnection, MonthSummary, Transaction } from './finance.models';
+import { MonthSummary, Transaction } from './finance.models';
 
 export const CURRENT_MONTH = '2026-11';
 export const TODAY = '2026-11-14';
@@ -60,60 +60,6 @@ export const INITIAL_TRANSACTIONS: Transaction[] = rows.map(
     note: null,
   }),
 );
-
-export const BANK_CONNECTIONS: BankConnection[] = [
-  {
-    id: 1,
-    bank: 'Nubank',
-    status: 'ok',
-    lastSyncAt: '2026-11-14T06:12:00-03:00',
-    expiredAt: null,
-    cards: [
-      {
-        id: 1,
-        brand: 'mastercard',
-        last4: '4821',
-        limit: 6000,
-        openBill: 2184.3,
-        previousBill: 2906.15,
-        futureInstallments: 0,
-        closesOn: '2026-12-03',
-        dueOn: '2026-12-10',
-      },
-    ],
-    accounts: [{ id: 1, branch: '0001', balance: 3912.55, balanceAt: '2026-11-14' }],
-  },
-  {
-    id: 2,
-    bank: 'Itaú',
-    status: 'ok',
-    lastSyncAt: '2026-11-14T06:15:00-03:00',
-    expiredAt: null,
-    cards: [
-      {
-        id: 2,
-        brand: 'visa',
-        last4: '1307',
-        limit: 4500,
-        openBill: 1179.8,
-        previousBill: 1342.6,
-        futureInstallments: 1049.3,
-        closesOn: '2026-12-08',
-        dueOn: '2026-12-15',
-      },
-    ],
-    accounts: [],
-  },
-  {
-    id: 3,
-    bank: 'Banco Inter',
-    status: 'expired',
-    lastSyncAt: '2026-11-10T06:20:00-03:00',
-    expiredAt: '2026-11-10',
-    cards: [],
-    accounts: [],
-  },
-];
 
 export const MONTHLY_HISTORY: MonthSummary[] = [
   {

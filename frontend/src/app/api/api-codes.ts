@@ -58,6 +58,16 @@ export const ApiCodes = {
   networkError: 'NETWORK_ERROR',
   unexpectedError: 'UNEXPECTED_ERROR',
   unknownError: 'UNKNOWN_ERROR',
+
+  bankConnectionsLoaded: 'BANK_CONNECTIONS_LOADED',
+  bankConnectTokenCreated: 'BANK_CONNECT_TOKEN_CREATED',
+  bankConnectionCreated: 'BANK_CONNECTION_CREATED',
+  bankConnectionRefreshed: 'BANK_CONNECTION_REFRESHED',
+  bankConnectionItemIdInvalid: 'BANK_CONNECTION_ITEM_ID_INVALID',
+  bankConnectionItemNotFound: 'BANK_CONNECTION_ITEM_NOT_FOUND',
+  bankConnectionTaken: 'BANK_CONNECTION_TAKEN',
+  pluggyNotConfigured: 'PLUGGY_NOT_CONFIGURED',
+  pluggyUnavailable: 'PLUGGY_UNAVAILABLE',
 } as const;
 
 export type ApiCode = (typeof ApiCodes)[keyof typeof ApiCodes];

@@ -1,3 +1,4 @@
+@use 'sass:list';
 @use 'sass:map';
 @use './colors';
 
@@ -55,4 +56,11 @@
   --app-color-on-aside: #{tone(on-aside)};
   --app-color-on-aside-muted: #{tone(on-aside-muted)};
   --app-radius: 14px;
+}
+
+@each $bank, $pair in colors.$banks {
+  .app-bank--#{$bank} {
+    --app-bank: #{list.nth($pair, 1)};
+    --app-on-bank: #{list.nth($pair, 2)};
+  }
 }

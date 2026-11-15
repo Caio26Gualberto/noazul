@@ -25,6 +25,7 @@ Só rate limit não basta porque IP roda barato. Só regra de negócio não bast
 | `login` | 10/5min por IP | erro de senha acontece; script de força bruta não |
 | `refresh-token` | 30/5min por IP | grava/revoga linha a cada chamada |
 | `item-create` | 20/h por usuário | exemplo de escrita que cria linha nova sem limite natural |
+| `bank-connect` | 20/h por usuário | `connect-token` e cadastro de conexão: cada chamada vai à Pluggy |
 
 Endpoint novo que **cria**, **envia** ou **chama fora** nasce com política própria e uma linha nesta tabela. Os números são ponto de partida; o projeto ajusta e registra o porquê.
 
