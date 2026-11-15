@@ -236,7 +236,7 @@ Migration já aplicada não se desfaz sozinha: se a versão nova criou tabela, r
 | Login dá "erro de conexão" e o console mostra CORS | `Cors__AllowedOrigins__0` diferente do endereço do site | confira o `.env` (`https://noazul.space`, sem barra no fim) e rode `docker compose up -d api` |
 | Recarregar `/lancamentos` dá 404 | falta o rewrite da SPA | passo 8.4 |
 | A janela da Pluggy não abre no site | o painel da Pluggy pode exigir o domínio liberado | no painel da Pluggy, procure a lista de domínios/URLs permitidos da aplicação e adicione `https://noazul.space` |
-| Janela da Pluggy mostra "Um erro inesperado ocorreu" e a aba Network tem `ITEM_USER_ALREADY_EXISTS` | o mesmo Meu Pluggy já está conectado em outro ambiente (o local) na mesma aplicação da Pluggy | desconecte no NoAzul local (apaga o item na Pluggy) e conecte de novo na produção; no local, use só o Pluggy Bank |
+| Janela da Pluggy mostra "Um erro inesperado ocorreu" e a aba Network tem `ITEM_USER_ALREADY_EXISTS` | o connect token com `avoidDuplicates` (corrigido em 2026-11-15) | confira se a API em produção já tem o commit que tirou a opção (`api/.claude/rules/bancos-pluggy.md`) |
 | `backup.sh` falha com `AccessDenied` | chave errada ou política sem o prefixo | passo 3 e `~/.aws/credentials` |
 | Ninguém consegue criar conta | `Auth__AllowRegistration=false` | esperado depois do passo 9 |
 

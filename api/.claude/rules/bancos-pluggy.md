@@ -46,7 +46,7 @@ Quem nunca usou a Pluggy não sabe que precisa conectar o banco no Meu Pluggy an
 
 ## Conectar de novo o mesmo banco não é erro
 
-O connect token pede `avoidDuplicates`, então a Pluggy pode devolver um item que já está guardado. Se ele é da mesma pessoa, a resposta é `BANK_CONNECTION_REFRESHED` e a sincronização é enfileirada. Se é de outra pessoa, `BANK_CONNECTION_TAKEN` (409). Nos dois casos de "mesma pessoa" a conexão passa para `Updating` até a sincronização terminar.
+Se a Pluggy devolve um item que já está guardado (o caso do Reconectar, com `updateItem`), e ele é da mesma pessoa, a resposta é `BANK_CONNECTION_REFRESHED` e a sincronização é enfileirada. Se é de outra pessoa, `BANK_CONNECTION_TAKEN` (409). Nos dois casos de "mesma pessoa" a conexão passa para `Updating` até a sincronização terminar.
 
 ## Reconectar e desconectar (decidido pelo dono em 2026-11-15)
 
@@ -128,11 +128,13 @@ Pelo conector MeuPluggy, `item.connector.name` é sempre "MeuPluggy" e o `imageU
 - Descartado: usar o `name` da conta. Ele vem inconsistente no mesmo banco ("itau", "ITAU VISA PLATINUM").
 - O logo do MeuPluggy não é guardado (`InstitutionImageUrl` fica nulo), para não aparecer como se fosse o do banco.
 
-## Um item por credencial: desenvolvimento só com o sandbox
+## Sem `avoidDuplicates` no connect token (2026-11-15)
 
-O desenvolvimento local e a produção usam a mesma aplicação da Pluggy (um `client_id`). A Pluggy não deixa criar dois items com as mesmas credenciais: conectar na produção um Meu Pluggy que já foi conectado no local dá `ITEM_USER_ALREADY_EXISTS` ("There are other items with the same credentials") dentro da janela da Pluggy, que mostra só "Um erro inesperado ocorreu". Visto no primeiro deploy, em 2026-11-15, com o Itaú do dono. A saída foi desconectar no local (o que apaga o item na Pluggy) e conectar de novo na produção.
+O connect token pedia `avoidDuplicates`, que "evita criar um item novo se já existe um com as mesmas credenciais". O MeuPluggy é conector OAuth: o item nasce antes do login, com credenciais vazias, então qualquer item MeuPluggy já existente na aplicação bloqueia o de **qualquer** pessoa com `ITEM_USER_ALREADY_EXISTS` ("There are other items with the same credentials"), e a janela da Pluggy mostra só "Um erro inesperado ocorreu". Visto no primeiro deploy: primeiro com o dono (havia o item do desenvolvimento) e depois com o pai, que nunca tinha conectado nada. A opção saiu; a primeira explicação, de que era só o item do desenvolvimento, estava errada.
 
-- Desenvolvimento usa só o banco de teste da Pluggy (Pluggy Bank, `user-ok` / `password-ok`). O Meu Pluggy de verdade fica para a produção.
+- Efeito colateral: clicar em "Conectar banco" de novo para um banco que já está no NoAzul cria uma segunda conexão (item novo na Pluggy), e os gastos contariam em dobro. Para atualizar um banco, o caminho é "Gerenciar → Reconectar". Barrar a duplicata (por exemplo, pelo número da conta depois da sincronização) fica em aberto.
+
+- Continua valendo: desenvolvimento usa só o banco de teste da Pluggy (Pluggy Bank, `user-ok` / `password-ok`), para o local e a produção não lerem a mesma conexão.
 - Descartado: cadastrar o mesmo item nos dois ambientes. Os dois leriam a mesma conexão todo dia, gastando em dobro o limite de leituras da Pluggy (contas cerca de 4/mês).
 - O uso pessoal do Meu Pluggy permite até 5 conexões por aplicação, e a autorização vale 1 ano (`consentExpiresAt`). Ao autorizar de novo, o `itemId` pode mudar: o Reconectar supõe o mesmo item e precisa tratar isso (em aberto).
 

@@ -32,7 +32,7 @@ namespace NoAzul.Infra.Data.Pluggy
 
         public async Task<string> CreateConnectTokenAsync(string clientUserId, string? itemId)
         {
-            var body = new ConnectTokenRequest(itemId, new ConnectTokenOptions(clientUserId, AvoidDuplicates: true));
+            var body = new ConnectTokenRequest(itemId, new ConnectTokenOptions(clientUserId));
             using var request = await AuthorizedAsync(HttpMethod.Post, "connect_token");
             request.Content = JsonContent.Create(body, options: JsonOptions);
 
@@ -228,7 +228,7 @@ namespace NoAzul.Infra.Data.Pluggy
             [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ItemId,
             ConnectTokenOptions Options);
 
-        private sealed record ConnectTokenOptions(string ClientUserId, bool AvoidDuplicates);
+        private sealed record ConnectTokenOptions(string ClientUserId);
 
         private sealed record ConnectTokenResponse(string AccessToken);
 
