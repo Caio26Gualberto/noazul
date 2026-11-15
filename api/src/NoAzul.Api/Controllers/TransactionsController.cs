@@ -37,5 +37,13 @@ namespace NoAzul.Api.Controllers
             var result = await _appService.UpdateCategory(id, input);
             return ToResponse(result);
         }
+
+        [EnableRateLimiting(ApiRateLimitPolicies.TransactionCategory)]
+        [HttpPut("{id:int}/display-name")]
+        public async Task<ActionResult> UpdateDisplayName(int id, [FromBody] UpdateDisplayNameInputDto input)
+        {
+            var result = await _appService.UpdateDisplayName(id, input);
+            return ToResponse(result);
+        }
     }
 }

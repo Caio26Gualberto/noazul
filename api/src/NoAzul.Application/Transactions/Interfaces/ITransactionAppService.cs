@@ -10,6 +10,7 @@ namespace NoAzul.Application.Transactions.Interfaces
         Task<Result<PagedResultDto<TransactionDto>>> GetMine(TransactionListQueryDto query);
         Task<Result<List<MonthSummaryDto>>> GetMonthlySummary(int months);
         Task<Result<CategoryRuleResultDto>> UpdateCategory(int id, UpdateTransactionCategoryInputDto input);
+        Task<Result<DisplayNameResultDto>> UpdateDisplayName(int id, UpdateDisplayNameInputDto input);
 
         Task<int> SyncFromProvider(FinancialAccount account, int userId);
         Task<int> RemoveForAccounts(IReadOnlyCollection<int> financialAccountIds);

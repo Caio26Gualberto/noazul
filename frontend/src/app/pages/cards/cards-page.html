@@ -219,7 +219,67 @@
         </section>
       }
     } @empty {
-      <p class="app-card cards__empty">{{ t('cards.empty') }}</p>
+      <section class="app-card cards__guide">
+        <h2 class="cards__guide-title">{{ t('cards.guide.title') }}</h2>
+        <p class="app-subtitle">{{ t('cards.guide.intro') }}</p>
+        <ng-container [ngTemplateOutlet]="steps" />
+        <div class="cards__guide-actions">
+          <a
+            tuiButton
+            appearance="secondary"
+            size="m"
+            iconEnd="@tui.external-link"
+            [href]="meuPluggyUrl"
+            target="_blank"
+            rel="noopener"
+          >
+            {{ t('cards.guide.openMeuPluggy') }}
+          </a>
+          <button tuiButton type="button" size="m" [loading]="connecting()" (click)="connectBank()">
+            {{ t('cards.connectBank') }}
+          </button>
+        </div>
+      </section>
     }
   }
+
+  <ng-template #steps>
+    <ol class="cards__steps">
+      <li>
+        <strong>{{ t('cards.guide.step1.title') }}</strong>
+        <span>{{ t('cards.guide.step1.text') }}</span>
+      </li>
+      <li>
+        <strong>{{ t('cards.guide.step2.title') }}</strong>
+        <span>{{ t('cards.guide.step2.text') }}</span>
+      </li>
+      <li>
+        <strong>{{ t('cards.guide.step3.title') }}</strong>
+        <span>{{ t('cards.guide.step3.text') }}</span>
+      </li>
+    </ol>
+  </ng-template>
+
+  <ng-template #beforeConnect let-observer>
+    <div class="cards__before">
+      <p class="app-subtitle">{{ t('cards.before.intro') }}</p>
+      <ng-container [ngTemplateOutlet]="steps" />
+      <div class="cards__guide-actions">
+        <a
+          tuiButton
+          appearance="secondary"
+          size="m"
+          iconEnd="@tui.external-link"
+          [href]="meuPluggyUrl"
+          target="_blank"
+          rel="noopener"
+        >
+          {{ t('cards.guide.openMeuPluggy') }}
+        </a>
+        <button tuiButton type="button" size="m" (click)="observer.next(true); observer.complete()">
+          {{ t('cards.before.continue') }}
+        </button>
+      </div>
+    </div>
+  </ng-template>
 </section>

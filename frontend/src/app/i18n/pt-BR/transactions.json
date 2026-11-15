@@ -55,5 +55,13 @@
     "deleteTitle": "Apagar {{name}}?",
     "deleteText": "Os lançamentos desta categoria voltam para a categoria automática, e os que chegarem depois também.",
     "deleteConfirm": "Apagar categoria"
+  },
+  "rename": {
+    "open": "Renomear {{name}}",
+    "title": "Renomear lançamento",
+    "original": "Nome do banco:",
+    "name": "Nome que vai aparecer",
+    "hint": "Vale para este lançamento e para todos com o mesmo nome do banco, os de agora e os que chegarem depois. Aparece também no Início e nas Métricas.",
+    "reset": "Voltar ao nome do banco"
   }
 }

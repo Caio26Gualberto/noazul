@@ -18,6 +18,7 @@ namespace NoAzul.Application.Transactions
     {
         private const int DescriptionMaxLength = 200;
         private const int SearchMaxLength = 100;
+        private const int DisplayNameMaxLength = 60;
         private const int MaxSummaryMonths = 24;
         private const int FirstSyncMonths = 12;
         private const int ResyncDays = 30;
@@ -25,6 +26,7 @@ namespace NoAzul.Application.Transactions
         private readonly ITransactionRepository _repository;
         private readonly IRepository<CategoryRule> _rules;
         private readonly IRepository<CustomCategory> _customCategories;
+        private readonly IRepository<DescriptionAlias> _aliases;
         private readonly IPluggyClient _pluggy;
         private readonly ICurrentUser _currentUser;
         private readonly IApplicationLogger _logger;
@@ -33,6 +35,7 @@ namespace NoAzul.Application.Transactions
             ITransactionRepository repository,
             IRepository<CategoryRule> rules,
             IRepository<CustomCategory> customCategories,
+            IRepository<DescriptionAlias> aliases,
             IPluggyClient pluggy,
             ICurrentUser currentUser,
             IApplicationLoggerFactory loggerFactory)
@@ -40,6 +43,7 @@ namespace NoAzul.Application.Transactions
             _repository = repository;
             _rules = rules;
             _customCategories = customCategories;
+            _aliases = aliases;
             _pluggy = pluggy;
             _currentUser = currentUser;
             _logger = loggerFactory.Create(LogContext.Transactions);
@@ -104,6 +108,11 @@ namespace NoAzul.Application.Transactions
             var userId = _currentUser.UserId;
             var (fromUtc, toUtc) = AppTime.MonthWindowUtc(month.Value.Year, month.Value.Month);
 
+            var aliases = await LoadAliasesAsync(userId);
+            var aliasMatches = string.IsNullOrEmpty(search)
+                ? []
+                : aliases.Where(a => a.Value.ToLowerInvariant().Contains(search)).Select(a => a.Key).ToList();
+
             var options = new QueryOptions<Transaction>
             {
                 AsNoTracking = true,
@@ -117,7 +126,9 @@ namespace NoAzul.Application.Transactions
                         || (filterCustomId != null
                             ? t.CustomCategoryId == filterCustomId
                             : t.CustomCategoryId == null && t.Category == filterCategory))
-                    && (string.IsNullOrEmpty(search) || t.Description.ToLower().Contains(search)),
+                    && (string.IsNullOrEmpty(search)
+                        || t.Description.ToLower().Contains(search)
+                        || aliasMatches.Contains(t.Description)),
                 OrderBy = q => q.OrderByDescending(t => t.OccurredAt).ThenByDescending(t => t.Id),
                 Skip = query.Skip,
                 Take = query.PageSize
@@ -127,10 +138,83 @@ namespace NoAzul.Application.Transactions
             var transactions = await _repository.ListAsync(options);
 
             var page = PagedResultDto<TransactionDto>.Create(
-                transactions.Select(Map).ToList(), query.Page, query.PageSize, totalCount);
+                transactions.Select(t => Map(t, aliases.GetValueOrDefault(t.Description))).ToList(),
+                query.Page,
+                query.PageSize,
+                totalCount);
 
             return Result<PagedResultDto<TransactionDto>>.Ok(page, "TRANSACTIONS_LOADED", "Transactions loaded successfully");
         }
+
+        public async Task<Result<DisplayNameResultDto>> UpdateDisplayName(int id, UpdateDisplayNameInputDto input)
+        {
+            _logger.SetOperation("UpdateTransactionDisplayName");
+
+            var name = string.Join(' ', (input.Name ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries));
+
+            if (name.Length > DisplayNameMaxLength)
+                return Result<DisplayNameResultDto>.Fail(new Error(
+                    "TRANSACTION_NAME_INVALID",
+                    $"Name must be up to {DisplayNameMaxLength} characters",
+                    ErrorType.Validation));
+
+            var userId = _currentUser.UserId;
+
+            var transaction = await _repository.FirstOrDefaultAsync(new QueryOptions<Transaction>
+            {
+                AsNoTracking = true,
+                Predicate = t => t.Id == id && t.UserId == userId
+            });
+
+            if (transaction == null)
+                return Result<DisplayNameResultDto>.Fail(new Error(
+                    "TRANSACTION_NOT_FOUND", "Transaction not found", ErrorType.NotFound));
+
+            var description = transaction.Description;
+            var reset = name.Length == 0 || name == description;
+
+            var alias = await _aliases.FirstOrDefaultAsync(new QueryOptions<DescriptionAlias>
+            {
+                Predicate = a => a.UserId == userId && a.Description == description
+            });
+
+            if (reset)
+            {
+                if (alias != null)
+                    await _aliases.SoftDelete(alias);
+            }
+            else if (alias == null)
+            {
+                await _aliases.AddAsync(new DescriptionAlias { UserId = userId, Description = description, Name = name });
+            }
+            else if (alias.Name != name)
+            {
+                alias.Name = name;
+                await _aliases.UpdateAsync(alias);
+            }
+
+            var affected = await _repository.CountAsync(new QueryOptions<Transaction>
+            {
+                Predicate = t => t.UserId == userId && t.Description == description
+            });
+
+            return Result<DisplayNameResultDto>.Ok(
+                new DisplayNameResultDto
+                {
+                    Description = description,
+                    DisplayName = reset ? null : name,
+                    AffectedCount = affected
+                },
+                reset ? "TRANSACTION_NAME_RESET" : "TRANSACTION_RENAMED",
+                reset ? "Transaction name reset to the bank description" : "Transaction renamed");
+        }
+
+        private async Task<Dictionary<string, string>> LoadAliasesAsync(int userId) =>
+            (await _aliases.ListAsync(new QueryOptions<DescriptionAlias>
+            {
+                AsNoTracking = true,
+                Predicate = a => a.UserId == userId
+            })).ToDictionary(a => a.Description, a => a.Name);
 
         public async Task<Result<List<MonthSummaryDto>>> GetMonthlySummary(int months)
         {
@@ -436,11 +520,12 @@ namespace NoAzul.Application.Transactions
         private static string ToCamel(string value) =>
             string.IsNullOrEmpty(value) ? value : char.ToLowerInvariant(value[0]) + value[1..];
 
-        private static TransactionDto Map(Transaction transaction) => new()
+        private static TransactionDto Map(Transaction transaction, string? displayName) => new()
         {
             Id = transaction.Id,
             OccurredAt = transaction.OccurredAt,
             Description = transaction.Description,
+            DisplayName = displayName,
             Category = CategoryKeys.For(transaction.Category, transaction.CustomCategoryId),
             Origin = ToCamel(transaction.Origin.ToString()),
             Bank = transaction.FinancialAccount?.BankConnection?.InstitutionName,

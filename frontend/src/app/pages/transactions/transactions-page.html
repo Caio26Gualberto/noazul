@@ -106,9 +106,18 @@
                 </td>
                 <td tuiTd>
                   <span class="transactions__description">
-                    <span class="transactions__description-text">{{
-                      transaction.description
-                    }}</span>
+                    <button
+                      type="button"
+                      class="transactions__description-text"
+                      [attr.aria-label]="t('transactions.rename.open', { name: transaction.name })"
+                      [disabled]="saving()"
+                      (click)="renameTransaction(transaction)"
+                    >
+                      <span>{{ transaction.name }}</span>
+                      @if (transaction.renamed) {
+                        <span class="transactions__original">{{ transaction.description }}</span>
+                      }
+                    </button>
                     @if (transaction.pending) {
                       <span tuiBadge appearance="neutral" size="s">{{ t('finance.pending') }}</span>
                     }
@@ -134,7 +143,7 @@
                     class="transactions__category-button"
                     [attr.aria-label]="
                       t('transactions.categoryMenu.label', {
-                        description: transaction.description,
+                        description: transaction.name,
                       })
                     "
                     [tuiDropdown]="categoryMenu"
@@ -244,6 +253,52 @@
       </tui-textfield>
       <p class="category-dialog__hint">{{ t('transactions.categoryDialog.hint') }}</p>
       <div class="category-dialog__actions">
+        <button
+          tuiButton
+          type="button"
+          appearance="secondary"
+          size="m"
+          (click)="observer.complete()"
+        >
+          {{ t('transactions.categoryDialog.cancel') }}
+        </button>
+        <button tuiButton type="submit" size="m" [disabled]="draftName().trim().length === 0">
+          {{ t('transactions.categoryDialog.save') }}
+        </button>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #renameDialog let-observer>
+    <form class="category-dialog" (ngSubmit)="submitRename(observer)">
+      <p class="category-dialog__hint">
+        {{ t('transactions.rename.original') }} <strong>{{ renaming()?.description }}</strong>
+      </p>
+      <tui-textfield>
+        <label tuiLabel for="transaction-name">{{ t('transactions.rename.name') }}</label>
+        <input
+          id="transaction-name"
+          tuiInput
+          name="transactionName"
+          autocomplete="off"
+          [maxlength]="displayNameMaxLength"
+          [(ngModel)]="draftName"
+        />
+      </tui-textfield>
+      <p class="category-dialog__hint">{{ t('transactions.rename.hint') }}</p>
+      <div class="category-dialog__actions">
+        @if (renaming()?.renamed) {
+          <button
+            tuiButton
+            type="button"
+            appearance="flat"
+            size="m"
+            class="category-dialog__reset"
+            (click)="observer.next(''); observer.complete()"
+          >
+            {{ t('transactions.rename.reset') }}
+          </button>
+        }
         <button
           tuiButton
           type="button"

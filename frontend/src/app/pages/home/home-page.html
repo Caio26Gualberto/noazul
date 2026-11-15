@@ -166,7 +166,7 @@
                   {{ transaction.date | date: 'dd/MM' }}
                 </td>
                 <td tuiTd>
-                  <span class="recent__description">{{ transaction.description }}</span>
+                  <span class="recent__description">{{ transaction.name }}</span>
                   @if (transaction.pending) {
                     <span tuiBadge appearance="neutral" size="s" class="recent__pending">{{
                       t('finance.pending')

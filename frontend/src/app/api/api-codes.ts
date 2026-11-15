@@ -72,6 +72,9 @@ export const ApiCodes = {
   transactionSummaryLoaded: 'TRANSACTION_SUMMARY_LOADED',
   transactionSummaryMonthsInvalid: 'TRANSACTION_SUMMARY_MONTHS_INVALID',
   transactionNotFound: 'TRANSACTION_NOT_FOUND',
+  transactionRenamed: 'TRANSACTION_RENAMED',
+  transactionNameReset: 'TRANSACTION_NAME_RESET',
+  transactionNameInvalid: 'TRANSACTION_NAME_INVALID',
 
   customCategoriesLoaded: 'CUSTOM_CATEGORIES_LOADED',
   customCategoryCreated: 'CUSTOM_CATEGORY_CREATED',

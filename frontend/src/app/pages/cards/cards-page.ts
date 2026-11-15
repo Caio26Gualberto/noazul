@@ -1,5 +1,13 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { CurrencyPipe, DatePipe, NgTemplateOutlet } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  TemplateRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { TuiThumbnailCard } from '@taiga-ui/addon-commerce';
@@ -32,6 +40,7 @@ import { PluggyConnectService } from '../../finance/pluggy-connect.service';
 
 const PRODUCT_TIME_ZONE = 'America/Sao_Paulo';
 const FIRST_SYNC_RECHECK_MS = 8000;
+const MEU_PLUGGY_URL = 'https://meu.pluggy.ai';
 const FIRST_SYNC_MAX_RECHECKS = 8;
 
 const timeFormat = new Intl.DateTimeFormat('pt-BR', {
@@ -62,6 +71,7 @@ interface ConnectionView {
   imports: [
     CurrencyPipe,
     DatePipe,
+    NgTemplateOutlet,
     TranslocoDirective,
     TuiAvatar,
     TuiButton,
@@ -92,6 +102,8 @@ export class CardsPage {
   private rechecksLeft = FIRST_SYNC_MAX_RECHECKS;
 
   protected readonly connecting = signal(false);
+  protected readonly meuPluggyUrl = MEU_PLUGGY_URL;
+  private readonly beforeConnect = viewChild.required<TemplateRef<unknown>>('beforeConnect');
   protected readonly busyId = signal<number | null>(null);
   protected readonly menuFor = signal<number | null>(null);
 
@@ -108,6 +120,17 @@ export class CardsPage {
 
   protected async connectBank(): Promise<void> {
     if (this.connecting()) return;
+
+    const ready = await firstValueFrom(
+      this.dialogs.open<boolean>(this.beforeConnect(), {
+        label: this.transloco.translate('cards.before.title'),
+        size: 'm',
+      }),
+      { defaultValue: false },
+    );
+
+    if (!ready) return;
+
     this.connecting.set(true);
 
     try {

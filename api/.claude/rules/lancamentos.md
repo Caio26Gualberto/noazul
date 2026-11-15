@@ -70,6 +70,15 @@ Além das onze, cada pessoa cria as próprias categorias (`CustomCategory`: pess
 - Nome: de 1 a 40 caracteres, espaços repetidos viram um, único por pessoa sem diferenciar maiúscula. Não é comparado com o nome das onze (o nome delas só existe no i18n do frontend). Limite de 50 por pessoa.
 - Rotas em `/api/custom-categories` (lista paginada, criar, renomear, apagar), com rate limit `custom-category` (60/h) nas escritas.
 
+## Nome escolhido pela pessoa (decidido pelo dono em 2026-11-15)
+
+A descrição do banco continua guardada e é a chave de tudo (regra de categoria, apelido). Por cima dela, a pessoa pode dar outro nome ao lançamento, e ele vale para todos com a mesma descrição, os de agora e os que chegarem depois, como a categoria. O nome aparece em Lançamentos, nos últimos lançamentos do Início e nos maiores gastos das Métricas; em Lançamentos, a descrição do banco fica embaixo, menor.
+
+- `DescriptionAlias` (pessoa + descrição **exata**, única filtrada, nome até 60). Não é gravado no `Transaction`: o `GetMine` carrega os apelidos da pessoa e preenche `displayName` no DTO (`null` sem apelido).
+- `PUT /api/transactions/{id}/display-name {"name":"..."}`: nome vazio ou igual à descrição volta ao nome do banco (`SoftDelete` do apelido). Espaços repetidos viram um. Usa o rate limit `transaction-category`.
+- A busca (`?search=`) procura na descrição e no apelido.
+- Descartado pelo dono: usar o nome do estabelecimento da Pluggy (`merchant`). Nos 89 gastos de 30 dias do dono, só 16 traziam `merchant`, quase sempre a razão social ("APPLE COMPUTER BRASIL LTDA"), e nenhum dos que confundem (Keeta, iFood de restaurante pequeno, posto). O `descriptionRaw` era igual à descrição.
+
 ## Sincronização
 
 `TransactionAppService.SyncFromProvider(conta, userId)`, chamado por `BankConnectionAppService` para cada conta, depois de atualizar as contas.
@@ -101,6 +110,9 @@ Além das onze, cada pessoa cria as próprias categorias (`CustomCategory`: pess
 | `TRANSACTION_MARKED_NOT_SPENDING` | marcado como não é gasto (e os idênticos) |
 | `TRANSACTION_CATEGORY_INVALID` (400) | categoria vazia, desconhecida, ou da pessoa que não existe ou é de outra pessoa (no `PUT` sem `ignored` e no filtro) |
 | `TRANSACTION_NOT_FOUND` (404) | id que não existe ou é de outra pessoa |
+| `TRANSACTION_RENAMED` | nome trocado (vale para os idênticos) |
+| `TRANSACTION_NAME_RESET` | voltou ao nome do banco |
+| `TRANSACTION_NAME_INVALID` (400) | nome com mais de 60 caracteres |
 | `CUSTOM_CATEGORIES_LOADED` | lista das categorias da pessoa |
 | `CUSTOM_CATEGORY_CREATED` | categoria criada |
 | `CUSTOM_CATEGORY_RENAMED` | categoria renomeada |
@@ -130,7 +142,8 @@ Falha da Pluggy sobe e vira `BANK_CONNECTION_SYNC_FAILED` da conexão inteira.
 5. Em Lançamentos, trocar a categoria de um lançamento que tem idênticos → aviso `TRANSACTION_CATEGORY_UPDATED`, todos os idênticos mudam (conferir no banco por `Description`), linha em `CategoryRules`. "Não é gasto" → linha apagada, total do filtro desconta. Rodar a sincronização → a escolha continua.
 6. Categorias da pessoa: `POST /api/custom-categories {"name":"  Pet  "}` → `CUSTOM_CATEGORY_CREATED` com nome `Pet` e chave `custom-N`; de novo com `pet` → 409 `CUSTOM_CATEGORY_NAME_TAKEN`; nome vazio → 400. `PUT /api/transactions/{id}/category {"category":"custom-N"}` → todos os idênticos com `CustomCategoryId = N`; `monthly-summary` traz `custom-N` com a soma; `?category=custom-N` filtra. `DELETE /api/custom-categories/N` → os lançamentos voltam para a categoria da tabela, a regra fica `IsDeleted`; apagar de novo → 404. (Visto em 2026-11-15 com dois lançamentos de teste.)
 7. Na tela: menu da categoria → "Nova categoria" → nome → o lançamento e os idênticos mudam, a categoria aparece no filtro, no Início e nas Métricas. "Minhas categorias" → renomear muda o nome em todo lugar; apagar pede confirmação.
+8. Nome: `PUT /api/transactions/{id}/display-name {"name":"  Keeta   Elisa "}` → `TRANSACTION_RENAMED`, `displayName` `Keeta Elisa` nos idênticos; `?search=elisa` acha; 61 caracteres → 400; `{"name":""}` → `TRANSACTION_NAME_RESET` e a busca não acha mais. Na tela: clicar na descrição → "Renomear lançamento" → o nome muda em Lançamentos, Início e Métricas; "Voltar ao nome do banco" desfaz. (Visto em 2026-11-15 com dados de teste.)
 
 ## Em aberto
 
-- A descrição é a que a Pluggy manda, crua do banco ("KEETABR*60.472.405 ELISAB…"). Limpar ou usar o nome do estabelecimento (`merchant`) é decisão do dono.
+- ~~A descrição é a que a Pluggy manda, crua do banco. Limpar ou usar o nome do estabelecimento é decisão do dono.~~ Decidido em 2026-11-15: fica a descrição do banco, com o nome escolhido pela pessoa por cima. Limpeza automática (tirar cidade e país colados no fim) ficou de fora.

@@ -28,6 +28,7 @@ namespace NoAzul.Infra.Data.Context
         public DbSet<Transaction> Transactions => Set<Transaction>();
         public DbSet<CategoryRule> CategoryRules => Set<CategoryRule>();
         public DbSet<CustomCategory> CustomCategories => Set<CustomCategory>();
+        public DbSet<DescriptionAlias> DescriptionAliases => Set<DescriptionAlias>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -178,6 +179,24 @@ namespace NoAzul.Infra.Data.Context
                     .WithMany()
                     .HasForeignKey(t => t.CustomCategoryId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<DescriptionAlias>(b =>
+            {
+                b.ToTable("DescriptionAliases");
+                b.HasKey(a => a.Id);
+
+                b.Property(a => a.Description).HasMaxLength(200).IsRequired();
+                b.Property(a => a.Name).HasMaxLength(60).IsRequired();
+
+                b.HasOne(a => a.User)
+                    .WithMany()
+                    .HasForeignKey(a => a.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasIndex(a => new { a.UserId, a.Description })
+                    .IsUnique()
+                    .HasFilter(softDeleteFilter);
             });
 
             builder.Entity<CustomCategory>(b =>

@@ -5,6 +5,7 @@ import {
   BankConnectionDto,
   CategoryRuleResultDto,
   ConnectTokenDto,
+  DisplayNameResultDto,
   MonthSummaryDto,
   PagedResultDto,
   TransactionDto,
@@ -55,6 +56,14 @@ export class FinanceService {
     return this.api
       .post<BankConnectionDto>('/api/bank-connections', { itemId }, { announce: true })
       .pipe(map(toBankConnection));
+  }
+
+  updateDisplayName(id: number, name: string): Observable<DisplayNameResultDto> {
+    return this.api.put<DisplayNameResultDto>(
+      `/api/transactions/${id}/display-name`,
+      { name },
+      { announce: true },
+    );
   }
 
   updateCategory(id: number, category: Category): Observable<CategoryRuleResultDto> {

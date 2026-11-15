@@ -15,7 +15,6 @@
     "cancel": "Cancelar"
   },
   "loading": "Carregando cartões e contas",
-  "empty": "Nenhum banco conectado ainda. Clique em \"Conectar banco\" para trazer seus cartões e contas.",
   "waitingData": "Buscando os cartões e contas deste banco. Isso leva alguns segundos.",
   "noAccounts": "A Pluggy não trouxe nenhum cartão ou conta deste banco.",
   "sync": {
@@ -47,5 +46,27 @@
     "title": "{{bank}} · precisa de atenção",
     "text": "A autorização expirou em {{date}}. Os dados desta conta pararam nessa data.",
     "reconnect": "Reconectar"
+  },
+  "guide": {
+    "title": "Como trazer seus cartões e contas",
+    "intro": "O NoAzul lê os dados do banco pelo Meu Pluggy, um serviço gratuito da Pluggy que usa o Open Finance. Antes de conectar aqui, você precisa ter os bancos conectados lá.",
+    "openMeuPluggy": "Abrir o Meu Pluggy",
+    "step1": {
+      "title": "Crie sua conta no Meu Pluggy",
+      "text": "Entre em meu.pluggy.ai e crie uma conta grátis com o seu e-mail."
+    },
+    "step2": {
+      "title": "Conecte seus bancos lá",
+      "text": "No Meu Pluggy, clique para conectar, escolha o seu banco e autorize o compartilhamento no aplicativo ou site do banco. Repita para cada banco que você quer ver no NoAzul."
+    },
+    "step3": {
+      "title": "Volte aqui e clique em \"Conectar banco\"",
+      "text": "Na janela que abrir, escolha \"Meu Pluggy\" e entre com o e-mail e a senha do Meu Pluggy. Se você tiver mais de um banco, conecte um de cada vez."
+    }
+  },
+  "before": {
+    "title": "Antes de conectar",
+    "intro": "Confira se você já fez os dois primeiros passos no Meu Pluggy. Sem eles, a janela de conexão não vai encontrar o seu banco.",
+    "continue": "Já fiz isso, continuar"
   }
 }

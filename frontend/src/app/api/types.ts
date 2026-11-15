@@ -81,6 +81,7 @@ export interface TransactionDto {
   id: number;
   occurredAt: string;
   description: string;
+  displayName: string | null;
   category: string;
   origin: TransactionOriginDto;
   bank: string | null;
@@ -102,6 +103,12 @@ export interface MonthSummaryDto {
   month: string;
   total: number;
   byCategory: Record<string, number>;
+}
+
+export interface DisplayNameResultDto {
+  description: string;
+  displayName: string | null;
+  affectedCount: number;
 }
 
 export interface CustomCategoryDto {

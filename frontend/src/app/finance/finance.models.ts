@@ -45,6 +45,8 @@ export interface Transaction {
   id: number;
   date: string;
   description: string;
+  name: string;
+  renamed: boolean;
   category: Category;
   origin: Origin;
   bank: string | null;

@@ -40,6 +40,10 @@ A Pluggy limita leituras por mês (Open Finance: contas cerca de 4/mês, faturas
 - `FinancialAccount` está em `AuditPolicy.Ignored`: é cópia de dado do provedor reescrita todo dia, não ação de alguém.
 - Status da conexão a partir do `item.status`: `UPDATED` → `Ok`, `UPDATING` → `Updating`, `LOGIN_ERROR`/`WAITING_USER_INPUT` → `NeedsReconnect`, o resto → `Failed`. Item que a Pluggy não acha mais → `NeedsReconnect`.
 
+## Antes de conectar: o guia do Meu Pluggy (decidido pelo dono em 2026-11-15)
+
+Quem nunca usou a Pluggy não sabe que precisa conectar o banco no Meu Pluggy antes. Por isso a tela Cartões e contas sem banco mostra um passo a passo (criar conta em meu.pluggy.ai, conectar os bancos lá, voltar e escolher "Meu Pluggy" na janela), com um link para o Meu Pluggy. E "Conectar banco" abre antes uma janela com os mesmos passos e "Já fiz isso, continuar"; só depois vem a janela da Pluggy. Reconectar não passa pela janela. Os passos seguem o README oficial (`github.com/pluggyai/meu-pluggy`): a autorização é uma vez por banco conectado no Meu Pluggy.
+
 ## Conectar de novo o mesmo banco não é erro
 
 O connect token pede `avoidDuplicates`, então a Pluggy pode devolver um item que já está guardado. Se ele é da mesma pessoa, a resposta é `BANK_CONNECTION_REFRESHED` e a sincronização é enfileirada. Se é de outra pessoa, `BANK_CONNECTION_TAKEN` (409). Nos dois casos de "mesma pessoa" a conexão passa para `Updating` até a sincronização terminar.

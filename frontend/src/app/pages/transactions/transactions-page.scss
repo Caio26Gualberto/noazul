@@ -85,7 +85,28 @@
 }
 
 .transactions__description-text {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
   font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.transactions__description-text:hover > span:first-child,
+.transactions__description-text:focus-visible > span:first-child {
+  text-decoration: underline;
+}
+
+.transactions__original {
+  font: var(--tui-typography-body-s);
+  font-weight: 400;
+  color: var(--tui-text-tertiary);
 }
 
 .transactions__origin {
@@ -193,4 +214,8 @@
 
 .category-manager__empty {
   color: var(--tui-text-secondary);
+}
+
+.category-dialog__reset {
+  margin-right: auto;
 }

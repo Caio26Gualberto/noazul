@@ -14,6 +14,8 @@ export function toTransaction(dto: TransactionDto): Transaction {
     id: dto.id,
     date: toProductDay(dto.occurredAt),
     description: dto.description,
+    name: dto.displayName ?? dto.description,
+    renamed: dto.displayName !== null,
     category: toCategory(dto.category),
     origin: dto.origin,
     bank: dto.bank,

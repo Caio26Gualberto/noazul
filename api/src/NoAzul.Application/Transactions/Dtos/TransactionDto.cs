@@ -5,6 +5,7 @@ namespace NoAzul.Application.Transactions.Dtos
         public int Id { get; set; }
         public DateTime OccurredAt { get; set; }
         public string Description { get; set; } = string.Empty;
+        public string? DisplayName { get; set; }
         public string Category { get; set; } = string.Empty;
         public string Origin { get; set; } = string.Empty;
         public string? Bank { get; set; }

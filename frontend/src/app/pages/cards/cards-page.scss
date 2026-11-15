@@ -182,3 +182,45 @@
   color: var(--tui-text-tertiary);
   cursor: help;
 }
+
+.cards__guide {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cards__guide-title {
+  margin: 0;
+  font: var(--tui-typography-heading-h6);
+  font-family: var(--tui-typography-family-display);
+}
+
+.cards__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.cards__steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cards__steps span {
+  color: var(--tui-text-secondary);
+}
+
+.cards__guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cards__before {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

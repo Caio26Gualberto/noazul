@@ -47,6 +47,7 @@ type CategoryFilter = 'all' | Category;
 const ORIGIN_FILTERS: readonly OriginFilter[] = ['all', 'card', 'account'];
 const MONTHS_AVAILABLE = 12;
 const CATEGORY_NAME_MAX_LENGTH = 40;
+const DISPLAY_NAME_MAX_LENGTH = 60;
 
 @Component({
   selector: 'app-transactions-page',
@@ -82,6 +83,9 @@ export class TransactionsPage {
   private readonly dialogs = inject(TuiDialogService);
   private readonly nameDialog = viewChild.required<TemplateRef<unknown>>('nameDialog');
   private readonly managerDialog = viewChild.required<TemplateRef<unknown>>('managerDialog');
+  private readonly renameDialog = viewChild.required<TemplateRef<unknown>>('renameDialog');
+  protected readonly renaming = signal<Transaction | null>(null);
+  protected readonly displayNameMaxLength = DISPLAY_NAME_MAX_LENGTH;
 
   protected readonly originFilters = ORIGIN_FILTERS;
   protected readonly categories = this.categoryStore.all;
@@ -120,7 +124,8 @@ export class TransactionsPage {
       (transaction) =>
         (origin === 'all' || transaction.origin === origin) &&
         (category === 'all' || transaction.category === category) &&
-        transaction.description.toLocaleLowerCase(this.locale).includes(search),
+        (transaction.name.toLocaleLowerCase(this.locale).includes(search) ||
+          transaction.description.toLocaleLowerCase(this.locale).includes(search)),
     );
   });
 
@@ -134,6 +139,30 @@ export class TransactionsPage {
     category === 'all'
       ? this.transloco.translate('transactions.filters.allCategories')
       : this.categoryStore.label(category);
+
+  protected async renameTransaction(transaction: Transaction): Promise<void> {
+    if (this.saving()) return;
+    this.renaming.set(transaction);
+    this.draftName.set(transaction.name);
+    const name = await firstValueFrom(
+      this.dialogs.open<string>(this.renameDialog(), {
+        label: this.transloco.translate('transactions.rename.title'),
+        size: 's',
+      }),
+      { defaultValue: undefined },
+    );
+    this.renaming.set(null);
+    if (name === undefined || name === transaction.name) return;
+    if (name === '' && !transaction.renamed) return;
+    await this.runSaving(this.finance.updateDisplayName(transaction.id, name), true);
+  }
+
+  protected submitRename(observer: Observer<string>): void {
+    const name = this.draftName().trim();
+    if (name.length === 0) return;
+    observer.next(name);
+    observer.complete();
+  }
 
   protected submitName(observer: Observer<string>): void {
     const name = this.draftName().trim();
