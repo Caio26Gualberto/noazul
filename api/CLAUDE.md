@@ -23,6 +23,7 @@ As **decisões** — o porquê de cada regra — vivem em `.claude/rules/`, um a
 | `.claude/rules/abuso-e-limites.md` | rate limit por IP/conta e limites de volume por regra de negócio |
 | `.claude/rules/bancos-pluggy.md` | conexão com a Pluggy, sincronização diária, cartões e contas guardados |
 | `.claude/rules/lancamentos.md` | o que é gasto, as onze categorias e a tabela da Pluggy, as categorias da pessoa, sincronização dos lançamentos, lista e resumo mensal |
+| `.claude/rules/hospedagem.md` | produção na AWS (Lightsail + Amplify em São Paulo), pipeline da API, migrations no boot, backup e DNS |
 
 **Rule nova entra nesta tabela no mesmo commit.** Rule fora do índice é rule que ninguém lê ao planejar.
 
@@ -144,7 +145,7 @@ Arquivo de referência: `src/NoAzul.Application/BankConnections/BankConnectionAp
   ```
   dotnet ef migrations add NomeDaMigration --project src/NoAzul.Infra.Data --startup-project src/NoAzul.Api
   ```
-  ⚠️ **Rebuildar antes do `database update`** — com `--no-build` o snapshot recém-gerado não está compilado e o EF acusa "pending model changes". `Database:MigrateOnStartup = true` só em desenvolvimento.
+  ⚠️ **Rebuildar antes do `database update`** — com `--no-build` o snapshot recém-gerado não está compilado e o EF acusa "pending model changes". `Database:MigrateOnStartup = true` só em desenvolvimento, com uma exceção: a produção de instância única no Lightsail liga no boot (`.claude/rules/hospedagem.md`).
 
 ### Postgres vs SQL Server
 

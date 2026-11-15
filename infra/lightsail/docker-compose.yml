@@ -1,0 +1,60 @@
+name: noazul
+
+services:
+  postgres:
+    image: postgres:18
+    container_name: noazul-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: noazul
+      POSTGRES_USER: noazul
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U noazul -d noazul"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: ghcr.io/caio26gualberto/noazul-api:latest
+    build:
+      context: ../../api
+    container_name: noazul-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=noazul;Username=noazul;Password=${POSTGRES_PASSWORD}
+      Database__MigrateOnStartup: "true"
+    expose:
+      - "8080"
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  caddy:
+    image: caddy:2
+    container_name: noazul-caddy
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

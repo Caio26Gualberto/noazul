@@ -15,7 +15,7 @@ Fase atual: autenticação funcionando de ponta a ponta (cadastro com trava, log
 | `api/` | API | .NET 10 · EF Core (Postgres) · Identity + JWT · Hangfire | `api/CLAUDE.md` |
 | `frontend/` | Site | Angular 22 · Taiga UI · Transloco | `frontend/CLAUDE.md` |
 | `.github/workflows/` | CI (`ci.yml`, com o check `ci-ok`) | GitHub Actions | este arquivo |
-| `deploy/` + `amplify.yml` + `DEPLOY.md` | Produção | Docker Compose (Lightsail) · Amplify | `DEPLOY.md` |
+| `infra/lightsail/` + `.github/workflows/deploy-api.yml` + `amplify.yml` | Produção | Docker Compose (Lightsail) · GHCR · Amplify | `DEPLOY.md` e `api/.claude/rules/hospedagem.md` |
 
 Ordem de trabalho: **api → frontend**. O frontend espelha codes e permissões da API; a API não sabe que ele existe.
 
@@ -64,7 +64,7 @@ Os `CLAUDE.md` de cada projeto são **convenção** (como codar); `<projeto>/.cl
 - Histórico: a primeira sincronização de cada conta traz 12 meses; depois, a diária relê os últimos 30 dias (2026-11-15).
 - Reconectar e desconectar ficam no menu "Gerenciar" de cada banco, em Cartões e contas. Desconectar apaga do NoAzul a conexão, os cartões, as contas e todos os lançamentos do banco, e apaga também o item na Pluggy; a confirmação avisa isso antes (2026-11-15).
 - Cada pessoa usa o próprio Meu Pluggy e conecta só os próprios bancos; o NoAzul usa um único `client_id`/`client_secret`, da aplicação do dono no dashboard da Pluggy (2026-11-15).
-- Deploy, tudo na região São Paulo (sa-east-1): AWS Lightsail (Ubuntu, 2 GB, Docker Compose com API + Postgres + Caddy) para `api.noazul.space` e AWS Amplify para o site em `noazul.space`. Domínio e DNS na Cloudflare (o Registro.br foi descartado pelo DNS ruim de configurar). Banco no mesmo Lightsail, com snapshot diário; descartado o banco gerenciado (~US$ 22/mês). Migrations em produção por script idempotente, não no boot. Passo a passo em `DEPLOY.md` (2026-11-15).
+- Deploy, tudo na região São Paulo (sa-east-1): AWS Lightsail (Ubuntu, 2 GB, Docker Compose com API + Postgres + Caddy, imagem buildada no GitHub Actions e publicada no GHCR) para `api.noazul.space` e AWS Amplify para o site em `noazul.space`. Domínio e DNS na Cloudflare (o Registro.br foi descartado pelo DNS ruim de configurar). Banco no mesmo Lightsail, com snapshot diário; descartado o banco gerenciado (~US$ 22/mês). Migrations em produção no boot (uma instância só). Backup diário no S3. Mesmo molde do Noise Vault. Passo a passo em `DEPLOY.md` (2026-11-15).
 
 ## Como o agente trabalha aqui
 
