@@ -114,7 +114,7 @@ O `bootstrap.sh` atualiza o Ubuntu, instala Docker e AWS CLI, cria 2 GB de swap,
    | `Pluggy__ClientId` / `Pluggy__ClientSecret` | os da Pluggy |
 
 2. `docker login ghcr.io -u Caio26Gualberto`, com um **token clássico** do GitHub só com `read:packages` (GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)). É o que deixa o servidor baixar a imagem, que é privada. O token fica em `~/.docker/config.json`. Se você já tem o token do Noise Vault, ele serve aqui também.
-3. Saia do SSH e entre de novo, para o grupo `docker` valer.
+3. Saia do SSH e entre de novo, para o grupo `docker` valer. Se o login mostrar "System restart required" (o `bootstrap.sh` atualizou o Ubuntu), rode `sudo reboot` e entre de novo depois de uns 30 segundos; os containers voltam sozinhos.
 
 ## 5. Os segredos do pipeline no GitHub
 
@@ -140,19 +140,17 @@ Se der errado, no SSH: `cd ~/noazul/infra/lightsail && docker compose logs --tai
 
 ## 7. Backup diário do banco
 
-No SSH:
+Precisa da API no ar (passo 6), porque o backup lê o container do Postgres. No SSH, **um comando por vez** (o SSH do navegador cola mal blocos de várias linhas):
 
-```bash
-mkdir -p ~/.aws && cat > ~/.aws/credentials <<'EOF'
-[default]
-aws_access_key_id = <Access key ID do noazul-backup>
-aws_secret_access_key = <Secret access key>
-EOF
-chmod 600 ~/.aws/credentials
-echo -e "[default]\nregion = sa-east-1" > ~/.aws/config
-~/noazul/infra/lightsail/backup.sh
-(crontab -l 2>/dev/null; echo "30 4 * * * /home/ubuntu/noazul/infra/lightsail/backup.sh >> /home/ubuntu/backup.log 2>&1") | crontab -
-```
+1. `aws configure` e responda: **Access Key ID** e **Secret Access Key** do passo 3.3, **region** `sa-east-1`, **output format** Enter.
+2. `chmod 600 ~/.aws/credentials`
+3. `~/noazul/infra/lightsail/backup.sh` → tem que imprimir `backup ok: ...`.
+4. O cron, numa linha só:
+   ```bash
+   (crontab -l 2>/dev/null; echo "30 4 * * * /home/ubuntu/noazul/infra/lightsail/backup.sh >> /home/ubuntu/backup.log 2>&1") | crontab -
+   ```
+
+Se o terminal ficar mostrando `>` e esperando, é comando de várias linhas colado pela metade: **Ctrl + C** cancela sem gravar nada.
 
 O primeiro `backup.sh` já deve imprimir `backup ok`. Confira em **S3 → noazul-backups → postgres/**. O cron roda às 4h30 UTC (1h30 em São Paulo), antes da leitura das 8h.
 
