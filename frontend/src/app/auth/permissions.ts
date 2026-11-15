@@ -1,11 +1,6 @@
 export const Permissions = {
   adminAccess: 'Admin.Access',
 
-  itemsView: 'Items.View',
-  itemsCreate: 'Items.Create',
-  itemsEdit: 'Items.Edit',
-  itemsDelete: 'Items.Delete',
-
   authorizationUsersView: 'Authorization.Users.View',
   authorizationUsersInvite: 'Authorization.Users.Invite',
   authorizationUsersDelete: 'Authorization.Users.Delete',

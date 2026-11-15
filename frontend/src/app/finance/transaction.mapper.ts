@@ -1,6 +1,13 @@
 import { MonthSummaryDto, TransactionDto } from '../api/types';
 import { toProductDay } from './finance.dates';
-import { CATEGORIES, Category, MonthSummary, Transaction } from './finance.models';
+import {
+  CATEGORIES,
+  Category,
+  MonthSummary,
+  Transaction,
+  isBuiltInCategory,
+  isCustomCategoryKey,
+} from './finance.models';
 
 export function toTransaction(dto: TransactionDto): Transaction {
   return {
@@ -22,12 +29,16 @@ export function toTransaction(dto: TransactionDto): Transaction {
 }
 
 export function toMonthSummary(dto: MonthSummaryDto): MonthSummary {
-  const byCategory = Object.fromEntries(
-    CATEGORIES.map((category) => [category, dto.byCategory[category] ?? 0]),
-  ) as Record<Category, number>;
+  const byCategory: Partial<Record<Category, number>> = Object.fromEntries(
+    CATEGORIES.map((category) => [category, 0]),
+  );
+  for (const [key, amount] of Object.entries(dto.byCategory)) {
+    const category = toCategory(key);
+    byCategory[category] = (byCategory[category] ?? 0) + amount;
+  }
   return { month: dto.month, total: dto.total, byCategory };
 }
 
-function toCategory(value: string): Category {
-  return (CATEGORIES as readonly string[]).includes(value) ? (value as Category) : 'other';
+export function toCategory(value: string): Category {
+  return isBuiltInCategory(value) || isCustomCategoryKey(value) ? value : 'other';
 }

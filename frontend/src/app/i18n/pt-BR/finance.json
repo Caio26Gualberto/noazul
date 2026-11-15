@@ -10,7 +10,8 @@
     "leisure": "Lazer e viagem",
     "education": "Educação",
     "fees": "Tarifas e impostos",
-    "other": "Outros"
+    "other": "Outros",
+    "unknownCustom": "Categoria própria"
   },
   "origins": {
     "card": "Cartão",

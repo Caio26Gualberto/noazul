@@ -14,6 +14,8 @@ namespace NoAzul.Domain.Entities
         public string Description { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public ETransactionCategory Category { get; set; } = ETransactionCategory.Other;
+        public int? CustomCategoryId { get; set; }
+        public CustomCategory? CustomCategory { get; set; }
         public string? ProviderCategoryId { get; set; }
         public bool IsPending { get; set; }
         public bool IsIgnored { get; set; }

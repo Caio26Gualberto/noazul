@@ -7,7 +7,6 @@ namespace NoAzul.Domain.Authorization
         public static class Groups
         {
             public const string Admin = "Admin";
-            public const string Items = "Items";
             public const string Authorization = "Authorization";
             public const string System = "System";
         }
@@ -15,7 +14,6 @@ namespace NoAzul.Domain.Authorization
         public static readonly IReadOnlyList<PermissionGroupDefinition> GroupDefinitions = new List<PermissionGroupDefinition>
         {
             new(Groups.Admin, "Geral"),
-            new(Groups.Items, "Itens"),
             new(Groups.Authorization, "Equipe e acesso"),
             new(Groups.System, "Sistema"),
         };
@@ -23,11 +21,6 @@ namespace NoAzul.Domain.Authorization
         public static readonly IReadOnlyList<PermissionDefinition> All = new List<PermissionDefinition>
         {
             new(Permissions.Admin.Access, "Acessar o painel", "Permite entrar no painel administrativo.", Groups.Admin),
-
-            new(Permissions.Items.View, "Ver itens", "Permite visualizar a lista e o detalhe de itens.", Groups.Items),
-            new(Permissions.Items.Create, "Criar itens", "Permite cadastrar novos itens.", Groups.Items, Permissions.Items.View),
-            new(Permissions.Items.Edit, "Editar itens", "Permite alterar e arquivar itens existentes.", Groups.Items, Permissions.Items.View),
-            new(Permissions.Items.Delete, "Excluir itens", "Permite excluir itens.", Groups.Items, Permissions.Items.View),
 
             new(Permissions.Authorization.UsersView, "Ver usuários da equipe", "Permite visualizar os usuários com acesso ao painel.", Groups.Authorization),
             new(Permissions.Authorization.UsersInvite, "Convidar pessoa para a equipe", "Permite convidar uma nova pessoa para o painel, definindo papel e permissões adicionais.", Groups.Authorization, Permissions.Authorization.UsersView),

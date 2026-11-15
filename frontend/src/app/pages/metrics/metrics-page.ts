@@ -16,7 +16,9 @@ import { TuiProgress } from '@taiga-ui/kit';
 import { forkJoin } from 'rxjs';
 import { sumAmounts, totalsByCategory, totalsByOrigin } from '../../finance/finance.calc';
 import { currentMonth, today } from '../../finance/finance.dates';
-import { CATEGORIES, Category, Origin } from '../../finance/finance.models';
+import { Category, Origin } from '../../finance/finance.models';
+import { CategoryNamePipe } from '../../finance/category-name.pipe';
+import { CategoryStore } from '../../finance/category.store';
 import { FinanceService } from '../../finance/finance.service';
 
 interface MonthBar {
@@ -74,12 +76,18 @@ function percentOf(part: number, whole: number): number {
     TuiLoader,
     TuiProgress,
     TuiTable,
+    CategoryNamePipe,
   ],
   templateUrl: './metrics-page.html',
   styleUrl: './metrics-page.scss',
 })
 export class MetricsPage {
   private readonly finance = inject(FinanceService);
+  private readonly categoryStore = inject(CategoryStore);
+
+  constructor() {
+    this.categoryStore.refresh();
+  }
   private readonly transloco = inject(TranslocoService);
   private readonly locale = inject(LOCALE_ID);
   private readonly currencyCode = inject(DEFAULT_CURRENCY_CODE);
@@ -188,13 +196,14 @@ export class MetricsPage {
   protected readonly categories = computed<CategoryComparison[]>(() => {
     const previous = this.lastClosed()?.byCategory;
     const current = totalsByCategory(this.transactions());
-    return CATEGORIES.map((category) => {
+    return this.categoryStore.all().map((category) => {
       const previousAmount = previous?.[category] ?? 0;
-      const percent = percentOf(current[category], previousAmount);
+      const currentAmount = current[category] ?? 0;
+      const percent = percentOf(currentAmount, previousAmount);
       return {
         category,
         previous: previousAmount,
-        current: current[category],
+        current: currentAmount,
         percent,
         exceeded: percent >= 100,
       };

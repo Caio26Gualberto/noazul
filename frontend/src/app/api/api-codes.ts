@@ -43,11 +43,6 @@ export const ApiCodes = {
   emailAlreadyInUse: 'EMAIL_ALREADY_IN_USE',
   cannotDeleteSelf: 'CANNOT_DELETE_SELF',
 
-  itemArchived: 'ITEM_ARCHIVED',
-  itemDeleted: 'ITEM_DELETED',
-  itemNotFound: 'ITEM_NOT_FOUND',
-  itemNotArchivable: 'ITEM_NOT_ARCHIVABLE',
-
   jobTriggered: 'JOB_TRIGGERED',
   jobAlreadyRunning: 'JOB_ALREADY_RUNNING',
   backgroundJobNotRetryable: 'BACKGROUND_JOB_NOT_RETRYABLE',
@@ -77,6 +72,15 @@ export const ApiCodes = {
   transactionSummaryLoaded: 'TRANSACTION_SUMMARY_LOADED',
   transactionSummaryMonthsInvalid: 'TRANSACTION_SUMMARY_MONTHS_INVALID',
   transactionNotFound: 'TRANSACTION_NOT_FOUND',
+
+  customCategoriesLoaded: 'CUSTOM_CATEGORIES_LOADED',
+  customCategoryCreated: 'CUSTOM_CATEGORY_CREATED',
+  customCategoryRenamed: 'CUSTOM_CATEGORY_RENAMED',
+  customCategoryDeleted: 'CUSTOM_CATEGORY_DELETED',
+  customCategoryNameInvalid: 'CUSTOM_CATEGORY_NAME_INVALID',
+  customCategoryNameTaken: 'CUSTOM_CATEGORY_NAME_TAKEN',
+  customCategoryLimitReached: 'CUSTOM_CATEGORY_LIMIT_REACHED',
+  customCategoryNotFound: 'CUSTOM_CATEGORY_NOT_FOUND',
   transactionCategoryInvalid: 'TRANSACTION_CATEGORY_INVALID',
   transactionCategoryUpdated: 'TRANSACTION_CATEGORY_UPDATED',
   transactionMarkedNotSpending: 'TRANSACTION_MARKED_NOT_SPENDING',

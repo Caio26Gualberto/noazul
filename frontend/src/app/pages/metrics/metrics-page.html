@@ -144,7 +144,7 @@
           <tbody tuiTbody>
             @for (row of categories(); track row.category) {
               <tr>
-                <td tuiTd class="strong">{{ t('finance.categories.' + row.category) }}</td>
+                <td tuiTd class="strong">{{ row.category | categoryName }}</td>
                 <td tuiTd class="numeric muted">{{ row.previous | currency }}</td>
                 <td tuiTd class="numeric strong">{{ row.current | currency }}</td>
                 <td tuiTd>
@@ -155,7 +155,7 @@
                       max="100"
                       [value]="row.percent > 100 ? 100 : row.percent"
                       [color]="row.exceeded ? 'var(--tui-status-negative)' : null"
-                      [attr.aria-label]="t('finance.categories.' + row.category)"
+                      [attr.aria-label]="row.category | categoryName"
                     ></progress>
                     <span
                       class="progress__percent"

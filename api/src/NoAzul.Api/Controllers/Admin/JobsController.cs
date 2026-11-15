@@ -41,14 +41,6 @@ namespace NoAzul.Api.Controllers.Admin
             return ToResponse(result);
         }
 
-        [HttpPost("items-snapshot")]
-        [Authorize(Policy = Permissions.System.JobsManage)]
-        public async Task<ActionResult> ItemsSnapshot()
-        {
-            var result = await _backgroundJobAppService.Trigger(EBackgroundJobType.ItemsSnapshot);
-            return ToResponse(result);
-        }
-
         [HttpPost("runs/{id:int}/retry")]
         [Authorize(Policy = Permissions.System.JobsManage)]
         public async Task<ActionResult> Retry(int id)

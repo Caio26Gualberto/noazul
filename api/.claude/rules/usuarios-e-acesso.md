@@ -58,7 +58,7 @@ Duas guardas: `CANNOT_DELETE_SELF` e `LAST_ADMIN_PROTECTED` (reusa `IsLastAdminA
 
 0. `GET /api/auth/registration` → `{ enabled: true }` em Development. Com `Auth__AllowRegistration=false`, devolve `false` e o `POST /api/auth/register` responde 403 `REGISTRATION_DISABLED`.
 1. `POST /api/auth/register` com senha `abcdef` → `PASSWORD_TOO_WEAK`; com e-mail já usado → 409 `EMAIL_ALREADY_IN_USE`; válido → `REGISTRATION_SUCCESS` com tokens.
-2. Token desse usuário em `GET /api/admin/items` → 403; em `GET /api/items` → 200.
+2. Token desse usuário em `GET /api/admin/jobs/runs` (`System.Jobs.View`) → 403; em `GET /api/bank-connections` → 200.
 3. Login `admin@noazul.local` → `POST /api/admin/users/invite` `{name, email, roleId}` → `USER_INVITED`; a senha temporária sai no log (`EMAIL_USER_INVITE`).
-4. Login do convidado → `GET /api/admin/items` → 403 `PASSWORD_CHANGE_REQUIRED`; `POST /api/profile/set-initial-password` → tokens novos; com eles, `GET /api/admin/items` → 200; repetir o set-initial → `PASSWORD_CHANGE_NOT_PENDING`.
+4. Login do convidado (com papel que tenha `System.Jobs.View`, como `Admin`) → `GET /api/admin/jobs/runs` → 403 `PASSWORD_CHANGE_REQUIRED`; `POST /api/profile/set-initial-password` → tokens novos; com eles, `GET /api/admin/jobs/runs` → 200; repetir o set-initial → `PASSWORD_CHANGE_NOT_PENDING`.
 5. `DELETE /api/admin/users/{id}` do próprio → `CANNOT_DELETE_SELF`; do último Admin → `LAST_ADMIN_PROTECTED`; de outro → `USER_DELETED` e o login dele passa a `INVALID_CREDENTIALS`.

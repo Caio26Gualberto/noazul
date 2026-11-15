@@ -103,3 +103,9 @@ export interface MonthSummaryDto {
   total: number;
   byCategory: Record<string, number>;
 }
+
+export interface CustomCategoryDto {
+  id: number;
+  key: string;
+  name: string;
+}

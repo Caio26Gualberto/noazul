@@ -20,14 +20,17 @@ export function totalsByOrigin(transactions: readonly Transaction[]): Record<Ori
   };
 }
 
-export function totalsByCategory(transactions: readonly Transaction[]): Record<Category, number> {
-  const totals = Object.fromEntries(CATEGORIES.map((category) => [category, 0])) as Record<
-    Category,
-    number
-  >;
+export function totalsByCategory(
+  transactions: readonly Transaction[],
+): Partial<Record<Category, number>> {
+  const totals: Partial<Record<Category, number>> = Object.fromEntries(
+    CATEGORIES.map((category) => [category, 0]),
+  );
   for (const transaction of transactions) {
     if (transaction.ignored) continue;
-    totals[transaction.category] = roundMoney(totals[transaction.category] + transaction.amount);
+    totals[transaction.category] = roundMoney(
+      (totals[transaction.category] ?? 0) + transaction.amount,
+    );
   }
   return totals;
 }

@@ -18,7 +18,6 @@ Todo o código de jobs vive em `src/NoAzul.Workers`, com **duas categorias separ
 | Fila | Servidor | Quem roda ali |
 |---|---|---|
 | `bank-connections` | `noazul-main` | sincronização diária e a primeira sincronização depois de conectar |
-| `items` | `noazul-main` | varredura de vencidos, pós-criação, snapshot manual |
 | `default` | `noazul-main` | ninguém de propósito — está na lista só para um job sem `[Queue]` não ficar invisível |
 
 🔴 **`[Queue]` é obrigatório em todo método de job.** O Hangfire enfileira em `default` qualquer método **sem** o atributo; se `default` não estiver na lista de nenhum servidor, o job fica `Enqueued` para sempre, sem erro, sem log. É a primeira coisa a conferir num job novo.
@@ -35,9 +34,9 @@ src/NoAzul.Workers/
   Triggers/Recurring/{Domínio}/{Domínio}RecurringJobsTrigger.cs   ← método executado
 ```
 
-Referência: `Wrappers/Recurring/Items/ItemRecurringJobsWrapper.cs` + `Triggers/Recurring/Items/ItemRecurringJobsTrigger.cs`.
+Referência: `Wrappers/Recurring/BankConnections/BankConnectionRecurringJobsWrapper.cs` + `Triggers/Recurring/BankConnections/BankConnectionRecurringJobsTrigger.cs`.
 
-- `recurringJobId` no formato `"<recurso>:<ação>"` (`items:archive-expired`).
+- `recurringJobId` no formato `"<recurso>:<ação>"` (`bank-connections:sync`).
 - `[Queue]` e `[JobDisplayName]` são **obrigatórios**. Sem display name o dashboard mostra `Classe.Método`.
 - Cron via helpers `Cron.*` (não usar string cron crua).
 - O Trigger **não contém lógica de negócio** — só injeta e chama o AppService, que devolve tipo cru (nenhum endpoint o chama).
@@ -48,9 +47,6 @@ Copiar `AutomaticRetry(3)` + `DisableConcurrentExecution(300)` em todo job produ
 
 | Job | Fila | Attempts / delays | Lock wait | Motivo |
 |---|---|---|---|---|
-| `items:archive-expired` | `items` | 2 · `60, 600` | 30s | Um `UPDATE` de conjunto, sem I/O externo: falha é banco indisponível. Roda de novo em 1h de qualquer jeito. |
-| pós-criação (`OnItemCreatedAsync`) | `items` | 3 · `30, 120, 600` | — | Efeito colateral sem linha de status própria; o retry do Hangfire é a única rede. |
-| `ItemsSnapshot` (manual) | `items` | 0 | — | Tem `BackgroundJobRun`; ver §2. |
 | `bank-connections:sync` | `bank-connections` | 2 · `900, 3600` | 30s | Chama a Pluggy, que limita leituras por mês: poucas tentativas e espaçadas. Falha de uma conexão é logada e não derruba as outras, então o retry só pega falha geral (Pluggy fora, banco do NoAzul fora). |
 | primeira sincronização (`SyncAsync`) | `bank-connections` | 3 · `60, 300, 1800` | — | Sem ela a tela fica "Buscando os dados" até o dia seguinte; vale insistir algumas vezes. |
 
@@ -83,6 +79,12 @@ src/NoAzul.Workers/
 - Não há Wrapper — nada a registrar no startup.
 - Trigger injeta o AppService (ou o logger) e delega.
 - Parâmetros do job devem ser serializáveis (ids, primitivos) — nunca entidades.
+
+Referência: `IEnqueuedJobDispatcher.EnqueueBankConnectionSync` → `Triggers/Enqueued/BankConnections/BankConnectionsEnqueuedJobsTrigger.cs`, disparado pelo `Register` de `BankConnections` depois de salvar a conexão.
+
+### Job manual com linha de status (`BackgroundJobRun`)
+
+A infraestrutura existe (`BackgroundJobRun`, `BackgroundJobAppService`, `IBackgroundJobHandler`, `GET /api/admin/jobs/runs` e o retry), mas **hoje não há nenhum tipo de job manual**: `EBackgroundJobType` está vazio e o dispatcher só tem o arm `_`. As seções abaixo descrevem o mecanismo para quando o primeiro tipo entrar. Tipo novo exige: valor no enum, handler em `Application/BackgroundJobs/Handlers/`, um método de Trigger em `Triggers/Enqueued/BackgroundJobs/` com `[Queue]` e `[AutomaticRetry(Attempts = 0)]`, o arm no `EnqueuedJobDispatcher` e a linha na tabela de retry acima.
 
 ### Um método por fila e por nome, e o dispatcher roteia por tipo
 

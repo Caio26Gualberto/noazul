@@ -16,7 +16,25 @@ export const CATEGORIES = [
   'other',
 ] as const;
 
-export type Category = (typeof CATEGORIES)[number];
+export type BuiltInCategory = (typeof CATEGORIES)[number];
+
+export type CustomCategoryKey = `custom-${number}`;
+
+export type Category = BuiltInCategory | CustomCategoryKey;
+
+export interface CustomCategory {
+  id: number;
+  key: CustomCategoryKey;
+  name: string;
+}
+
+export function isBuiltInCategory(value: string): value is BuiltInCategory {
+  return (CATEGORIES as readonly string[]).includes(value);
+}
+
+export function isCustomCategoryKey(value: string): value is CustomCategoryKey {
+  return /^custom-\d+$/.test(value);
+}
 
 export interface Installment {
   current: number;
@@ -81,5 +99,5 @@ export interface BankConnection {
 export interface MonthSummary {
   month: string;
   total: number;
-  byCategory: Record<Category, number>;
+  byCategory: Partial<Record<Category, number>>;
 }

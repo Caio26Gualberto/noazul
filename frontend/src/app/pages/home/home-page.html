@@ -67,7 +67,7 @@
           @for (row of data.categories; track row.category) {
             <div class="category">
               <div class="category__line">
-                <span class="category__name">{{ t('finance.categories.' + row.category) }}</span>
+                <span class="category__name">{{ row.category | categoryName }}</span>
                 <span class="home__number">
                   <strong>{{ row.amount | currency }}</strong>
                   <span class="home__muted">
@@ -80,7 +80,7 @@
                 size="s"
                 [value]="row.amount"
                 [max]="data.largestCategory"
-                [attr.aria-label]="t('finance.categories.' + row.category)"
+                [attr.aria-label]="row.category | categoryName"
               ></progress>
             </div>
           }
@@ -175,7 +175,7 @@
                 </td>
                 <td tuiTd>
                   <span tuiChip size="xs" appearance="secondary-grayscale">{{
-                    t('finance.categories.' + transaction.category)
+                    transaction.category | categoryName
                   }}</span>
                 </td>
                 <td tuiTd class="home__muted">

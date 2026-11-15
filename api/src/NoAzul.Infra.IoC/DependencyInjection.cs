@@ -20,15 +20,14 @@ using NoAzul.Application.Auth.Interfaces;
 using NoAzul.Application.Authorizations;
 using NoAzul.Application.Authorizations.Interfaces;
 using NoAzul.Application.BackgroundJobs;
-using NoAzul.Application.BackgroundJobs.Handlers;
 using NoAzul.Application.BackgroundJobs.Interfaces;
 using NoAzul.Application.Common.Time;
 using NoAzul.Application.Interfaces;
 using NoAzul.Application.Interfaces.Pluggy;
-using NoAzul.Application.Items;
-using NoAzul.Application.Items.Interfaces;
 using NoAzul.Application.Profiles;
 using NoAzul.Application.Profiles.Interfaces;
+using NoAzul.Application.CustomCategories;
+using NoAzul.Application.CustomCategories.Interfaces;
 using NoAzul.Application.Transactions;
 using NoAzul.Application.Transactions.Interfaces;
 using NoAzul.Application.Users;
@@ -48,18 +47,13 @@ using NoAzul.Infra.Data.Pluggy;
 using NoAzul.Infra.Data.Repositories;
 using NoAzul.Infra.Data.Repositories.AuditLogs;
 using NoAzul.Infra.Data.Repositories.BackgroundJobRuns;
-using NoAzul.Infra.Data.Repositories.Items;
 using NoAzul.Infra.Data.Repositories.Transactions;
 using NoAzul.Infra.Data.Repositories.UnitOfWork;
 using NoAzul.Workers.Dispatch;
 using NoAzul.Workers.Monitoring;
-using NoAzul.Workers.Triggers.Enqueued.BackgroundJobs;
 using NoAzul.Workers.Triggers.Enqueued.BankConnections;
-using NoAzul.Workers.Triggers.Enqueued.Items;
 using NoAzul.Workers.Triggers.Recurring.BankConnections;
-using NoAzul.Workers.Triggers.Recurring.Items;
 using NoAzul.Workers.Wrappers.Recurring.BankConnections;
-using NoAzul.Workers.Wrappers.Recurring.Items;
 
 namespace NoAzul.Infra.IoC
 {
@@ -148,9 +142,9 @@ namespace NoAzul.Infra.IoC
             services.AddScoped<SeedData>();
 
             // Services
-            services.AddScoped<IItemAppService, ItemAppService>();
             services.AddScoped<IBankConnectionAppService, BankConnectionAppService>();
             services.AddScoped<ITransactionAppService, TransactionAppService>();
+            services.AddScoped<ICustomCategoryAppService, CustomCategoryAppService>();
 
             // External services
             services.AddScoped<IEmailService, ConsoleEmailService>();
@@ -166,11 +160,6 @@ namespace NoAzul.Infra.IoC
             services.AddScoped<IRecurringJobReader, RecurringJobReader>();
             services.AddScoped<IEnqueuedJobDispatcher, EnqueuedJobDispatcher>();
             services.AddScoped<IBackgroundJobAppService, BackgroundJobAppService>();
-            services.AddScoped<IBackgroundJobHandler, ItemsSnapshotJobHandler>();
-            services.AddScoped<BackgroundJobsEnqueuedTrigger>();
-            services.AddScoped<ItemsEnqueuedJobsTrigger>();
-            services.AddScoped<ItemRecurringJobsTrigger>();
-            services.AddScoped<ItemRecurringJobsWrapper>();
             services.AddScoped<BankConnectionsEnqueuedJobsTrigger>();
             services.AddScoped<BankConnectionRecurringJobsTrigger>();
             services.AddScoped<BankConnectionRecurringJobsWrapper>();
@@ -180,7 +169,6 @@ namespace NoAzul.Infra.IoC
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IAuditLogRepository, AuditLogRepository>();
             services.AddScoped<IBackgroundJobRunRepository, BackgroundJobRunRepository>();
-            services.AddScoped<IItemRepository, ItemRepository>();
             services.AddScoped<ITransactionRepository, TransactionRepository>();
 
             return services;

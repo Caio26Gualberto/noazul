@@ -44,5 +44,5 @@ Ações: `Created`, `Updated`, `SoftDeleted`, `HardDeleted`. **Campo alterado é
 ## Roteiro de verificação
 
 1. Login admin → `POST /api/admin/users/invite` → `GET /api/admin/audit?entityType=User` mostra `Created` com os campos do usuário.
-2. Mesma ação por um usuário comum (`POST /api/items/{id}/archive`) → nenhuma linha nova em `AuditLog`. ⚠️ Arquivar é `ExecuteUpdateAsync`, que não passa pelo `ChangeTracker`: nem o admin gera `AuditLog` ali. Para ver o interceptor, edite um papel (`PUT /api/admin/authorization/roles/{id}`) — não: `ApplicationRole` não herda `EntityBase`. Convide um usuário: `User` novo → `Created`.
+2. Escrita de um usuário comum (`DELETE /api/bank-connections/{id}`, desconectar um banco) → nenhuma linha nova em `AuditLog`. ⚠️ Os lançamentos que saem junto são apagados por `ExecuteUpdateAsync` (`ITransactionRepository.SoftDeleteByAccountsAsync`), que não passa pelo `ChangeTracker`: nem com um admin eles gerariam `AuditLog`. Para ver o interceptor, use o passo 1 (`User` novo → `Created`); editar papel não serve, porque `ApplicationRole` não herda `EntityBase`.
 3. `POST /api/admin/authorization/roles` → linha em `AuthorizationAuditLog` (`RoleCreated`); nada em `AuditLog`, porque `ApplicationRole` não herda `EntityBase`.

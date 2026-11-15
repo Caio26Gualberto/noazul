@@ -35,6 +35,25 @@
   "categoryMenu": {
     "label": "Trocar a categoria de {{description}}",
     "title": "Categorias",
-    "notSpending": "Não é gasto"
+    "notSpending": "Não é gasto",
+    "newCategory": "Nova categoria",
+    "manage": "Minhas categorias"
+  },
+  "categoryDialog": {
+    "createTitle": "Nova categoria",
+    "renameTitle": "Renomear categoria",
+    "name": "Nome da categoria",
+    "hint": "Vale para este lançamento e para todos com a mesma descrição, os de agora e os que chegarem depois.",
+    "save": "Salvar",
+    "cancel": "Cancelar"
+  },
+  "categoryManager": {
+    "title": "Minhas categorias",
+    "empty": "Você ainda não criou nenhuma categoria.",
+    "rename": "Renomear {{name}}",
+    "delete": "Apagar {{name}}",
+    "deleteTitle": "Apagar {{name}}?",
+    "deleteText": "Os lançamentos desta categoria voltam para a categoria automática, e os que chegarem depois também.",
+    "deleteConfirm": "Apagar categoria"
   }
 }

@@ -5,6 +5,9 @@ paths:
   - "**/NoAzul.Api/Controllers/TransactionsController.cs"
   - "**/NoAzul.Domain/Entities/Transaction.cs"
   - "**/NoAzul.Domain/Enums/Transactions/**"
+  - "**/NoAzul.Application/CustomCategories/**"
+  - "**/NoAzul.Api/Controllers/CustomCategoriesController.cs"
+  - "**/NoAzul.Domain/Entities/CustomCategory.cs"
 ---
 
 # Decisões — Lançamentos
@@ -55,6 +58,18 @@ O `ProviderCategoryId` fica guardado em cada lançamento, então mudar a tabela 
 - Não há "voltar à categoria automática": escolher a mesma categoria da tabela grava regra igual. Apagar a regra é só pelo banco.
 - `ExecuteUpdateAsync` não passa pela auditoria; `Transaction` já é ignorada nela.
 
+## Categorias da pessoa (decidido pelo dono em 2026-11-15)
+
+Além das onze, cada pessoa cria as próprias categorias (`CustomCategory`: pessoa + nome) e elas funcionam como qualquer outra: entram no menu e no filtro de Lançamentos, nos totais do Início e na comparação das Métricas. Ficam presas à descrição para sempre, pela mesma `CategoryRule` das onze.
+
+- **A chave é texto.** A API fala de categoria por uma chave única: o nome do enum em camelCase (`restaurants`) ou `custom-<id>` (`CategoryKeys`). Vale no `category` do lançamento, no filtro `?category=`, no `PUT /api/transactions/{id}/category` e nas chaves do `byCategory` do resumo. O resumo traz as onze e todas as categorias da pessoa, zeradas quando não há gasto.
+- **No banco**, `Transaction.CustomCategoryId` e `CategoryRule.CustomCategoryId` (FK `Restrict`). Com ele preenchido, a categoria é a da pessoa e o `Category` (enum) é ignorado. Escolher uma das onze zera o `CustomCategoryId`.
+- Na sincronização, regra com categoria da pessoa grava o `CustomCategoryId` e deixa o `Category` com o da tabela da Pluggy.
+- **Criar** é pelo menu do lançamento ("Nova categoria"): cria e já aplica nele e nos idênticos. **Renomear e apagar** ficam em "Minhas categorias", no mesmo menu.
+- **Apagar** (`DELETE /api/custom-categories/{id}`, numa transação do `IUnitOfWork`): `SoftDelete` das regras que apontam para ela e dos que tinham a categoria, `CustomCategoryId` zerado e `Category` recalculado pela tabela da Pluggy (`ProviderCategoryId`). Ou seja, os lançamentos voltam para a categoria automática, e os que chegarem depois também. O recálculo é linha a linha, porque a tabela é código e não SQL.
+- Nome: de 1 a 40 caracteres, espaços repetidos viram um, único por pessoa sem diferenciar maiúscula. Não é comparado com o nome das onze (o nome delas só existe no i18n do frontend). Limite de 50 por pessoa.
+- Rotas em `/api/custom-categories` (lista paginada, criar, renomear, apagar), com rate limit `custom-category` (60/h) nas escritas.
+
 ## Sincronização
 
 `TransactionAppService.SyncFromProvider(conta, userId)`, chamado por `BankConnectionAppService` para cada conta, depois de atualizar as contas.
@@ -69,9 +84,9 @@ O `ProviderCategoryId` fica guardado em cada lançamento, então mudar a tabela 
 
 ## Leitura
 
-- `GET /api/transactions?month=yyyy-MM&origin=&category=&search=&page=&pageSize=` — do próprio usuário, mês na zona do produto (`AppTime.MonthWindowUtc`), mais recente primeiro com desempate por `Id`. Sem `month`, o mês atual. Origem e categoria aceitam o nome do enum (`card`, `restaurants`). O frontend pede todas as páginas do mês e filtra na tela.
-- `GET /api/transactions/monthly-summary?months=6` — de 1 a 24 meses terminando no atual, total e soma por categoria, um `GroupBy` por mês no `ITransactionRepository`. Mês sem dados vem zerado.
-- Valor inválido de `origin`/`category` cai na validação padrão do ASP.NET (400 em ProblemDetails, fora do envelope), igual ao `status` de `Items`.
+- `GET /api/transactions?month=yyyy-MM&origin=&category=&search=&page=&pageSize=` — do próprio usuário, mês na zona do produto (`AppTime.MonthWindowUtc`), mais recente primeiro com desempate por `Id`. Sem `month`, o mês atual. Origem aceita o nome do enum (`card`); categoria aceita a chave (`restaurants` ou `custom-12`). O frontend pede todas as páginas do mês e filtra na tela.
+- `GET /api/transactions/monthly-summary?months=6` — de 1 a 24 meses terminando no atual, total e soma por categoria (onze mais as da pessoa), um `GroupBy` por mês no `ITransactionRepository`. Mês sem dados vem zerado.
+- `origin` inválido cai na validação padrão do ASP.NET (400 em ProblemDetails, fora do envelope). `category` inválida é `TRANSACTION_CATEGORY_INVALID`, no envelope.
 
 ## Codes
 
@@ -84,16 +99,25 @@ O `ProviderCategoryId` fica guardado em cada lançamento, então mudar a tabela 
 | `TRANSACTION_SUMMARY_MONTHS_INVALID` (400) | `months` fora de 1–24 |
 | `TRANSACTION_CATEGORY_UPDATED` | categoria trocada (e nos idênticos) |
 | `TRANSACTION_MARKED_NOT_SPENDING` | marcado como não é gasto (e os idênticos) |
-| `TRANSACTION_CATEGORY_INVALID` (400) | categoria vazia ou desconhecida sem `ignored` |
+| `TRANSACTION_CATEGORY_INVALID` (400) | categoria vazia, desconhecida, ou da pessoa que não existe ou é de outra pessoa (no `PUT` sem `ignored` e no filtro) |
 | `TRANSACTION_NOT_FOUND` (404) | id que não existe ou é de outra pessoa |
+| `CUSTOM_CATEGORIES_LOADED` | lista das categorias da pessoa |
+| `CUSTOM_CATEGORY_CREATED` | categoria criada |
+| `CUSTOM_CATEGORY_RENAMED` | categoria renomeada |
+| `CUSTOM_CATEGORY_DELETED` | categoria apagada, lançamentos de volta à automática |
+| `CUSTOM_CATEGORY_NAME_INVALID` (400) | nome vazio ou com mais de 40 caracteres |
+| `CUSTOM_CATEGORY_NAME_TAKEN` (409) | a pessoa já tem uma com esse nome |
+| `CUSTOM_CATEGORY_LIMIT_REACHED` (400) | já tem 50 |
+| `CUSTOM_CATEGORY_NOT_FOUND` (404) | renomear ou apagar uma que não existe ou é de outra pessoa |
 
 ## Eventos de log
 
 | Evento | Nível | Quando |
 |---|---|---|
 | `TRANSACTIONS_SYNCED` | Info | uma conta ganhou ou perdeu lançamentos na sincronização (com `Received`, `Added`, `Removed`, `FirstSync`); conta sem mudança não loga |
-
 | `TRANSACTION_CATEGORY_RULE_SAVED` | Info | regra gravada, com quantos lançamentos mudaram |
+| `CUSTOM_CATEGORY_CREATED` | Info | categoria da pessoa criada |
+| `CUSTOM_CATEGORY_DELETED` | Info | categoria da pessoa apagada, com quantos lançamentos voltaram à automática (`Restored`) |
 
 Falha da Pluggy sobe e vira `BANK_CONNECTION_SYNC_FAILED` da conexão inteira.
 
@@ -104,6 +128,8 @@ Falha da Pluggy sobe e vira `BANK_CONNECTION_SYNC_FAILED` da conexão inteira.
 3. Rodar de novo → contas sem mudança não logam; nenhuma linha duplicada (`PluggyTransactionId` único).
 4. Lançamentos, Início e Métricas mostram o mês atual com os dados do banco.
 5. Em Lançamentos, trocar a categoria de um lançamento que tem idênticos → aviso `TRANSACTION_CATEGORY_UPDATED`, todos os idênticos mudam (conferir no banco por `Description`), linha em `CategoryRules`. "Não é gasto" → linha apagada, total do filtro desconta. Rodar a sincronização → a escolha continua.
+6. Categorias da pessoa: `POST /api/custom-categories {"name":"  Pet  "}` → `CUSTOM_CATEGORY_CREATED` com nome `Pet` e chave `custom-N`; de novo com `pet` → 409 `CUSTOM_CATEGORY_NAME_TAKEN`; nome vazio → 400. `PUT /api/transactions/{id}/category {"category":"custom-N"}` → todos os idênticos com `CustomCategoryId = N`; `monthly-summary` traz `custom-N` com a soma; `?category=custom-N` filtra. `DELETE /api/custom-categories/N` → os lançamentos voltam para a categoria da tabela, a regra fica `IsDeleted`; apagar de novo → 404. (Visto em 2026-11-15 com dois lançamentos de teste.)
+7. Na tela: menu da categoria → "Nova categoria" → nome → o lançamento e os idênticos mudam, a categoria aparece no filtro, no Início e nas Métricas. "Minhas categorias" → renomear muda o nome em todo lugar; apagar pede confirmação.
 
 ## Em aberto
 

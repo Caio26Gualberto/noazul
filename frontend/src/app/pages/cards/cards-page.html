@@ -94,7 +94,9 @@
               {{ t('cards.manage') }}
             </button>
             <ng-template #manageMenu>
-              <tui-data-list [attr.aria-label]="t('cards.manageMenu.label', { bank: connection.bank })">
+              <tui-data-list
+                [attr.aria-label]="t('cards.manageMenu.label', { bank: connection.bank })"
+              >
                 <button tuiOption type="button" (click)="reconnect(connection)">
                   <tui-icon icon="@tui.refresh-cw" />
                   {{ t('cards.manageMenu.reconnect') }}

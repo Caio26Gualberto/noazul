@@ -43,7 +43,7 @@
     >
       <label tuiLabel for="transactions-category">{{ t('transactions.filters.category') }}</label>
       <input id="transactions-category" tuiSelect [(ngModel)]="category" />
-      <tui-data-list-wrapper *tuiDropdown [items]="categoryFilters" />
+      <tui-data-list-wrapper *tuiDropdown [items]="categoryFilters()" />
     </tui-textfield>
 
     <tui-textfield
@@ -144,24 +144,46 @@
                     @if (transaction.ignored) {
                       {{ t('transactions.categoryMenu.notSpending') }}
                     } @else {
-                      {{ t('finance.categories.' + transaction.category) }}
+                      {{ transaction.category | categoryName }}
                     }
                   </button>
                   <ng-template #categoryMenu>
                     <tui-data-list [attr.aria-label]="t('transactions.categoryMenu.title')">
-                      @for (category of categories; track category) {
+                      @for (category of categories(); track category) {
                         <button
                           tuiOption
                           type="button"
                           [disabled]="saving()"
                           (click)="changeCategory(transaction, category)"
                         >
-                          {{ t('finance.categories.' + category) }}
+                          {{ category | categoryName }}
                           @if (!transaction.ignored && transaction.category === category) {
                             <tui-icon icon="@tui.check" />
                           }
                         </button>
                       }
+                      <tui-opt-group>
+                        <button
+                          tuiOption
+                          type="button"
+                          [disabled]="saving()"
+                          (click)="createAndApply(transaction)"
+                        >
+                          <tui-icon icon="@tui.plus" />
+                          {{ t('transactions.categoryMenu.newCategory') }}
+                        </button>
+                        @if (customCategories().length > 0) {
+                          <button
+                            tuiOption
+                            type="button"
+                            [disabled]="saving()"
+                            (click)="openManager()"
+                          >
+                            <tui-icon icon="@tui.settings-2" />
+                            {{ t('transactions.categoryMenu.manage') }}
+                          </button>
+                        }
+                      </tui-opt-group>
                       <tui-opt-group>
                         <button
                           tuiOption
@@ -206,4 +228,71 @@
       </div>
     </section>
   }
+
+  <ng-template #nameDialog let-observer>
+    <form class="category-dialog" (ngSubmit)="submitName(observer)">
+      <tui-textfield>
+        <label tuiLabel for="category-name">{{ t('transactions.categoryDialog.name') }}</label>
+        <input
+          id="category-name"
+          tuiInput
+          name="categoryName"
+          autocomplete="off"
+          [maxlength]="nameMaxLength"
+          [(ngModel)]="draftName"
+        />
+      </tui-textfield>
+      <p class="category-dialog__hint">{{ t('transactions.categoryDialog.hint') }}</p>
+      <div class="category-dialog__actions">
+        <button
+          tuiButton
+          type="button"
+          appearance="secondary"
+          size="m"
+          (click)="observer.complete()"
+        >
+          {{ t('transactions.categoryDialog.cancel') }}
+        </button>
+        <button tuiButton type="submit" size="m" [disabled]="draftName().trim().length === 0">
+          {{ t('transactions.categoryDialog.save') }}
+        </button>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #managerDialog>
+    <ul class="category-manager">
+      @for (category of customCategories(); track category.id) {
+        <li class="category-manager__row">
+          <span class="category-manager__name">{{ category.name }}</span>
+          <span class="category-manager__actions">
+            <button
+              tuiIconButton
+              type="button"
+              size="s"
+              appearance="flat-grayscale"
+              iconStart="@tui.pencil"
+              [disabled]="saving()"
+              (click)="renameCategory(category)"
+            >
+              {{ t('transactions.categoryManager.rename', { name: category.name }) }}
+            </button>
+            <button
+              tuiIconButton
+              type="button"
+              size="s"
+              appearance="flat-destructive"
+              iconStart="@tui.trash-2"
+              [disabled]="saving()"
+              (click)="deleteCategory(category)"
+            >
+              {{ t('transactions.categoryManager.delete', { name: category.name }) }}
+            </button>
+          </span>
+        </li>
+      } @empty {
+        <li class="category-manager__empty">{{ t('transactions.categoryManager.empty') }}</li>
+      }
+    </ul>
+  </ng-template>
 </section>

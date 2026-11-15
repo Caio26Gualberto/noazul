@@ -32,7 +32,7 @@ builder.Services.AddHangfire(config =>
 builder.Services.AddHangfireServer(options =>
 {
     options.ServerName = "noazul-main";
-    options.Queues = new[] { "default", "bank-connections", "items" };
+    options.Queues = new[] { "default", "bank-connections" };
 });
 
 builder.Services.AddControllers(options =>

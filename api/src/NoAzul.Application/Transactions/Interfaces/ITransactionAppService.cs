@@ -13,5 +13,6 @@ namespace NoAzul.Application.Transactions.Interfaces
 
         Task<int> SyncFromProvider(FinancialAccount account, int userId);
         Task<int> RemoveForAccounts(IReadOnlyCollection<int> financialAccountIds);
+        Task<int> ClearCustomCategory(int customCategoryId);
     }
 }

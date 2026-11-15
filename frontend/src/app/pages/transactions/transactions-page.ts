@@ -1,5 +1,13 @@
 import { CurrencyPipe, DatePipe, formatDate } from '@angular/common';
-import { Component, LOCALE_ID, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  LOCALE_ID,
+  TemplateRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
@@ -7,6 +15,7 @@ import { TuiTable } from '@taiga-ui/addon-table';
 import {
   TuiButton,
   TuiDataList,
+  TuiDialogService,
   TuiDropdown,
   TuiIcon,
   TuiInput,
@@ -14,6 +23,8 @@ import {
   TuiTextfieldOptionsDirective,
 } from '@taiga-ui/core';
 import {
+  TUI_CONFIRM,
+  TuiConfirmData,
   TuiBadge,
   TuiChevron,
   TuiChip,
@@ -22,22 +33,25 @@ import {
   TuiSelect,
 } from '@taiga-ui/kit';
 import { sumAmounts } from '../../finance/finance.calc';
-import { Observable, firstValueFrom, startWith, switchMap } from 'rxjs';
+import { Observable, Observer, firstValueFrom, startWith, switchMap } from 'rxjs';
 import { ignoreApiError } from '../../api/api-error';
+import { CategoryNamePipe } from '../../finance/category-name.pipe';
+import { CategoryStore } from '../../finance/category.store';
 import { currentMonth, recentMonths } from '../../finance/finance.dates';
-import { CATEGORIES, Category, Origin, Transaction } from '../../finance/finance.models';
+import { Category, CustomCategory, Origin, Transaction } from '../../finance/finance.models';
 import { FinanceService } from '../../finance/finance.service';
 
 type OriginFilter = 'all' | Origin;
 type CategoryFilter = 'all' | Category;
 
 const ORIGIN_FILTERS: readonly OriginFilter[] = ['all', 'card', 'account'];
-const CATEGORY_FILTERS: readonly CategoryFilter[] = ['all', ...CATEGORIES];
 const MONTHS_AVAILABLE = 12;
+const CATEGORY_NAME_MAX_LENGTH = 40;
 
 @Component({
   selector: 'app-transactions-page',
   imports: [
+    CategoryNamePipe,
     CurrencyPipe,
     DatePipe,
     FormsModule,
@@ -64,11 +78,22 @@ export class TransactionsPage {
   private readonly transloco = inject(TranslocoService);
   private readonly locale = inject(LOCALE_ID);
 
+  private readonly categoryStore = inject(CategoryStore);
+  private readonly dialogs = inject(TuiDialogService);
+  private readonly nameDialog = viewChild.required<TemplateRef<unknown>>('nameDialog');
+  private readonly managerDialog = viewChild.required<TemplateRef<unknown>>('managerDialog');
+
   protected readonly originFilters = ORIGIN_FILTERS;
-  protected readonly categoryFilters = CATEGORY_FILTERS;
+  protected readonly categories = this.categoryStore.all;
+  protected readonly customCategories = this.categoryStore.custom;
+  protected readonly categoryFilters = computed<CategoryFilter[]>(() => [
+    'all',
+    ...this.categories(),
+  ]);
   protected readonly months = recentMonths(MONTHS_AVAILABLE);
   protected readonly month = signal(currentMonth());
-  protected readonly categories = CATEGORIES;
+  protected readonly nameMaxLength = CATEGORY_NAME_MAX_LENGTH;
+  protected readonly draftName = signal('');
   protected readonly menuFor = signal<number | null>(null);
   protected readonly saving = signal(false);
   private readonly version = signal(0);
@@ -101,10 +126,99 @@ export class TransactionsPage {
 
   protected readonly total = computed(() => sumAmounts(this.filtered()));
 
+  constructor() {
+    this.categoryStore.refresh();
+  }
+
   protected readonly stringifyCategory = (category: CategoryFilter): string =>
     category === 'all'
       ? this.transloco.translate('transactions.filters.allCategories')
-      : this.transloco.translate(`finance.categories.${category}`);
+      : this.categoryStore.label(category);
+
+  protected submitName(observer: Observer<string>): void {
+    const name = this.draftName().trim();
+    if (name.length === 0) return;
+    observer.next(name);
+    observer.complete();
+  }
+
+  protected async createAndApply(transaction: Transaction): Promise<void> {
+    this.menuFor.set(null);
+    const name = await this.askName('transactions.categoryDialog.createTitle', '');
+    if (!name) return;
+    if (this.saving()) return;
+    this.saving.set(true);
+    try {
+      const created = await firstValueFrom(this.categoryStore.create(name));
+      await firstValueFrom(this.finance.updateCategory(transaction.id, created.key));
+      this.version.update((value) => value + 1);
+    } catch (error) {
+      ignoreApiError(error);
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  protected openManager(): void {
+    this.menuFor.set(null);
+    this.dialogs
+      .open(this.managerDialog(), {
+        label: this.transloco.translate('transactions.categoryManager.title'),
+        size: 's',
+      })
+      .subscribe();
+  }
+
+  protected async renameCategory(category: CustomCategory): Promise<void> {
+    const name = await this.askName('transactions.categoryDialog.renameTitle', category.name);
+    if (!name || name === category.name) return;
+    await this.runSaving(this.categoryStore.rename(category, name), false);
+  }
+
+  protected async deleteCategory(category: CustomCategory): Promise<void> {
+    const confirmed = await firstValueFrom(
+      this.dialogs.open<boolean>(TUI_CONFIRM, {
+        label: this.transloco.translate('transactions.categoryManager.deleteTitle', {
+          name: category.name,
+        }),
+        size: 's',
+        data: {
+          content: this.transloco.translate('transactions.categoryManager.deleteText'),
+          yes: this.transloco.translate('transactions.categoryManager.deleteConfirm'),
+          no: this.transloco.translate('transactions.categoryDialog.cancel'),
+          appearance: ['primary-destructive', 'secondary'],
+        } satisfies TuiConfirmData,
+      }),
+      { defaultValue: false },
+    );
+    if (!confirmed) return;
+    if (this.category() === category.key) this.category.set('all');
+    await this.runSaving(this.categoryStore.remove(category), true);
+  }
+
+  private async askName(labelKey: string, initial: string): Promise<string | undefined> {
+    this.draftName.set(initial);
+    return firstValueFrom(
+      this.dialogs.open<string>(this.nameDialog(), {
+        label: this.transloco.translate(labelKey),
+        size: 's',
+      }),
+      { defaultValue: undefined },
+    );
+  }
+
+  private async runSaving(request: Observable<unknown>, reload: boolean): Promise<void> {
+    if (this.saving()) return;
+    this.saving.set(true);
+    try {
+      await firstValueFrom(request, { defaultValue: undefined });
+      if (reload) this.version.update((value) => value + 1);
+    } catch (error) {
+      ignoreApiError(error);
+    } finally {
+      this.saving.set(false);
+    }
+  }
 
   protected readonly stringifyMonth = (month: string): string => this.formatMonth(month);
 

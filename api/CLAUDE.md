@@ -6,24 +6,23 @@
 
 O que ele **não** é: não movimenta dinheiro (só lê e organiza), não é produto comercial (sem cadastro aberto ao público, sem planos), não cuida de investimentos e não é em tempo real (os dados do banco chegam uma vez por dia).
 
-Fase atual: autenticação pronta, `BankConnections` (conectar banco pela Pluggy, sincronização diária de cartões e contas) e `Transactions` (lançamentos de cartão e conta vindos da Pluggy, lista e resumo mensal). `Items` continua como feature de exemplo.
+Fase atual: autenticação pronta, `BankConnections` (conectar banco pela Pluggy, sincronização diária de cartões e contas), `Transactions` (lançamentos de cartão e conta vindos da Pluggy, lista e resumo mensal) e `CustomCategories` (categorias criadas pela pessoa).
 
 ## Como trabalhar neste repositório
 
-Arquitetura e convenções do backend. Ao criar ou alterar qualquer feature, siga o padrão canônico descrito aqui. **A feature de referência é `Items`** — quando tiver dúvida, copie a estrutura dela. Ela existe para isso: exercita entidade, CRUD paginado, permissões por verbo, update atômico, soft delete, índice único filtrado, rate limit, log, job recorrente e job enfileirado.
+Arquitetura e convenções do backend. Ao criar ou alterar qualquer feature, siga o padrão canônico descrito aqui. **As features de referência são `BankConnections` e `Transactions`** — quando tiver dúvida, copie a estrutura delas. `BankConnections` exercita entidade, lista paginada, soft delete, índice único filtrado, rate limit, log, job recorrente e job enfileirado, integração externa que degrada sem configuração e transação com `IUnitOfWork`. `Transactions` exercita o repositório específico (`ExecuteUpdateAsync`, `GroupBy`) e a regra por descrição (`CategoryRule`). Para permissões por verbo, a referência é `Authorization.Roles.*`.
 
 As **decisões** — o porquê de cada regra — vivem em `.claude/rules/`, um arquivo por domínio, com front matter `paths:`. Elas carregam sozinhas quando você toca no código correspondente; **ao planejar antes de abrir arquivo, leia a relevante de propósito.** Este arquivo é convenção; a rule é decisão.
 
 | Arquivo | Cobre |
 |---|---|
-| `.claude/rules/items.md` | a feature de exemplo: por que ela é assim, e como usá-la como molde |
 | `.claude/rules/usuarios-e-acesso.md` | registro, login, convite com senha inicial, revogação de acesso, papéis e permissões |
 | `.claude/rules/auditoria.md` | as duas trilhas, o interceptor global, política de dados sensíveis |
 | `.claude/rules/jobs-hangfire.md` | filas, Wrapper + Trigger, jobs enfileirados com linha de status |
 | `.claude/rules/observabilidade.md` | as quatro categorias de falha, `UNHANDLED_EXCEPTION`/`REQUEST_FAILED`/`RATE_LIMIT_REJECTED`, cadeia de exceções |
 | `.claude/rules/abuso-e-limites.md` | rate limit por IP/conta e limites de volume por regra de negócio |
 | `.claude/rules/bancos-pluggy.md` | conexão com a Pluggy, sincronização diária, cartões e contas guardados |
-| `.claude/rules/lancamentos.md` | o que é gasto, as onze categorias e a tabela da Pluggy, sincronização dos lançamentos, lista e resumo mensal |
+| `.claude/rules/lancamentos.md` | o que é gasto, as onze categorias e a tabela da Pluggy, as categorias da pessoa, sincronização dos lançamentos, lista e resumo mensal |
 
 **Rule nova entra nesta tabela no mesmo commit.** Rule fora do índice é rule que ninguém lê ao planejar.
 
@@ -56,12 +55,12 @@ Dependência entre camadas: `Api → Application → Domain`; `Infra.Data` imple
 
 Uma única superfície HTTP: todo controller herda `ApiBaseController` (`[ApiController] [Authorize]`) e vive em `src/NoAzul.Api/Controllers/`. A organização é por **escopo de acesso**, não por tipo de usuário:
 
-- `Controllers/*.cs` — `/api/...`: o que qualquer usuário autenticado faz sobre o que é dele (`auth`, `profile`, `items`). Sem `[Authorize(Policy)]`; o filtro de dono é `UserId == _currentUser.UserId` no `WHERE`.
-- `Controllers/Admin/*.cs` — `/api/admin/...`: o que exige permissão do catálogo (`items` de todos, `users`, `authorization`, `audit`, `jobs`). **Toda action tem `[Authorize(Policy = Permissions.X.Y)]`.**
+- `Controllers/*.cs` — `/api/...`: o que qualquer usuário autenticado faz sobre o que é dele (`auth`, `profile`, `bank-connections`, `transactions`). Sem `[Authorize(Policy)]`; o filtro de dono é `UserId == _currentUser.UserId` no `WHERE`.
+- `Controllers/Admin/*.cs` — `/api/admin/...`: o que exige permissão do catálogo (`users`, `authorization`, `audit`, `jobs`). **Toda action tem `[Authorize(Policy = Permissions.X.Y)]`.**
 
 O mesmo token serve para os dois; o que separa é a permissão. Superfície nova de verdade (webhook de provedor, integração servidor-a-servidor) ganha pasta própria, base controller próprio e validação própria — não reutilize `ApiBaseController` para request que não tem usuário.
 
-Rotas são explícitas, minúsculas/kebab-case (`/api/items/{id}/archive`), sem `[controller]` token e sem `/v1`.
+Rotas são explícitas, minúsculas/kebab-case (`/api/bank-connections/{id}/reconnect-token`), sem `[controller]` token e sem `/v1`.
 
 ## Modelo de usuário
 
@@ -73,14 +72,15 @@ Se o produto precisar de **dois tipos** com dados diferentes (cliente vs equipe,
 
 Fluxo: `GET /api/auth/registration` (diz se o cadastro está ligado), `POST /api/auth/register` (nome, e-mail, senha → papel `User`, já logado; só com `Auth:AllowRegistration` ligado, senão 403 `REGISTRATION_DISABLED`), `login`, `refresh-token`, `logout`; `POST /api/profile/change-password` (exige a atual) e `set-initial-password` (só com `password_change_required`, para quem entrou por convite). Decisões em `.claude/rules/usuarios-e-acesso.md`. Verificação de e-mail, esqueci-a-senha e login social ficaram de fora: cada um exige um provedor; quando entrarem, entram no `AuthAppService` e no `IAuthenticateService`, não num serviço paralelo.
 
-## Padrão canônico de feature (referência: Items)
+## Padrão canônico de feature (referência: BankConnections)
 
-Fluxo ponta-a-ponta de `GET /api/items`:
+Fluxo ponta-a-ponta de `GET /api/bank-connections`:
 
 ```
-ItemsController.List → IItemAppService.GetMine → QueryOptions<Item> → IItemRepository
-→ Repository<T> (EF, filtro soft-delete) → AppDbContext → ItemDto (mapeamento manual)
-→ Result<PagedResultDto<ItemDto>> → BaseController.ToResponse → ApiResponse<T>
+BankConnectionsController.List → IBankConnectionAppService.GetMine → QueryOptions<BankConnection>
+→ IRepository<BankConnection> → Repository<T> (EF, filtro soft-delete) → AppDbContext
+→ BankConnectionDto (mapeamento manual) → Result<PagedResultDto<BankConnectionDto>>
+→ BaseController.ToResponse → ApiResponse<T>
 ```
 
 ### Layout por feature em `Application`
@@ -95,7 +95,7 @@ src/NoAzul.Application/{Feature}/
 
 ### Controller
 
-Arquivo de referência: `src/NoAzul.Api/Controllers/App/ItemsController.cs`.
+Arquivo de referência: `src/NoAzul.Api/Controllers/BankConnectionsController.cs`.
 
 - Herda `ApiBaseController` e retorna **sempre** via `ToResponse(result)` — nunca montar `ApiResponse` manualmente nem escolher status code na mão. Ações públicas (login, register) usam `[AllowAnonymous]` por action.
 - Controller não contém lógica de negócio nem mapeamento — só delega ao AppService.
@@ -104,8 +104,8 @@ Arquivo de referência: `src/NoAzul.Api/Controllers/App/ItemsController.cs`.
 ### Envelope de resposta e erros
 
 - Todo AppService retorna `Result<T>` ou `Result` (`Application/Response/Result.cs`): `Result<T>.Ok(data, "CODE", "message")` / `Result<T>.Fail(new Error("CODE", "message", ErrorType.X))`.
-- **`Result<T>` é só para métodos que um endpoint chama.** Método público de AppService que existe para outro AppService ou para um job devolve o tipo cru (`Task<int>`, `Task<bool>`) — `IItemAppService.ArchiveExpired` e `Snapshot` são o exemplo. `Result<T>` carrega code/message HTTP que nunca vira resposta, e obriga o chamador a desembrulhar `IsSuccess`/`Data` sem ter o que fazer com a falha.
-- Códigos em SCREAMING_SNAKE_CASE e mensagens em inglês (`ITEM_NOT_FOUND`, `"Item not found"`).
+- **`Result<T>` é só para métodos que um endpoint chama.** Método público de AppService que existe para outro AppService ou para um job devolve o tipo cru (`Task<int>`, `Task<bool>`) — `IBankConnectionAppService.SyncAll` (`Task<int>`) e `Sync` (`Task<bool>`), chamados pelos jobs, são o exemplo. `Result<T>` carrega code/message HTTP que nunca vira resposta, e obriga o chamador a desembrulhar `IsSuccess`/`Data` sem ter o que fazer com a falha.
+- Códigos em SCREAMING_SNAKE_CASE e mensagens em inglês (`TRANSACTION_NOT_FOUND`, `"Transaction not found"`).
 - **O `Code` é contrato de i18n, não só log.** Os clientes traduzem a resposta **pelo code** — a `Message` é fallback para code desconhecido. Consequências ao criar um `Result` novo: o code precisa ser **estável** (renomear quebra a tradução) e **específico** (dois erros diferentes não compartilham code, senão o usuário lê a mensagem errada); vale para **sucesso** também; todo code novo é espelhado nos clientes que o exibem.
 - `BaseController.ToResponse/MapError` traduz `ErrorType` em status HTTP: `Validation`→400, `NotFound`→404, `Unauthorized`→401, `Forbidden`→403, `Conflict`→409, demais→500. A resposta é sempre `ApiResponse<T>` (`{ isSuccess, code, message, data }`, camelCase).
 - Validação é **imperativa dentro do AppService**, retornando `Result.Fail(... ErrorType.Validation)`. Não usar FluentValidation nem DataAnnotations. Mensagem específica > genérica: mensagem genérica não deixa o usuário parado, faz ele inventar a regra.
@@ -113,32 +113,32 @@ Arquivo de referência: `src/NoAzul.Api/Controllers/App/ItemsController.cs`.
 
 ### AppService
 
-Arquivo de referência: `src/NoAzul.Application/Items/ItemAppService.cs`.
+Arquivo de referência: `src/NoAzul.Application/BankConnections/BankConnectionAppService.cs`.
 
 - Mapeamento entidade↔DTO é **manual** (sem AutoMapper). Nunca retornar entidade de domínio para fora do AppService — sempre DTO.
 - 🔴 **Precisou de lógica de outra entidade? Injete o AppService dela — não crie um AppService novo para o cruzamento.** A lógica mora no AppService **dono da entidade**. AppService novo continua certo quando a feature não tem entidade dona (um dashboard) ou quando o consumo é de outra superfície.
 - Usuário logado: injetar `ICurrentUser` (`Application/Abstractions/Authentication/ICurrentUser.cs`, implementado em `Api/Authentication/CurrentUser.cs`). É a **única** abstração de usuário atual — não criar outra.
   - ⚠️ `Email`, `Name` e `UserId` **lançam `UnauthorizedAccessException`** fora de request HTTP. Só `UserIdOrNull`, `Role` e `IpAddress` são null-safe — código que roda em job só pode usar esses.
-- **Guarda de concorrência vive no `WHERE`, não num `if` depois do `SELECT`.** Transição de estado que pode sofrer corrida (claim, ativar, arquivar, reservar) é um `ExecuteUpdateAsync` condicional no repositório específico, e "zero linhas afetadas" é a recusa. `IItemRepository.TryActivateAsync`/`TryArchiveAsync` são a referência.
-- Chamada externa (e-mail, provedor, fila) acontece **depois** do commit e nunca derruba o caminho principal: falha vira log + `Result` específico, ou log + seguir (ver `Create` de `Items`, que só avisa quando o enfileiramento falha).
+- **Guarda de concorrência vive no `WHERE`, não num `if` depois do `SELECT`.** Transição de estado que pode sofrer corrida (claim, ativar, arquivar, reservar) é um `ExecuteUpdateAsync` condicional no repositório específico, e "zero linhas afetadas" é a recusa. `IBackgroundJobRunRepository.TryClaimAsync` é a referência.
+- Chamada externa (e-mail, provedor, fila) acontece **depois** do commit e nunca derruba o caminho principal: falha vira log + `Result` específico, ou log + seguir (ver `Register` de `BankConnections`, que só avisa com `BANK_CONNECTION_SYNC_NOT_ENQUEUED` quando o enfileiramento falha).
 
 ### Camada de dados
 
 - Repositório genérico `IRepository<T>` + `QueryOptions<T>` (`Application/Abstractions/Repository/`): `Predicate`, `Includes`, `OrderBy`, `AsNoTracking`, `IncludeDeleted`, `Skip/Take`. Implementação em `Infra.Data/Repositories/Repository.cs` — aplica filtro de soft-delete automaticamente. **Padrão default:** use o genérico.
-- **Repositório específico por entidade (casos excepcionais):** quando uma operação precisar de SQL atômico (`ExecuteUpdateAsync` condicional) ou de **projeção agregada** (`GroupBy` numa ida ao banco). Crie um repositório **que estende o genérico**:
+- **Repositório específico por entidade (casos excepcionais):** quando uma operação precisar de SQL atômico (`ExecuteUpdateAsync` condicional) ou de **projeção agregada** (`GroupBy` numa ida ao banco). Crie um repositório **que estende o genérico** (referência: `ITransactionRepository`/`TransactionRepository`, com `ApplyCategoryRuleAsync` e `SoftDeleteByAccountsAsync` em `ExecuteUpdateAsync` e `SumByCategoryAsync` em `GroupBy`):
   - Interface `I{Entidade}Repository : IRepository<{Entidade}>` co-locada na feature: `Application/{Feature}/Interfaces/`.
   - Implementação `{Entidade}Repository : Repository<{Entidade}>` em `Infra.Data/Repositories/{FeaturePlural}/`. Herda `_context`/`_dbSet` (protected).
   - Registrar no `AddInfra` (o genérico continua registrado).
-  - **Subpasta no plural** (`Items`, não `Item`): namespace terminando no nome do modelo colide com o tipo (`CS0118`).
+  - **Subpasta no plural** (`Transactions`, não `Transaction`): namespace terminando no nome do modelo colide com o tipo (`CS0118`).
   - **Regra de contenção:** só entra no específico o que realmente precisa de SQL custom; o resto continua no genérico.
   - Entidade que **não** herda `EntityBase` (`AuditLog`) não é alcançada pelo genérico — o repositório dela é independente.
-- Escritas com múltiplas operações usam transação via `IUnitOfWork` — exemplo real: `AppAuthAppService.Register`. ⚠️ `Repository<T>` chama `SaveChangesAsync` a **cada** operação, então um caso de uso com 4 escritas dispara 4 `SaveChanges` dentro da mesma transação.
+- Escritas com múltiplas operações usam transação via `IUnitOfWork` — exemplos reais: `AppAuthAppService.Register` e `BankConnectionAppService.Disconnect`. ⚠️ `Repository<T>` chama `SaveChangesAsync` a **cada** operação, então um caso de uso com 4 escritas dispara 4 `SaveChanges` dentro da mesma transação.
 - Entidades herdam `EntityBase`. Auditoria (`CreatedAt/By`, `UpdatedAt/By`, `DeletedAt/By`) é preenchida **automaticamente** pelo `ApplyAuditing` do `AppDbContext` — nunca setar data ou autor na mão.
 - 🔴 **`SoftDelete` e `DeleteAsync` são coisas diferentes.** `SoftDelete` marca `IsDeleted = true` e a linha continua respondendo por FKs e auditoria; `DeleteAsync` apaga de verdade. FKs são `Restrict`, então `DeleteAsync` numa entidade referenciada lança. O padrão é `SoftDelete`.
   - O carimbo de exclusão é disparado pela **transição** (`IsDeleted = true` com `DeletedAt` nulo), é idempotente e vale para quem marca `IsDeleted` direto.
   - Reviver uma linha exige **zerar `DeletedAt`** junto com `IsDeleted = false`.
-- Índice único sobre entidade com soft delete precisa de **filtro**: `.HasFilter(DatabaseProvider.SoftDeleteIndexFilter(this))`. Sem ele, apagar e recadastrar a mesma chave colide contra uma linha invisível. `Items(CustomerId, Name)` é o exemplo.
-- Violação de unicidade **não é o caminho normal de erro**: o AppService checa antes e devolve `Conflict` (`ITEM_NAME_TAKEN`); o índice é a rede de segurança contra a corrida, e quando ela pega, o 500 sai logado com `caused-by`.
+- Índice único sobre entidade com soft delete precisa de **filtro**: `.HasFilter(DatabaseProvider.SoftDeleteIndexFilter(this))`. Sem ele, apagar e recadastrar a mesma chave colide contra uma linha invisível. `BankConnections(PluggyItemId)` é o exemplo.
+- Violação de unicidade **não é o caminho normal de erro**: o AppService checa antes e devolve `Conflict` (`BANK_CONNECTION_TAKEN`); o índice é a rede de segurança contra a corrida, e quando ela pega, o 500 sai logado com `caused-by`.
 - Configuração EF é fluent **inline** no `OnModelCreating` do `AppDbContext` — não criar classes `IEntityTypeConfiguration` separadas.
 - Migrations em `Infra.Data/Migrations/`:
   ```
@@ -164,10 +164,10 @@ Arquivo de referência: `src/NoAzul.Application/Items/ItemAppService.cs`.
 
 Toda listagem nasce paginada. O par canônico vive em `Application/Pagination/`:
 
-- **Entrada**: `PagedRequestDto` (`Page`, `PageSize`, `Skip`, `Normalize()` que clampa `Page >= 1` e `PageSize` entre 1 e `MaxPageSize`, hoje **100**). O filtro de cada feature **herda** dele (`ItemListQueryDto`) e é bindado com `[FromQuery]`. Chamar `Normalize()` como primeira linha.
+- **Entrada**: `PagedRequestDto` (`Page`, `PageSize`, `Skip`, `Normalize()` que clampa `Page >= 1` e `PageSize` entre 1 e `MaxPageSize`, hoje **100**). O filtro de cada feature **herda** dele (`BankConnectionListQueryDto`) e é bindado com `[FromQuery]`. Chamar `Normalize()` como primeira linha.
 - **Saída**: `PagedResultDto<T>` (`Items`/`Page`/`PageSize`/`TotalCount` + calculados), montado por `PagedResultDto<T>.Create(...)`.
 
-O AppService monta **um** `QueryOptions` e o usa nas duas chamadas — `CountAsync(filter)` e `ListAsync(filter)`. `CountAsync` ignora `Skip`/`Take` de propósito. Referência: `ItemAppService.ListAsync`.
+O AppService monta **um** `QueryOptions` e o usa nas duas chamadas — `CountAsync(filter)` e `ListAsync(filter)`. `CountAsync` ignora `Skip`/`Take` de propósito. Referência: `BankConnectionAppService.GetMine`.
 
 Nunca paginar em memória (`ListAsync().Skip().Take()`); contagem é `CountAsync`, nunca `ListAsync().Count`. **Ordenação precisa de desempate**: `OrderByDescending(CreatedAt)` sozinho não é determinístico — toda listagem acrescenta `.ThenByDescending(x => x.Id)`.
 
@@ -175,7 +175,7 @@ Nunca paginar em memória (`ListAsync().Skip().Take()`); contagem é `CountAsync
 
 🔴 **Endpoint em `Controllers/Admin/` sem `[Authorize(Policy = ...)]` é bug de revisão.** A permissão faz parte da entrega. O ciclo completo, todo obrigatório:
 
-1. Constante em `Domain/Constants/Permissions.cs` (SCREAMING dot-case: `Items.View`).
+1. Constante em `Domain/Constants/Permissions.cs` (SCREAMING dot-case: `Authorization.Roles.View`).
 2. Declaração em `Domain/Authorization/PermissionCatalog.cs`, com grupo e o pai implícito quando houver. **`PermissionCatalog.Exists` é o portão**: nome fora do catálogo não vira policy, e o `PermissionPolicyProvider` deixa cair no provider padrão — o endpoint fica aberto sem ninguém perceber.
 3. Concessão padrão por papel em `Domain/Authorization/RoleDefaultPermissions.cs` — senão o papel que deveria usar a tela toma 403. `Admin` tem tudo implícito.
 4. `[Authorize(Policy = Permissions.X.Y)]` na action.
@@ -185,7 +185,7 @@ Não existe registro manual de policy: `Api/Authorization/PermissionPolicyProvid
 
 #### Granularidade: um verbo por ação, não um `Manage` guarda-chuva
 
-🔴 **`Manage` só se sobrar exatamente uma ação de escrita.** Uma feature com CRUD nasce com `View` / `Create` / `Edit` / `Delete` — os três últimos declarando `View` como pai. Sem isso não existe o caso mais comum de todos: *deixar alguém ver a lista sem poder mexer em nada*. `Items.*` e `Authorization.Roles.*` são a referência.
+🔴 **`Manage` só se sobrar exatamente uma ação de escrita.** Uma feature com CRUD nasce com `View` / `Create` / `Edit` / `Delete` — os três últimos declarando `View` como pai. Sem isso não existe o caso mais comum de todos: *deixar alguém ver a lista sem poder mexer em nada*. `Authorization.Roles.*` é a referência.
 
 - **No front, cada botão verifica a sua própria capacidade.** Uma coluna de ações inteira atrás de uma permissão só devolve o problema pela porta dos fundos.
 - **Leitura auxiliar fica no `View`**, não no verbo de escrita.
@@ -224,9 +224,9 @@ O banco guarda **instantes em UTC** — o `ApplyAuditing` grava `DateTime.UtcNow
 🔴 **Não injete `ILogger<T>` em código novo.** A API tem logger próprio, com contratos em `Application/Abstractions/Logging/` e implementação em `Infra.Data/Logging/` — a `Application` não conhece `Microsoft.Extensions.Logging` nem ASP.NET Core.
 
 ```csharp
-public ItemAppService(IApplicationLoggerFactory loggerFactory)
+public BankConnectionAppService(IApplicationLoggerFactory loggerFactory)
 {
-    _logger = loggerFactory.Create(LogContext.Items);
+    _logger = loggerFactory.Create(LogContext.BankConnections);
 }
 ```
 
@@ -234,7 +234,7 @@ public ItemAppService(IApplicationLoggerFactory loggerFactory)
 
 ### O store é o que faz o log valer alguma coisa
 
-`_logger.SetOperation("CreateItem")` e `_logger.Set("ItemId", id)` não emitem log: alimentam o snapshot que sai no campo `data` de todo evento daquele scope — inclusive do `UNHANDLED_EXCEPTION` que o middleware escreve quando a exceção sobe. O transporte é o `ILogContextStore` Scoped (não `BeginScope`): o contexto precisa sobreviver ao unwind da exceção até o middleware.
+`_logger.SetOperation("RegisterBankConnection")` e `_logger.Set("BankConnectionId", id)` não emitem log: alimentam o snapshot que sai no campo `data` de todo evento daquele scope — inclusive do `UNHANDLED_EXCEPTION` que o middleware escreve quando a exceção sobe. O transporte é o `ILogContextStore` Scoped (não `BeginScope`): o contexto precisa sobreviver ao unwind da exceção até o middleware.
 
 - **`Activate` é último-vence.** Criar o logger pela factory não ativa nada; o contexto é ativado em `SetOperation`, `Set` ou num dos métodos de log.
 - Chave nula ou vazia é ignorada em silêncio. Logging nunca derruba o caminho feliz.
@@ -249,10 +249,10 @@ Formato texto (leitura humana): `LEVEL dd/MM/yyyy HH:mm:ss (context) EVENT_NAME:
 
 ```csharp
 _logger.Info(
-    eventName: "ITEM_ARCHIVED",
-    message: "Item archived",
-    userId: _currentUser.UserIdOrNull,
-    extra: new { ItemId = id });
+    eventName: "BANK_CONNECTION_CREATED",
+    message: "Bank connection created",
+    userId: userId,
+    extra: new { BankConnectionId = connection.Id, Institution = connection.InstitutionName });
 ```
 
 `eventName` é SCREAMING_SNAKE_CASE e agrupa no CloudWatch — mesma disciplina do `Code` do `Result`, mas **não** é a mesma string e não vai para o i18n. O critério do que logar é **evento que muda estado importante ou anomalia que alguém vai investigar** — não passo de execução. Silêncio deliberado (reentrega idempotente, evento ignorado por design) é escolha registrada na rule, não esquecimento.
@@ -270,7 +270,7 @@ _logger.Info(
 ## Integrações externas
 
 - `HttpClient` sempre por `AddHttpClient` (typed client), nunca `new HttpClient` por chamada.
-- Serviço externo tem abstração em `Application/Abstractions/` ou `Application/Interfaces/` e implementação em `Infra.Data/`. Quando a configuração está ausente, a implementação degrada de forma explícita (`ConsoleEmailService` é o exemplo: loga em vez de enviar) e o boot avisa — nunca lança no caminho feliz por integração opcional faltando.
+- Serviço externo tem abstração em `Application/Abstractions/` ou `Application/Interfaces/` e implementação em `Infra.Data/`. Quando a configuração está ausente, a implementação degrada de forma explícita (`ConsoleEmailService` é o exemplo: loga em vez de enviar; sem `Pluggy:ClientId`/`ClientSecret`, `BankConnections` responde `PLUGGY_NOT_CONFIGURED` e o job pula a sincronização) e o boot avisa — nunca lança no caminho feliz por integração opcional faltando.
 - Segredo vem de configuração/variável de ambiente; nunca em Markdown nem em Git. `appsettings.Production.json` só carrega o bloco `Logging`.
 
 ## Convenções gerais
@@ -286,8 +286,8 @@ _logger.Info(
 
 ### Antes de escrever código
 
-1. Ler "Sobre este projeto", este arquivo inteiro e a rule do domínio que a task toca (tabela no topo). Se a task cria domínio novo, ler `items.md` de qualquer jeito — é o molde.
-2. Localizar a feature de referência para o que vai fazer: CRUD paginado → `Items`; auth/usuários → `Auth/`, `Users/` e `usuarios-e-acesso.md`; job → `jobs-hangfire.md`; logging → `observabilidade.md`.
+1. Ler "Sobre este projeto", este arquivo inteiro e a rule do domínio que a task toca (tabela no topo). Se a task cria domínio novo, ler `bancos-pluggy.md` e `lancamentos.md` de qualquer jeito — são o molde.
+2. Localizar a feature de referência para o que vai fazer: lista paginada, integração externa e job → `BankConnections`; repositório específico → `Transactions`; auth/usuários → `Auth/`, `Users/` e `usuarios-e-acesso.md`; job → `jobs-hangfire.md`; logging → `observabilidade.md`.
 3. Confirmar se o endpoint é do próprio usuário (`Controllers/`) ou de administração (`Controllers/Admin/`, com permissão). Validação, regra e o que a API devolve são daqui, mesmo quando a task fala em tela.
 4. Se a decisão não é óbvia (alternativas reais, impacto em cliente, dinheiro, segurança), registrar a escolha na rule **antes** de codar — a rule é a spec.
 

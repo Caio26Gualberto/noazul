@@ -436,6 +436,9 @@ namespace NoAzul.Infra.Data.Migrations
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("CustomCategoryId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -464,11 +467,59 @@ namespace NoAzul.Infra.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CustomCategoryId");
+
                     b.HasIndex("UserId", "Description")
                         .IsUnique()
                         .HasFilter("\"IsDeleted\" = false");
 
                     b.ToTable("CategoryRules", (string)null);
+                });
+
+            modelBuilder.Entity("NoAzul.Domain.Entities.CustomCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Name")
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = false");
+
+                    b.ToTable("CustomCategories", (string)null);
                 });
 
             modelBuilder.Entity("NoAzul.Domain.Entities.FinancialAccount", b =>
@@ -566,69 +617,6 @@ namespace NoAzul.Infra.Data.Migrations
                     b.ToTable("FinancialAccounts", (string)null);
                 });
 
-            modelBuilder.Entity("NoAzul.Domain.Entities.Item", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("ArchivedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("DeletedBy")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateTime?>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("UpdatedBy")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Status", "ExpiresAt");
-
-                    b.HasIndex("UserId", "CreatedAt");
-
-                    b.HasIndex("UserId", "Name")
-                        .IsUnique()
-                        .HasFilter("\"IsDeleted\" = false");
-
-                    b.ToTable("Items", (string)null);
-                });
-
             modelBuilder.Entity("NoAzul.Domain.Entities.Transaction", b =>
                 {
                     b.Property<int>("Id")
@@ -648,6 +636,9 @@ namespace NoAzul.Infra.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("CustomCategoryId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -703,6 +694,8 @@ namespace NoAzul.Infra.Data.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomCategoryId");
 
                     b.HasIndex("PluggyTransactionId")
                         .IsUnique()
@@ -996,6 +989,24 @@ namespace NoAzul.Infra.Data.Migrations
 
             modelBuilder.Entity("NoAzul.Domain.Entities.CategoryRule", b =>
                 {
+                    b.HasOne("NoAzul.Domain.Entities.CustomCategory", "CustomCategory")
+                        .WithMany()
+                        .HasForeignKey("CustomCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("NoAzul.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CustomCategory");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("NoAzul.Domain.Entities.CustomCategory", b =>
+                {
                     b.HasOne("NoAzul.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1016,19 +1027,13 @@ namespace NoAzul.Infra.Data.Migrations
                     b.Navigation("BankConnection");
                 });
 
-            modelBuilder.Entity("NoAzul.Domain.Entities.Item", b =>
-                {
-                    b.HasOne("NoAzul.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("NoAzul.Domain.Entities.Transaction", b =>
                 {
+                    b.HasOne("NoAzul.Domain.Entities.CustomCategory", "CustomCategory")
+                        .WithMany()
+                        .HasForeignKey("CustomCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("NoAzul.Domain.Entities.FinancialAccount", "FinancialAccount")
                         .WithMany()
                         .HasForeignKey("FinancialAccountId")
@@ -1039,6 +1044,8 @@ namespace NoAzul.Infra.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("CustomCategory");
 
                     b.Navigation("FinancialAccount");
 

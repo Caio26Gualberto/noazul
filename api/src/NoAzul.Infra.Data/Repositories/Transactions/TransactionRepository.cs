@@ -12,7 +12,7 @@ namespace NoAzul.Infra.Data.Repositories.Transactions
         {
         }
 
-        public async Task<Dictionary<ETransactionCategory, decimal>> SumByCategoryAsync(
+        public async Task<List<CategoryTotal>> SumByCategoryAsync(
             int userId, DateTime fromUtc, DateTime toUtc, CancellationToken ct = default)
         {
             return await _dbSet
@@ -22,19 +22,30 @@ namespace NoAzul.Infra.Data.Repositories.Transactions
                     && !t.IsIgnored
                     && t.OccurredAt >= fromUtc
                     && t.OccurredAt < toUtc)
-                .GroupBy(t => t.Category)
-                .Select(g => new { Category = g.Key, Total = g.Sum(t => t.Amount) })
-                .ToDictionaryAsync(x => x.Category, x => x.Total, ct);
+                .GroupBy(t => new { t.Category, t.CustomCategoryId })
+                .Select(g => new CategoryTotal(g.Key.Category, g.Key.CustomCategoryId, g.Sum(t => t.Amount)))
+                .ToListAsync(ct);
         }
 
         public async Task<int> ApplyCategoryRuleAsync(
-            int userId, string description, ETransactionCategory category, bool isIgnored, CancellationToken ct = default)
+            int userId,
+            string description,
+            ETransactionCategory category,
+            int? customCategoryId,
+            bool isIgnored,
+            CancellationToken ct = default)
         {
-            return await _dbSet
-                .Where(t => t.UserId == userId && !t.IsDeleted && t.Description == description)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(t => t.Category, category)
+            var query = _dbSet.Where(t => t.UserId == userId && !t.IsDeleted && t.Description == description);
+
+            if (customCategoryId.HasValue)
+                return await query.ExecuteUpdateAsync(s => s
+                    .SetProperty(t => t.CustomCategoryId, customCategoryId)
                     .SetProperty(t => t.IsIgnored, isIgnored), ct);
+
+            return await query.ExecuteUpdateAsync(s => s
+                .SetProperty(t => t.Category, category)
+                .SetProperty(t => t.CustomCategoryId, (int?)null)
+                .SetProperty(t => t.IsIgnored, isIgnored), ct);
         }
 
         public async Task<int> SoftDeleteByAccountsAsync(

@@ -15,12 +15,13 @@ import { currentMonth, today } from '../../finance/finance.dates';
 import {
   BankConnection,
   Card,
-  CATEGORIES,
   Category,
   MonthSummary,
   Transaction,
 } from '../../finance/finance.models';
 import { bankClass } from '../../finance/bank-connection.mapper';
+import { CategoryNamePipe } from '../../finance/category-name.pipe';
+import { CategoryStore } from '../../finance/category.store';
 import { FinanceService } from '../../finance/finance.service';
 
 const RECENT_TRANSACTIONS_COUNT = 6;
@@ -67,12 +68,18 @@ interface Dashboard {
     TuiBadge,
     TuiTable,
     TuiThumbnailCard,
+    CategoryNamePipe,
   ],
   templateUrl: './home-page.html',
   styleUrl: './home-page.scss',
 })
 export class HomePage {
   private readonly finance = inject(FinanceService);
+  private readonly categoryStore = inject(CategoryStore);
+
+  constructor() {
+    this.categoryStore.refresh();
+  }
 
   protected readonly auth = inject(AuthStore);
   protected readonly routes = AppRoutes;
@@ -115,11 +122,17 @@ export class HomePage {
 
   private categoryRows(transactions: Transaction[], total: number): CategoryRow[] {
     const totals = totalsByCategory(transactions);
-    return CATEGORIES.map((category) => ({
-      category,
-      amount: totals[category],
-      percent: total > 0 ? Math.round((totals[category] / total) * 100) : 0,
-    })).sort((a, b) => b.amount - a.amount);
+    return this.categoryStore
+      .all()
+      .map((category) => {
+        const amount = totals[category] ?? 0;
+        return {
+          category,
+          amount,
+          percent: total > 0 ? Math.round((amount / total) * 100) : 0,
+        };
+      })
+      .sort((a, b) => b.amount - a.amount);
   }
 
   private openBills(connections: BankConnection[]): OpenBill[] {

@@ -6,13 +6,20 @@ namespace NoAzul.Application.Transactions.Interfaces
 {
     public interface ITransactionRepository : IRepository<Transaction>
     {
-        Task<Dictionary<ETransactionCategory, decimal>> SumByCategoryAsync(
+        Task<List<CategoryTotal>> SumByCategoryAsync(
             int userId, DateTime fromUtc, DateTime toUtc, CancellationToken ct = default);
 
         Task<int> ApplyCategoryRuleAsync(
-            int userId, string description, ETransactionCategory category, bool isIgnored, CancellationToken ct = default);
+            int userId,
+            string description,
+            ETransactionCategory category,
+            int? customCategoryId,
+            bool isIgnored,
+            CancellationToken ct = default);
 
         Task<int> SoftDeleteByAccountsAsync(
             IReadOnlyCollection<int> financialAccountIds, int? deletedBy, CancellationToken ct = default);
     }
+
+    public sealed record CategoryTotal(ETransactionCategory Category, int? CustomCategoryId, decimal Total);
 }

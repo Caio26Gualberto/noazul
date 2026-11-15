@@ -23,11 +23,11 @@ namespace NoAzul.Infra.Data.Context
         public DbSet<AuthorizationAuditLog> AuthorizationAuditLogs => Set<AuthorizationAuditLog>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
         public DbSet<BackgroundJobRun> BackgroundJobRuns => Set<BackgroundJobRun>();
-        public DbSet<Item> Items => Set<Item>();
         public DbSet<BankConnection> BankConnections => Set<BankConnection>();
         public DbSet<FinancialAccount> FinancialAccounts => Set<FinancialAccount>();
         public DbSet<Transaction> Transactions => Set<Transaction>();
         public DbSet<CategoryRule> CategoryRules => Set<CategoryRule>();
+        public DbSet<CustomCategory> CustomCategories => Set<CustomCategory>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -95,27 +95,6 @@ namespace NoAzul.Infra.Data.Context
                     .WithMany()
                     .HasForeignKey(r => r.ApplicationUserId)
                     .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            builder.Entity<Item>(b =>
-            {
-                b.ToTable("Items");
-                b.HasKey(i => i.Id);
-
-                b.Property(i => i.Name).HasMaxLength(120).IsRequired();
-                b.Property(i => i.Description).HasMaxLength(1000);
-
-                b.HasOne(i => i.User)
-                    .WithMany()
-                    .HasForeignKey(i => i.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                b.HasIndex(i => new { i.UserId, i.Name })
-                    .IsUnique()
-                    .HasFilter(softDeleteFilter);
-
-                b.HasIndex(i => new { i.Status, i.ExpiresAt });
-                b.HasIndex(i => new { i.UserId, i.CreatedAt });
             });
 
             builder.Entity<BankConnection>(b =>
@@ -194,6 +173,28 @@ namespace NoAzul.Infra.Data.Context
                 b.HasIndex(t => new { t.UserId, t.OccurredAt });
                 b.HasIndex(t => new { t.FinancialAccountId, t.OccurredAt });
                 b.HasIndex(t => new { t.UserId, t.Description });
+
+                b.HasOne(t => t.CustomCategory)
+                    .WithMany()
+                    .HasForeignKey(t => t.CustomCategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<CustomCategory>(b =>
+            {
+                b.ToTable("CustomCategories");
+                b.HasKey(c => c.Id);
+
+                b.Property(c => c.Name).HasMaxLength(40).IsRequired();
+
+                b.HasOne(c => c.User)
+                    .WithMany()
+                    .HasForeignKey(c => c.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasIndex(c => new { c.UserId, c.Name })
+                    .IsUnique()
+                    .HasFilter(softDeleteFilter);
             });
 
             builder.Entity<CategoryRule>(b =>
@@ -206,6 +207,11 @@ namespace NoAzul.Infra.Data.Context
                 b.HasOne(r => r.User)
                     .WithMany()
                     .HasForeignKey(r => r.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasOne(r => r.CustomCategory)
+                    .WithMany()
+                    .HasForeignKey(r => r.CustomCategoryId)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 b.HasIndex(r => new { r.UserId, r.Description })

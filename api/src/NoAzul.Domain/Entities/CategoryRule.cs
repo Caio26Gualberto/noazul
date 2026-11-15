@@ -8,6 +8,8 @@ namespace NoAzul.Domain.Entities
         public User? User { get; set; }
         public string Description { get; set; } = string.Empty;
         public ETransactionCategory Category { get; set; }
+        public int? CustomCategoryId { get; set; }
+        public CustomCategory? CustomCategory { get; set; }
         public bool IsIgnored { get; set; }
     }
 }

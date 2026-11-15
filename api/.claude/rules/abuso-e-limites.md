@@ -24,9 +24,11 @@ Só rate limit não basta porque IP roda barato. Só regra de negócio não bast
 | `register` | 5/h por IP | cadastro é evento raro por pessoa; 5 cobre família e rede compartilhada |
 | `login` | 10/5min por IP | erro de senha acontece; script de força bruta não |
 | `refresh-token` | 30/5min por IP | grava/revoga linha a cada chamada |
-| `item-create` | 20/h por usuário | exemplo de escrita que cria linha nova sem limite natural |
-| `bank-connect` | 20/h por usuário | `connect-token` e cadastro de conexão: cada chamada vai à Pluggy |
+| `bank-connect` | 20/h por usuário | `connect-token`, `reconnect-token`, cadastro e desconexão de conexão: cada chamada vai à Pluggy |
 | `transaction-category` | 300/h por usuário | troca de categoria grava uma regra por descrição; 300 cobre corrigir um mês inteiro de uma vez |
+| `custom-category` | 60/h por usuário | criar, renomear e apagar categoria da pessoa; apagar recalcula os lançamentos dela |
+
+Limite de volume: no máximo 50 categorias da pessoa (`CUSTOM_CATEGORY_LIMIT_REACHED`), ver `lancamentos.md`.
 
 Endpoint novo que **cria**, **envia** ou **chama fora** nasce com política própria e uma linha nesta tabela. Os números são ponto de partida; o projeto ajusta e registra o porquê.
 

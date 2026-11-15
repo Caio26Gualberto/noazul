@@ -142,3 +142,55 @@
 .transactions__row--ignored .transactions__strong {
   text-decoration: line-through;
 }
+
+.category-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category-dialog__hint {
+  margin: 0;
+  font: var(--tui-typography-body-s);
+  color: var(--tui-text-secondary);
+}
+
+.category-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.category-manager {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category-manager__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--tui-border-normal);
+}
+
+.category-manager__row:last-child {
+  border-bottom: none;
+}
+
+.category-manager__name {
+  overflow-wrap: anywhere;
+}
+
+.category-manager__actions {
+  display: flex;
+  gap: 4px;
+}
+
+.category-manager__empty {
+  color: var(--tui-text-secondary);
+}

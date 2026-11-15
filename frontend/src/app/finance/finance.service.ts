@@ -44,9 +44,7 @@ export class FinanceService {
   }
 
   createReconnectToken(connectionId: number): Observable<ConnectTokenDto> {
-    return this.api.post<ConnectTokenDto>(
-      `/api/bank-connections/${connectionId}/reconnect-token`,
-    );
+    return this.api.post<ConnectTokenDto>(`/api/bank-connections/${connectionId}/reconnect-token`);
   }
 
   disconnect(connectionId: number): Observable<void> {

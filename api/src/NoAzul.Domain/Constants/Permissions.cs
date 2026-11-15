@@ -7,14 +7,6 @@ namespace NoAzul.Domain.Constants
             public const string Access = "Admin.Access";
         }
 
-        public static class Items
-        {
-            public const string View = "Items.View";
-            public const string Create = "Items.Create";
-            public const string Edit = "Items.Edit";
-            public const string Delete = "Items.Delete";
-        }
-
         public static class Authorization
         {
             public const string UsersView = "Authorization.Users.View";

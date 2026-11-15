@@ -24,6 +24,7 @@ namespace NoAzul.Application.Transactions
 
         private readonly ITransactionRepository _repository;
         private readonly IRepository<CategoryRule> _rules;
+        private readonly IRepository<CustomCategory> _customCategories;
         private readonly IPluggyClient _pluggy;
         private readonly ICurrentUser _currentUser;
         private readonly IApplicationLogger _logger;
@@ -31,12 +32,14 @@ namespace NoAzul.Application.Transactions
         public TransactionAppService(
             ITransactionRepository repository,
             IRepository<CategoryRule> rules,
+            IRepository<CustomCategory> customCategories,
             IPluggyClient pluggy,
             ICurrentUser currentUser,
             IApplicationLoggerFactory loggerFactory)
         {
             _repository = repository;
             _rules = rules;
+            _customCategories = customCategories;
             _pluggy = pluggy;
             _currentUser = currentUser;
             _logger = loggerFactory.Create(LogContext.Transactions);
@@ -44,6 +47,32 @@ namespace NoAzul.Application.Transactions
 
         public Task<int> RemoveForAccounts(IReadOnlyCollection<int> financialAccountIds) =>
             _repository.SoftDeleteByAccountsAsync(financialAccountIds, _currentUser.UserIdOrNull);
+
+        public async Task<int> ClearCustomCategory(int customCategoryId)
+        {
+            var rules = await _rules.ListAsync(new QueryOptions<CategoryRule>
+            {
+                Predicate = r => r.CustomCategoryId == customCategoryId
+            });
+
+            foreach (var rule in rules)
+                await _rules.SoftDelete(rule);
+
+            var transactions = await _repository.ListAsync(new QueryOptions<Transaction>
+            {
+                IncludeDeleted = true,
+                Predicate = t => t.CustomCategoryId == customCategoryId
+            });
+
+            foreach (var transaction in transactions)
+            {
+                transaction.CustomCategoryId = null;
+                transaction.Category = PluggyCategoryMap.ToCategory(transaction.ProviderCategoryId);
+                await _repository.UpdateAsync(transaction);
+            }
+
+            return transactions.Count(t => !t.IsDeleted);
+        }
 
         public async Task<Result<PagedResultDto<TransactionDto>>> GetMine(TransactionListQueryDto query)
         {
@@ -65,6 +94,13 @@ namespace NoAzul.Application.Transactions
                     $"Search must be up to {SearchMaxLength} characters",
                     ErrorType.Validation));
 
+            var filterByCategory = !string.IsNullOrWhiteSpace(query.Category);
+            var filterCategory = ETransactionCategory.Other;
+            int? filterCustomId = null;
+
+            if (filterByCategory && !CategoryKeys.TryParse(query.Category, out filterCategory, out filterCustomId))
+                return Result<PagedResultDto<TransactionDto>>.Fail(CategoryInvalid());
+
             var userId = _currentUser.UserId;
             var (fromUtc, toUtc) = AppTime.MonthWindowUtc(month.Value.Year, month.Value.Month);
 
@@ -77,7 +113,10 @@ namespace NoAzul.Application.Transactions
                     && t.OccurredAt >= fromUtc
                     && t.OccurredAt < toUtc
                     && (query.Origin == null || t.Origin == query.Origin)
-                    && (query.Category == null || t.Category == query.Category)
+                    && (!filterByCategory
+                        || (filterCustomId != null
+                            ? t.CustomCategoryId == filterCustomId
+                            : t.CustomCategoryId == null && t.Category == filterCategory))
                     && (string.IsNullOrEmpty(search) || t.Description.ToLower().Contains(search)),
                 OrderBy = q => q.OrderByDescending(t => t.OccurredAt).ThenByDescending(t => t.Id),
                 Skip = query.Skip,
@@ -105,18 +144,30 @@ namespace NoAzul.Application.Transactions
             var currentMonth = new DateTime(AppTime.Today.Year, AppTime.Today.Month, 1);
             var summaries = new List<MonthSummaryDto>();
 
+            var customKeys = (await _customCategories.ListAsync(new QueryOptions<CustomCategory>
+            {
+                AsNoTracking = true,
+                Predicate = c => c.UserId == userId
+            })).Select(c => CategoryKeys.Custom(c.Id));
+
+            var keys = Enum.GetValues<ETransactionCategory>()
+                .Select(c => CategoryKeys.For(c, null))
+                .Concat(customKeys)
+                .ToList();
+
             for (var offset = months - 1; offset >= 0; offset--)
             {
                 var month = currentMonth.AddMonths(-offset);
                 var (fromUtc, toUtc) = AppTime.MonthWindowUtc(month.Year, month.Month);
-                var totals = await _repository.SumByCategoryAsync(userId, fromUtc, toUtc);
+                var totals = (await _repository.SumByCategoryAsync(userId, fromUtc, toUtc))
+                    .GroupBy(t => CategoryKeys.For(t.Category, t.CustomCategoryId))
+                    .ToDictionary(g => g.Key, g => g.Sum(t => t.Total));
 
                 summaries.Add(new MonthSummaryDto
                 {
                     Month = month.ToString("yyyy-MM", CultureInfo.InvariantCulture),
                     Total = totals.Values.Sum(),
-                    ByCategory = Enum.GetValues<ETransactionCategory>()
-                        .ToDictionary(c => ToCamel(c.ToString()), c => totals.GetValueOrDefault(c))
+                    ByCategory = keys.ToDictionary(k => k, k => totals.GetValueOrDefault(k))
                 });
             }
 
@@ -140,14 +191,26 @@ namespace NoAzul.Application.Transactions
                     "TRANSACTION_NOT_FOUND", "Transaction not found", ErrorType.NotFound));
 
             var category = transaction.Category;
+            var customCategoryId = transaction.CustomCategoryId;
 
             if (!input.Ignored)
             {
-                if (!TryParseCategory(input.Category, out category))
-                    return Result<CategoryRuleResultDto>.Fail(new Error(
-                        "TRANSACTION_CATEGORY_INVALID",
-                        "Category must be one of the known categories",
-                        ErrorType.Validation));
+                if (!CategoryKeys.TryParse(input.Category, out category, out customCategoryId))
+                    return Result<CategoryRuleResultDto>.Fail(CategoryInvalid());
+
+                if (customCategoryId.HasValue)
+                {
+                    var customId = customCategoryId.Value;
+                    var owned = await _customCategories.CountAsync(new QueryOptions<CustomCategory>
+                    {
+                        Predicate = c => c.Id == customId && c.UserId == userId
+                    }) > 0;
+
+                    if (!owned)
+                        return Result<CategoryRuleResultDto>.Fail(CategoryInvalid());
+
+                    category = transaction.Category;
+                }
             }
 
             var description = transaction.Description;
@@ -164,29 +227,34 @@ namespace NoAzul.Application.Transactions
                     UserId = userId,
                     Description = description,
                     Category = category,
+                    CustomCategoryId = customCategoryId,
                     IsIgnored = input.Ignored
                 });
             }
             else
             {
                 rule.Category = category;
+                rule.CustomCategoryId = customCategoryId;
                 rule.IsIgnored = input.Ignored;
                 await _rules.UpdateAsync(rule);
             }
 
-            var updated = await _repository.ApplyCategoryRuleAsync(userId, description, category, input.Ignored);
+            var updated = await _repository.ApplyCategoryRuleAsync(
+                userId, description, category, customCategoryId, input.Ignored);
+
+            var key = CategoryKeys.For(category, customCategoryId);
 
             _logger.Info(
                 eventName: "TRANSACTION_CATEGORY_RULE_SAVED",
                 message: "Category rule saved and applied to identical transactions",
                 userId: userId,
-                extra: new { TransactionId = id, Category = category.ToString(), input.Ignored, Updated = updated });
+                extra: new { TransactionId = id, Category = key, input.Ignored, Updated = updated });
 
             return Result<CategoryRuleResultDto>.Ok(
                 new CategoryRuleResultDto
                 {
                     Description = description,
-                    Category = ToCamel(category.ToString()),
+                    Category = key,
                     IsIgnored = input.Ignored,
                     UpdatedCount = updated
                 },
@@ -253,7 +321,10 @@ namespace NoAzul.Application.Transactions
                 var description = Truncate(item.Description);
                 var amount = Math.Abs(item.Amount);
                 rules.TryGetValue(description, out var rule);
-                var category = rule?.Category ?? PluggyCategoryMap.ToCategory(item.CategoryId);
+                var customCategoryId = rule?.CustomCategoryId;
+                var category = rule != null && customCategoryId == null
+                    ? rule.Category
+                    : PluggyCategoryMap.ToCategory(item.CategoryId);
                 var isIgnored = rule?.IsIgnored ?? false;
                 var isPending = item.Status == "PENDING";
                 var installmentNumber = item.TotalInstallments > 1 ? item.InstallmentNumber : null;
@@ -271,6 +342,7 @@ namespace NoAzul.Application.Transactions
                         Description = description,
                         Amount = amount,
                         Category = category,
+                        CustomCategoryId = customCategoryId,
                         ProviderCategoryId = item.CategoryId,
                         IsPending = isPending,
                         IsIgnored = isIgnored,
@@ -286,6 +358,7 @@ namespace NoAzul.Application.Transactions
                     || existing.Amount != amount
                     || existing.ProviderCategoryId != item.CategoryId
                     || existing.Category != category
+                    || existing.CustomCategoryId != customCategoryId
                     || existing.IsPending != isPending
                     || existing.IsIgnored != isIgnored
                     || existing.InstallmentNumber != installmentNumber
@@ -302,6 +375,7 @@ namespace NoAzul.Application.Transactions
                 existing.Amount = amount;
                 existing.ProviderCategoryId = item.CategoryId;
                 existing.Category = category;
+                existing.CustomCategoryId = customCategoryId;
                 existing.IsPending = isPending;
                 existing.IsIgnored = isIgnored;
                 existing.InstallmentNumber = installmentNumber;
@@ -350,14 +424,8 @@ namespace NoAzul.Application.Transactions
                 : null;
         }
 
-        private static bool TryParseCategory(string? value, out ETransactionCategory category)
-        {
-            category = ETransactionCategory.Other;
-            return !string.IsNullOrWhiteSpace(value)
-                && !int.TryParse(value, out _)
-                && Enum.TryParse(value.Trim(), ignoreCase: true, out category)
-                && Enum.IsDefined(category);
-        }
+        private static Error CategoryInvalid() =>
+            new("TRANSACTION_CATEGORY_INVALID", "Category must be one of the known categories", ErrorType.Validation);
 
         private static string Truncate(string value)
         {
@@ -373,7 +441,7 @@ namespace NoAzul.Application.Transactions
             Id = transaction.Id,
             OccurredAt = transaction.OccurredAt,
             Description = transaction.Description,
-            Category = ToCamel(transaction.Category.ToString()),
+            Category = CategoryKeys.For(transaction.Category, transaction.CustomCategoryId),
             Origin = ToCamel(transaction.Origin.ToString()),
             Bank = transaction.FinancialAccount?.BankConnection?.InstitutionName,
             Amount = transaction.Amount,
