@@ -8,18 +8,19 @@ import {
   getCurrencySymbol,
 } from '@angular/common';
 import { Component, DEFAULT_CURRENCY_CODE, LOCALE_ID, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { TuiTable } from '@taiga-ui/addon-table';
 import { TuiLoader } from '@taiga-ui/core';
 import { TuiProgress } from '@taiga-ui/kit';
-import { forkJoin } from 'rxjs';
+import { forkJoin, startWith, switchMap } from 'rxjs';
 import { sumAmounts, totalsByCategory, totalsByOrigin } from '../../finance/finance.calc';
 import { currentMonth, today } from '../../finance/finance.dates';
 import { Category, Origin } from '../../finance/finance.models';
 import { CategoryNamePipe } from '../../finance/category-name.pipe';
 import { CategoryStore } from '../../finance/category.store';
 import { FinanceService } from '../../finance/finance.service';
+import { ScopeStore } from '../../finance/scope.store';
 
 interface MonthBar {
   month: string;
@@ -84,6 +85,7 @@ function percentOf(part: number, whole: number): number {
 export class MetricsPage {
   private readonly finance = inject(FinanceService);
   private readonly categoryStore = inject(CategoryStore);
+  private readonly scope = inject(ScopeStore);
 
   constructor() {
     this.categoryStore.refresh();
@@ -93,10 +95,14 @@ export class MetricsPage {
   private readonly currencyCode = inject(DEFAULT_CURRENCY_CODE);
 
   private readonly data = toSignal(
-    forkJoin({
-      history: this.finance.history(),
-      transactions: this.finance.transactions(currentMonth()),
-    }),
+    toObservable(this.scope.selected).pipe(
+      switchMap((connection) =>
+        forkJoin({
+          history: this.finance.history(connection),
+          transactions: this.finance.transactions(currentMonth(), connection),
+        }).pipe(startWith(undefined)),
+      ),
+    ),
   );
 
   protected readonly loading = computed(() => this.data() === undefined);

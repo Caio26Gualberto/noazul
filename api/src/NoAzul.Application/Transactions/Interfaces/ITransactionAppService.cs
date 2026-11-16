@@ -8,7 +8,7 @@ namespace NoAzul.Application.Transactions.Interfaces
     public interface ITransactionAppService
     {
         Task<Result<PagedResultDto<TransactionDto>>> GetMine(TransactionListQueryDto query);
-        Task<Result<List<MonthSummaryDto>>> GetMonthlySummary(int months);
+        Task<Result<List<MonthSummaryDto>>> GetMonthlySummary(int months, int? connectionId);
         Task<Result<CategoryRuleResultDto>> UpdateCategory(int id, UpdateTransactionCategoryInputDto input);
         Task<Result<DisplayNameResultDto>> UpdateDisplayName(int id, UpdateDisplayNameInputDto input);
 

@@ -6,12 +6,14 @@ import { TuiAvatar } from '@taiga-ui/kit';
 import { AuthStore } from '../auth/auth.store';
 import { AppRoutes } from '../auth/routes';
 import { AppBrand } from '../components/app-brand';
+import { AppScopeSelect } from '../components/app-scope-select';
 import { navItems } from './nav-config';
 
 @Component({
   selector: 'app-shell',
   imports: [
     AppBrand,
+    AppScopeSelect,
     RouterLink,
     RouterLinkActive,
     RouterOutlet,

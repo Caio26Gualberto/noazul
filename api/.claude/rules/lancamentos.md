@@ -93,9 +93,18 @@ A descrição do banco continua guardada e é a chave de tudo (regra de categori
 
 ## Leitura
 
-- `GET /api/transactions?month=yyyy-MM&origin=&category=&search=&page=&pageSize=` — do próprio usuário, mês na zona do produto (`AppTime.MonthWindowUtc`), mais recente primeiro com desempate por `Id`. Sem `month`, o mês atual. Origem aceita o nome do enum (`card`); categoria aceita a chave (`restaurants` ou `custom-12`). O frontend pede todas as páginas do mês e filtra na tela.
-- `GET /api/transactions/monthly-summary?months=6` — de 1 a 24 meses terminando no atual, total e soma por categoria (onze mais as da pessoa), um `GroupBy` por mês no `ITransactionRepository`. Mês sem dados vem zerado.
+- `GET /api/transactions?month=yyyy-MM&origin=&category=&search=&connectionId=&page=&pageSize=` — do próprio usuário, mês na zona do produto (`AppTime.MonthWindowUtc`), mais recente primeiro com desempate por `Id`. Sem `month`, o mês atual. Origem aceita o nome do enum (`card`); categoria aceita a chave (`restaurants` ou `custom-12`); `connectionId` filtra pelo banco (ver "Filtro global por banco"). O frontend pede todas as páginas do mês e filtra na tela.
+- `GET /api/transactions/monthly-summary?months=6&connectionId=` — de 1 a 24 meses terminando no atual, total e soma por categoria (onze mais as da pessoa), um `GroupBy` por mês no `ITransactionRepository`. Mês sem dados vem zerado. `connectionId` filtra pelo banco.
 - `origin` inválido cai na validação padrão do ASP.NET (400 em ProblemDetails, fora do envelope). `category` inválida é `TRANSACTION_CATEGORY_INVALID`, no envelope.
+
+## Filtro global por banco (decidido pelo dono em 2026-11-15)
+
+Quem tem mais de um banco conectado quer ver uma conta de cada vez (o dono usa o crédito no Itaú e a conta corrente na Inter). O seletor global do site, como um "tenant", escolhe **um banco ou todas as contas**, e a escolha vale em Lançamentos, Início e Métricas. Cartões e contas sempre mostra todos os bancos (é onde se gerencia a conexão).
+
+- O filtro é por **conexão** (`BankConnection`), não por conta individual: um banco com mais de uma conta (corrente + cartão) entra inteiro.
+- Na API é o `connectionId` opcional de `GET /api/transactions` e de `GET /api/transactions/monthly-summary`. Null = todas. Ele entra no `WHERE` por `t.FinancialAccount.BankConnectionId == connectionId` (lista e `SumByCategoryAsync`).
+- Não valida dono: o filtro já corre junto de `UserId == userId`, então `connectionId` de outra pessoa (ou inexistente) devolve vazio, não vaza nada. Por isso não há code próprio.
+- As faturas abertas e a "última atualização" do Início saem das conexões que o frontend já tem, filtradas na tela pelo banco escolhido; não há parâmetro para elas.
 
 ## Codes
 
@@ -143,6 +152,7 @@ Falha da Pluggy sobe e vira `BANK_CONNECTION_SYNC_FAILED` da conexão inteira.
 6. Categorias da pessoa: `POST /api/custom-categories {"name":"  Pet  "}` → `CUSTOM_CATEGORY_CREATED` com nome `Pet` e chave `custom-N`; de novo com `pet` → 409 `CUSTOM_CATEGORY_NAME_TAKEN`; nome vazio → 400. `PUT /api/transactions/{id}/category {"category":"custom-N"}` → todos os idênticos com `CustomCategoryId = N`; `monthly-summary` traz `custom-N` com a soma; `?category=custom-N` filtra. `DELETE /api/custom-categories/N` → os lançamentos voltam para a categoria da tabela, a regra fica `IsDeleted`; apagar de novo → 404. (Visto em 2026-11-15 com dois lançamentos de teste.)
 7. Na tela: menu da categoria → "Nova categoria" → nome → o lançamento e os idênticos mudam, a categoria aparece no filtro, no Início e nas Métricas. "Minhas categorias" → renomear muda o nome em todo lugar; apagar pede confirmação.
 8. Nome: `PUT /api/transactions/{id}/display-name {"name":"  Keeta   Elisa "}` → `TRANSACTION_RENAMED`, `displayName` `Keeta Elisa` nos idênticos; `?search=elisa` acha; 61 caracteres → 400; `{"name":""}` → `TRANSACTION_NAME_RESET` e a busca não acha mais. Na tela: clicar na descrição → "Renomear lançamento" → o nome muda em Lançamentos, Início e Métricas; "Voltar ao nome do banco" desfaz. (Visto em 2026-11-15 com dados de teste.)
+9. Filtro por banco, com dois bancos (ex.: Itaú conexão 2, soma 300; Inter conexão 3, soma 50): `monthly-summary?months=1` sem filtro → total 350; `&connectionId=2` → 300; `&connectionId=3` → 50; `&connectionId=999` → 0. `GET /api/transactions?month=atual` dá os mesmos cortes no `totalCount` (3/2/1/0). Na tela, o seletor global troca os números de Início, Lançamentos e Métricas juntos; Cartões e contas não muda. (Visto em 2026-11-15 com dois bancos de teste semeados.)
 
 ## Em aberto
 

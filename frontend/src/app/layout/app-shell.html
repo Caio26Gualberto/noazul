@@ -76,17 +76,20 @@
 
   <div class="shell__main">
     <header class="shell__bar">
-      <button
-        tuiIconButton
-        appearance="flat"
-        type="button"
-        iconStart="@tui.menu"
-        [attr.aria-label]="t('common.nav.openMenu')"
-        (click)="menuOpen.set(true)"
-      >
-        {{ t('common.nav.openMenu') }}
-      </button>
-      <app-brand />
+      <div class="shell__bar-nav">
+        <button
+          tuiIconButton
+          appearance="flat"
+          type="button"
+          iconStart="@tui.menu"
+          [attr.aria-label]="t('common.nav.openMenu')"
+          (click)="menuOpen.set(true)"
+        >
+          {{ t('common.nav.openMenu') }}
+        </button>
+        <app-brand />
+      </div>
+      <app-scope-select />
     </header>
 
     <main class="shell__content">

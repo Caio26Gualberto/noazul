@@ -19,13 +19,19 @@ const CONNECTIONS_PAGE_SIZE = 100;
 const TRANSACTIONS_PAGE_SIZE = 100;
 const HISTORY_MONTHS = 6;
 
+function connectionParam(connectionId: number | null): string {
+  return connectionId === null ? '' : `&connectionId=${connectionId}`;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FinanceService {
   private readonly api = inject(ApiClient);
 
-  transactions(month: string): Observable<Transaction[]> {
-    return this.transactionsPage(month, 1).pipe(
-      expand((page) => (page.hasNext ? this.transactionsPage(month, page.page + 1) : EMPTY)),
+  transactions(month: string, connectionId: number | null = null): Observable<Transaction[]> {
+    return this.transactionsPage(month, 1, connectionId).pipe(
+      expand((page) =>
+        page.hasNext ? this.transactionsPage(month, page.page + 1, connectionId) : EMPTY,
+      ),
       reduce((all, page) => [...all, ...page.items.map(toTransaction)], [] as Transaction[]),
     );
   }
@@ -82,10 +88,12 @@ export class FinanceService {
     );
   }
 
-  history(): Observable<MonthSummary[]> {
+  history(connectionId: number | null = null): Observable<MonthSummary[]> {
     const month = currentMonth();
     return this.api
-      .get<MonthSummaryDto[]>(`/api/transactions/monthly-summary?months=${HISTORY_MONTHS}`)
+      .get<MonthSummaryDto[]>(
+        `/api/transactions/monthly-summary?months=${HISTORY_MONTHS}${connectionParam(connectionId)}`,
+      )
       .pipe(
         map((summaries) =>
           summaries.filter((summary) => summary.month < month).map(toMonthSummary),
@@ -96,9 +104,10 @@ export class FinanceService {
   private transactionsPage(
     month: string,
     page: number,
+    connectionId: number | null,
   ): Observable<PagedResultDto<TransactionDto>> {
     return this.api.get<PagedResultDto<TransactionDto>>(
-      `/api/transactions?month=${month}&page=${page}&pageSize=${TRANSACTIONS_PAGE_SIZE}`,
+      `/api/transactions?month=${month}&page=${page}&pageSize=${TRANSACTIONS_PAGE_SIZE}${connectionParam(connectionId)}`,
     );
   }
 }

@@ -1,7 +1,8 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { startWith, switchMap } from 'rxjs';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { TuiThumbnailCard } from '@taiga-ui/addon-commerce';
 import { TuiTable } from '@taiga-ui/addon-table';
@@ -23,6 +24,7 @@ import { bankClass } from '../../finance/bank-connection.mapper';
 import { CategoryNamePipe } from '../../finance/category-name.pipe';
 import { CategoryStore } from '../../finance/category.store';
 import { FinanceService } from '../../finance/finance.service';
+import { ScopeStore } from '../../finance/scope.store';
 
 const RECENT_TRANSACTIONS_COUNT = 6;
 const PRODUCT_TIME_ZONE_OFFSET = '-0300';
@@ -76,6 +78,7 @@ interface Dashboard {
 export class HomePage {
   private readonly finance = inject(FinanceService);
   private readonly categoryStore = inject(CategoryStore);
+  private readonly scope = inject(ScopeStore);
 
   constructor() {
     this.categoryStore.refresh();
@@ -86,9 +89,19 @@ export class HomePage {
   protected readonly timeZone = PRODUCT_TIME_ZONE_OFFSET;
   protected readonly monthStart = `${currentMonth()}-01`;
 
-  private readonly transactions = toSignal(this.finance.transactions(currentMonth()));
+  private readonly transactions = toSignal(
+    toObservable(this.scope.selected).pipe(
+      switchMap((connection) =>
+        this.finance.transactions(currentMonth(), connection).pipe(startWith(undefined)),
+      ),
+    ),
+  );
   private readonly connections = toSignal(this.finance.connections());
-  private readonly history = toSignal(this.finance.history());
+  private readonly history = toSignal(
+    toObservable(this.scope.selected).pipe(
+      switchMap((connection) => this.finance.history(connection).pipe(startWith(undefined))),
+    ),
+  );
 
   protected readonly dashboard = computed<Dashboard | null>(() => {
     const all = this.transactions();
@@ -97,6 +110,9 @@ export class HomePage {
     if (!all || !connections || !history) {
       return null;
     }
+    const selected = this.scope.selected();
+    const scoped =
+      selected === null ? connections : connections.filter((connection) => connection.id === selected);
     const transactions = all.filter((transaction) => !transaction.ignored);
     const total = sumAmounts(transactions);
     const categories = this.categoryRows(transactions, total);
@@ -105,10 +121,10 @@ export class HomePage {
       byOrigin: totalsByOrigin(transactions),
       categories,
       largestCategory: categories[0]?.amount ?? 0,
-      bills: this.openBills(connections),
+      bills: this.openBills(scoped),
       recent: transactions.slice(0, RECENT_TRANSACTIONS_COUNT),
       previousMonth: this.previousMonth(history),
-      lastSyncAt: this.lastSyncAt(connections),
+      lastSyncAt: this.lastSyncAt(scoped),
     };
   });
 

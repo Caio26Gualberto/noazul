@@ -40,6 +40,7 @@ import { CategoryStore } from '../../finance/category.store';
 import { currentMonth, recentMonths } from '../../finance/finance.dates';
 import { Category, CustomCategory, Origin, Transaction } from '../../finance/finance.models';
 import { FinanceService } from '../../finance/finance.service';
+import { ScopeStore } from '../../finance/scope.store';
 
 type OriginFilter = 'all' | Origin;
 type CategoryFilter = 'all' | Category;
@@ -104,10 +105,19 @@ export class TransactionsPage {
   protected readonly monthLabel = computed(() => this.formatMonth(this.month()));
 
   private readonly finance = inject(FinanceService);
+  private readonly scope = inject(ScopeStore);
 
   protected readonly transactions = toSignal(
-    toObservable(computed(() => ({ month: this.month(), version: this.version() }))).pipe(
-      switchMap(({ month }) => this.finance.transactions(month).pipe(startWith(undefined))),
+    toObservable(
+      computed(() => ({
+        month: this.month(),
+        connection: this.scope.selected(),
+        version: this.version(),
+      })),
+    ).pipe(
+      switchMap(({ month, connection }) =>
+        this.finance.transactions(month, connection).pipe(startWith(undefined)),
+      ),
     ),
   );
   protected readonly loading = computed(() => this.transactions() === undefined);

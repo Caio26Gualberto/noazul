@@ -140,7 +140,23 @@
 }
 
 .shell__bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 56px;
+  padding: 0 40px;
+  background: var(--tui-background-base);
+  border-bottom: 1px solid var(--tui-border-normal);
+}
+
+.shell__bar-nav {
   display: none;
+  align-items: center;
+  gap: 8px;
 }
 
 .shell__content {
@@ -174,16 +190,11 @@
   }
 
   .shell__bar {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 56px;
     padding: 0 12px;
-    background: var(--tui-background-base);
-    border-bottom: 1px solid var(--tui-border-normal);
+  }
+
+  .shell__bar-nav {
+    display: flex;
   }
 
   .shell__content {

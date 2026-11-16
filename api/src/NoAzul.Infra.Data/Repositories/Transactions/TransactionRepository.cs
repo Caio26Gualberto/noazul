@@ -13,7 +13,7 @@ namespace NoAzul.Infra.Data.Repositories.Transactions
         }
 
         public async Task<List<CategoryTotal>> SumByCategoryAsync(
-            int userId, DateTime fromUtc, DateTime toUtc, CancellationToken ct = default)
+            int userId, DateTime fromUtc, DateTime toUtc, int? connectionId, CancellationToken ct = default)
         {
             return await _dbSet
                 .AsNoTracking()
@@ -21,7 +21,8 @@ namespace NoAzul.Infra.Data.Repositories.Transactions
                     && !t.IsDeleted
                     && !t.IsIgnored
                     && t.OccurredAt >= fromUtc
-                    && t.OccurredAt < toUtc)
+                    && t.OccurredAt < toUtc
+                    && (connectionId == null || t.FinancialAccount!.BankConnectionId == connectionId))
                 .GroupBy(t => new { t.Category, t.CustomCategoryId })
                 .Select(g => new CategoryTotal(g.Key.Category, g.Key.CustomCategoryId, g.Sum(t => t.Amount)))
                 .ToListAsync(ct);

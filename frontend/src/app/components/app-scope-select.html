@@ -1,0 +1,38 @@
+@if (visible()) {
+  <button
+    *transloco="let t"
+    type="button"
+    class="scope"
+    [tuiDropdown]="menu"
+    [(tuiDropdownOpen)]="open"
+  >
+    <span class="scope__dot" [class]="current() ? bankClass(current()!) : ''"></span>
+    <span class="scope__label">{{ current()?.bank ?? t('common.scope.all') }}</span>
+    <tui-icon icon="@tui.chevron-down" class="scope__chevron" />
+  </button>
+
+  <ng-template #menu>
+    <tui-data-list *transloco="let t">
+      <button
+        tuiOption
+        type="button"
+        [attr.aria-selected]="selected() === null"
+        (click)="choose(null)"
+      >
+        <span class="scope__dot"></span>
+        {{ t('common.scope.all') }}
+      </button>
+      @for (connection of connections(); track connection.id) {
+        <button
+          tuiOption
+          type="button"
+          [attr.aria-selected]="selected() === connection.id"
+          (click)="choose(connection.id)"
+        >
+          <span class="scope__dot" [class]="bankClass(connection)"></span>
+          {{ connection.bank }}
+        </button>
+      }
+    </tui-data-list>
+  </ng-template>
+}

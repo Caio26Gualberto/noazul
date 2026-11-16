@@ -1,0 +1,49 @@
+:host {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.scope {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 220px;
+  padding: 8px 12px;
+  border: 1px solid var(--tui-border-normal);
+  border-radius: 10px;
+  background: var(--tui-background-base);
+  color: var(--tui-text-primary);
+  cursor: pointer;
+  transition: background var(--tui-duration);
+
+  &:hover {
+    background: var(--tui-background-neutral-1);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--tui-background-accent-1);
+    outline-offset: 2px;
+  }
+}
+
+.scope__dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--app-bank, var(--tui-background-accent-1));
+}
+
+.scope__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--tui-typography-body-s);
+  font-weight: 600;
+}
+
+.scope__chevron {
+  flex-shrink: 0;
+  color: var(--tui-text-secondary);
+}

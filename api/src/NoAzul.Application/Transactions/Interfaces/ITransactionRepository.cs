@@ -7,7 +7,7 @@ namespace NoAzul.Application.Transactions.Interfaces
     public interface ITransactionRepository : IRepository<Transaction>
     {
         Task<List<CategoryTotal>> SumByCategoryAsync(
-            int userId, DateTime fromUtc, DateTime toUtc, CancellationToken ct = default);
+            int userId, DateTime fromUtc, DateTime toUtc, int? connectionId, CancellationToken ct = default);
 
         Task<int> ApplyCategoryRuleAsync(
             int userId,

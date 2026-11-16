@@ -14,5 +14,8 @@
   "actions": {
     "logout": "Sair",
     "changePassword": "Trocar senha"
+  },
+  "scope": {
+    "all": "Todas as contas"
   }
 }

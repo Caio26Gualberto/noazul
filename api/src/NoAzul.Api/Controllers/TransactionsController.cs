@@ -24,9 +24,9 @@ namespace NoAzul.Api.Controllers
         }
 
         [HttpGet("monthly-summary")]
-        public async Task<ActionResult> MonthlySummary([FromQuery] int months = 6)
+        public async Task<ActionResult> MonthlySummary([FromQuery] int months = 6, [FromQuery] int? connectionId = null)
         {
-            var result = await _appService.GetMonthlySummary(months);
+            var result = await _appService.GetMonthlySummary(months, connectionId);
             return ToResponse(result);
         }
 

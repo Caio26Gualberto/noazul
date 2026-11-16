@@ -122,6 +122,7 @@ namespace NoAzul.Application.Transactions
                     && t.OccurredAt >= fromUtc
                     && t.OccurredAt < toUtc
                     && (query.Origin == null || t.Origin == query.Origin)
+                    && (query.ConnectionId == null || t.FinancialAccount!.BankConnectionId == query.ConnectionId)
                     && (!filterByCategory
                         || (filterCustomId != null
                             ? t.CustomCategoryId == filterCustomId
@@ -216,7 +217,7 @@ namespace NoAzul.Application.Transactions
                 Predicate = a => a.UserId == userId
             })).ToDictionary(a => a.Description, a => a.Name);
 
-        public async Task<Result<List<MonthSummaryDto>>> GetMonthlySummary(int months)
+        public async Task<Result<List<MonthSummaryDto>>> GetMonthlySummary(int months, int? connectionId)
         {
             if (months < 1 || months > MaxSummaryMonths)
                 return Result<List<MonthSummaryDto>>.Fail(new Error(
@@ -243,7 +244,7 @@ namespace NoAzul.Application.Transactions
             {
                 var month = currentMonth.AddMonths(-offset);
                 var (fromUtc, toUtc) = AppTime.MonthWindowUtc(month.Year, month.Month);
-                var totals = (await _repository.SumByCategoryAsync(userId, fromUtc, toUtc))
+                var totals = (await _repository.SumByCategoryAsync(userId, fromUtc, toUtc, connectionId))
                     .GroupBy(t => CategoryKeys.For(t.Category, t.CustomCategoryId))
                     .ToDictionary(g => g.Key, g => g.Sum(t => t.Total));
 
