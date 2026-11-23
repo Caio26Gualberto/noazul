@@ -18,7 +18,6 @@
     "account": "Conta"
   },
   "originWithBank": "{{origin}} {{bank}}",
-  "pending": "Pendente",
   "installment": "Parcela {{current}} de {{total}}",
   "brands": {
     "mastercard": "Mastercard",

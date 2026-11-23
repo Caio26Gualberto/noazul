@@ -51,7 +51,6 @@ export interface Transaction {
   origin: Origin;
   bank: string | null;
   amount: number;
-  pending: boolean;
   ignored: boolean;
   installment: Installment | null;
   note: string | null;

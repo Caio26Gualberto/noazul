@@ -79,7 +79,8 @@ Gastos, cartões, contas e métricas, todos vindos da API. Não existe lançamen
 - Nome escolhido: `Transaction.name` é o apelido da pessoa (`displayName` da API) ou a descrição do banco; `renamed` diz se há apelido. Tela mostra sempre `name`; `description` só aparece embaixo, em Lançamentos, quando há apelido. Clicar na descrição abre "Renomear lançamento" (`updateDisplayName`, `PUT /api/transactions/{id}/display-name`); nome vazio volta ao do banco. A busca olha os dois.
 - Cartões e contas sem banco mostra o guia do Meu Pluggy (3 passos, `ng-template #steps`), e "Conectar banco" abre antes a janela "Antes de conectar" com os mesmos passos (`#beforeConnect`); só com "Já fiz isso, continuar" abre a Pluggy.
 - Filtro global por banco: `scope.store.ts` (`ScopeStore`) guarda em signal qual conexão está selecionada (`selected`, `null` = todas), persistida por pessoa no `localStorage` (`noazul:scope:<userId>`, lida por um `effect` no `AuthStore.profile()`). O seletor é `components/app-scope-select.ts` (some com menos de dois bancos; `reconcile` volta para "todas" se o banco escolhido sumiu), na barra de topo da casca (`app-shell`), sempre visível. Início, Lançamentos e Métricas reagem ao `selected()` e mandam o `connectionId` para `FinanceService.transactions(month, connectionId)` e `history(connectionId)`; no Início, as faturas e a última atualização são filtradas na tela pelas conexões já carregadas. Cartões e contas não usa o filtro.
-- Textos compartilhados (categorias, origens, "Pendente", parcelas) em `i18n/pt-BR/finance.json`.
+- Sem selo "Pendente": a Pluggy marca como `PENDING` os gastos da fatura aberta do cartão, e o selo dava a entender que a compra não foi aprovada. O `isPending` continua no `TransactionDto`, sem uso na tela (decisão do dono, 2026-11-23).
+- Textos compartilhados (categorias, origens, parcelas) em `i18n/pt-BR/finance.json`.
 
 ## Autenticação (`app/auth/`)
 

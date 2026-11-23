@@ -118,9 +118,6 @@
                         <span class="transactions__original">{{ transaction.description }}</span>
                       }
                     </button>
-                    @if (transaction.pending) {
-                      <span tuiBadge appearance="neutral" size="s">{{ t('finance.pending') }}</span>
-                    }
                     @if (transaction.installment; as installment) {
                       <span tuiBadge appearance="info" size="s">
                         {{

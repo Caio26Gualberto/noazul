@@ -20,7 +20,6 @@ export function toTransaction(dto: TransactionDto): Transaction {
     origin: dto.origin,
     bank: dto.bank,
     amount: dto.amount,
-    pending: dto.isPending,
     ignored: dto.isIgnored,
     installment:
       dto.installmentNumber && dto.installmentTotal

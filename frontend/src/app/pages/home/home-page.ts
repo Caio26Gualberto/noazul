@@ -7,7 +7,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { TuiThumbnailCard } from '@taiga-ui/addon-commerce';
 import { TuiTable } from '@taiga-ui/addon-table';
 import { TuiLink, TuiLoader, TuiTitle } from '@taiga-ui/core';
-import { TuiBadge, TuiChip, TuiProgress } from '@taiga-ui/kit';
+import { TuiChip, TuiProgress } from '@taiga-ui/kit';
 import { TuiCardLarge, TuiHeader } from '@taiga-ui/layout';
 import { AuthStore } from '../../auth/auth.store';
 import { AppRoutes } from '../../auth/routes';
@@ -67,7 +67,6 @@ interface Dashboard {
     TuiHeader,
     TuiProgress,
     TuiChip,
-    TuiBadge,
     TuiTable,
     TuiThumbnailCard,
     CategoryNamePipe,
